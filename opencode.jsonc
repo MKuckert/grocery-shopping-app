@@ -1,0 +1,106 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "manifest/small",
+  "small_model": "manifest/mini",
+  "agent": {
+    "build": {
+      "mode": "primary",
+    },
+    "plan": {
+      "mode": "primary",
+    },
+    "general": {
+      "mode": "subagent",
+    },
+    "explore": {
+      "mode": "subagent",
+    },
+
+    // System agents
+    "compaction": {
+      "mode": "primary",
+      "hidden": true,
+    },
+    "title": {
+      "mode": "primary",
+      "hidden": true,
+      "model": "manifest/mini",
+    },
+    "summary": {
+      "mode": "primary",
+      "hidden": true,
+      "model": "manifest/mini",
+    },
+  },
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true,
+    },
+  },
+  "disabled_providers": [
+    "opencode",
+    "openai",
+    "xai",
+    "anthropic",
+    "groq",
+    "amazon-bedrock",
+    "openrouter",
+    "github-copilot",
+    "google",
+  ],
+  "provider": {
+    "manifest": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Manifest",
+      "options": {
+        "baseURL": "http://192.168.178.55:11438/v1",
+        "apiKey": "mnfst_fg2oPyRbADke61Mj406BoEuKcavenT1bsbnLwLVuUFQ",
+      },
+      "models": {
+        "mini": {
+          "name": "Mini (apple on device",
+          "headers": {
+            "X-Manifest-Tier": "mini",
+          },
+        },
+        "small": {
+          "name": "Small (local Gemma 4, GPT-5-mini)",
+          "headers": {
+            "X-Manifest-Tier": "small",
+          },
+        },
+        "medium": {
+          "name": "Medium (local Gemma 4, Haiku, GPT-5.4-mini)",
+          "headers": {
+            "X-Manifest-Tier": "medium",
+          },
+        },
+        "complex": {
+          "name": "Complex (Sonnet, Gemini Pro, GPT-5.3-Codex)",
+          "headers": {
+            "X-Manifest-Tier": "complex",
+          },
+        },
+        "ultra": {
+          "name": "Ultra (Opus, GPT-5.4)",
+          "headers": {
+            "X-Manifest-Tier": "ultra",
+          },
+        },
+      },
+    },
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+  },
+  // Disables the snapshot feature to roll back agent changes as I'm not using it anyway
+  "snapshot": false,
+  "experimental": {
+    "quotaToast": {
+      "enableToast": false,
+    },
+  },
+}

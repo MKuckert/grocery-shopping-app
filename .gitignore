@@ -1,0 +1,18 @@
+.env
+*.user
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+[Cc]ache/
+[Bb]ackup/
+
+# macos
+.DS_Store
+
+# Windows
+Thumbs.db
+[Dd]esktop.ini
