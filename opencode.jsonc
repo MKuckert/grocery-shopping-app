@@ -4,15 +4,19 @@
   "small_model": "manifest/mini",
   "agent": {
     "build": {
+      "disable": true,
       "mode": "primary",
     },
     "plan": {
+      "disable": true,
       "mode": "primary",
     },
     "general": {
+      "disable": true,
       "mode": "subagent",
     },
     "explore": {
+      "disable": true,
       "mode": "subagent",
     },
 

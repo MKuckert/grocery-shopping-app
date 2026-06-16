@@ -1,5 +1,10 @@
 # TODO
 
+## Agent harness
+
+- [x] Split reviewer into plan-reviewer and code-reviewer
+- [ ] Add builder not implementing `PLAN.md`
+
 ## General
 
 - [ ] Create initial `PROJECT_MAP.md`

@@ -4,9 +4,7 @@ mode: primary
 disable: true
 model: manifest/medium
 permission:
-  fsrw_*: allow
-  git_*: allow
-  web_*: allow
+  "*": allow
 color: "#DD8800"
 ---
 
