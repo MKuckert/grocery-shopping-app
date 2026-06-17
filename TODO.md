@@ -3,7 +3,8 @@
 ## Agent harness
 
 - [x] Split reviewer into plan-reviewer and code-reviewer
-- [ ] Add builder not implementing `PLAN.md`
+- [x] Add buddy agent not adhering to `PLAN.md` workflows one can use for general tasks, e.g. to make changes to the harness or kickoff research tasks
+- [ ] Add websearch mcp for Librarian agent
 
 ## General
 
