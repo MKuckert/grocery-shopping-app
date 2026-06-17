@@ -44,7 +44,7 @@ The storage footprint utilizes a highly optimized, flat structure designed to mi
 Tracks the global state machine configuration for the entire household namespace.
 
 - `id`: `UUID` (PRIMARY KEY). Enforced to a static singleton ID per tenant (e.g., namespace configuration), or unique if tracking multiple distinct setups. Defaults to `'00000000-0000-0000-0000-000000000001'::uuid` for this single-tenant deployment bootstrap.
-- `current_shopping_state`: `TEXT` (NOT NULL, DEFAULT `'IDLE'`). State machine restriction boundary. Validated through Postgres check constraint: `IN ('IDLE', 'SHOPPING', 'UNLOADING')`.
+- `current_state`: `TEXT` (NOT NULL, DEFAULT `'IDLE'`). State machine restriction boundary. Validated through Postgres check constraint: `IN ('IDLE', 'SHOPPING', 'UNLOADING')`.
 - `shopping_started_at`: `TIMESTAMP WITH TIME ZONE` (NULL). Automatically stamped with server `NOW()` when moving to `SHOPPING`. Useful to determine if a cart entry was abandoned weeks ago.
 
 #### Table: `public.product_groups`
@@ -98,11 +98,6 @@ WHERE deleted_at IS NULL;
 -- 3. High-frequency reactive query execution path for the Stateless Shopping Matrix views
 CREATE INDEX idx_product_kinds_shopping_state
 ON product_kinds (household_id, quantity_to_buy, pending_stock)
-WHERE deleted_at IS NULL;
-
--- 4. Ensures rapid sorting of category groups without memory-intensive sorting operations
-CREATE INDEX idx_product_groups_active
-ON product_groups (household_id, display_order)
 WHERE deleted_at IS NULL;
 ```
 
