@@ -1,7 +1,6 @@
 import subprocess
 from pathlib import Path
 
-import uvicorn
 from mcp.server.lowlevel import Server
 from mcp.server.sse import SseServerTransport
 from mcp.shared.exceptions import McpError
@@ -90,8 +89,3 @@ def create_app() -> Starlette:
             Mount("/messages/", app=sse.handle_post_message),
         ]
     )
-
-
-if __name__ == "__main__":
-    app = create_app()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
