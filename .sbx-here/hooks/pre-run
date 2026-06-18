@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+backgrounded.sh start grocery-shopping-app-androidbuild uv run --directory androidbuild mcpandroidbuild --port 12001
