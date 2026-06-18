@@ -1,5 +1,5 @@
-import os
 import subprocess
+from pathlib import Path
 
 import uvicorn
 from mcp.server.lowlevel import Server
@@ -49,16 +49,14 @@ async def call_tool(name, arguments: dict) -> list[TextContent]:
         args = GradleCommand(**arguments)
     except ValueError as e:
         raise McpError(ErrorData(code=INVALID_PARAMS, message=str(e)))
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(script_dir))), "src"
-    )
+    script_dir = Path(__file__).resolve().parent
+    project_dir = script_dir.parent.parent.parent / "src"
 
     print(f"Executing command: {args.command} in project directory: {project_dir}")
 
     command = [""]
     if name == "gradlew":
-        command = [os.path.join(script_dir, "gradlew.sh"), args.command]
+        command = [str(script_dir / "gradlew.sh"), args.command]
 
     result = subprocess.run(
         command,
