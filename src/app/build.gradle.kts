@@ -4,9 +4,7 @@ plugins {
 
 android {
   namespace = "de.curlybracket.grocery"
-  compileSdk {
-    version = release(37)
-  }
+  compileSdk = 37
 
   defaultConfig {
     applicationId = "de.curlybracket.grocery"
@@ -20,16 +18,13 @@ android {
 
   buildTypes {
     release {
-      optimization {
-        enable = false
-      }
+      isMinifyEnabled = false
     }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
-  buildToolsVersion = "37.0.0"
 }
 
 dependencies {

@@ -9,7 +9,8 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
 ## Requirements & Decisions
 
 - **Application ID:** `de.curlybracket.grocery`
-- **Min / Compile / Target SDK:** API 35 (Android 15)
+- **Min / Compile SDK:** API 35 (Android 15)
+- **Target SDK:** API 37 (ANdroid 17)
 - **Gradle DSL:** Kotlin DSL (`.kts`) + `gradle/libs.versions.toml` Version Catalog
 - **Frameworks:** Jetpack Compose (UI), Hilt (DI), CameraX + ML Kit (barcode scanning), PowerSync 1.13.0 (local-first sync), Supabase Kotlin SDK (backend/auth)
 - **Architecture Pattern:** MVI — ViewModels expose `StateFlow<UiState>`, UI sends sealed `Intent/Action` events
@@ -44,20 +45,20 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
 
 > Status Markers: [ ] Open, [/] In Progress, [x] Completed (set after accepted review only!)
 
-- [ ] **Task 1: Root Gradle Configuration**
+- [x] **Task 1: Root Gradle Configuration**
   - **Description:** Create or modify the following files in `src`:
     - `settings.gradle.kts` — project name `"GroceryShopping"`, `pluginManagement` block declaring `gradlePluginPortal()`, `google()`, `mavenCentral()` repos, and `dependencyResolutionManagement` pointing all repositories to the same three remotes.
     - `build.gradle.kts` — declares all top-level plugins with `apply false` only (no `dependencies {}` block at root level).
     - `gradle.properties` — sets `android.useAndroidX=true`, `kotlin.code.style=official`, `android.nonTransitiveRClass=true`, `org.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC`.
-    - `gradle/wrapper/gradle-wrapper.properties` — pins Gradle wrapper to `8.14` (latest stable compatible with AGP 8.9.x).
+    - `gradle/wrapper/gradle-wrapper.properties` — pins Gradle wrapper to `9.2.1`.
   - **Review Criteria:** `android_gradlew('help')` runs to completion without error. `settings.gradle.kts` resolves all plugin IDs to be declared in Task 2.
 
 - [ ] **Task 2: Gradle Version Catalog (`gradle/libs.versions.toml`)**
-  - **Description:** Centralise ALL dependency and plugin versions in the `[versions]` table. Minimum required entries: `agp` (8.9.x), `kotlin` (2.1.x), `composeBom`, `hilt`, `powersync` (`1.13.0`), `supabase`, `cameraX`, `mlkitBarcode`, `navigationCompose`, `coroutines`, `serialization`, `ksp`. In `[libraries]`, declare every individual artifact using the version refs (e.g., `powersync-core = { module = "com.powersync:core", version.ref = "powersync" }`). In `[plugins]`, declare: `android-application`, `kotlin-android`, `kotlin-compose`, `kotlin-serialization`, `hilt-android`, `ksp`. Create two `[bundles]`: `compose` (ui, material3, tooling-preview, activity) and `camerax` (core, lifecycle, view).
+  - **Description:** Centralise ALL dependency and plugin versions in the `[versions]` table. Minimum required entries: `agp` (9.2.1), `kotlin` (2.1.x), `composeBom`, `hilt`, `powersync` (`1.13.0`), `supabase`, `cameraX`, `mlkitBarcode`, `navigationCompose`, `coroutines`, `serialization`, `ksp`. In `[libraries]`, declare every individual artifact using the version refs (e.g., `powersync-core = { module = "com.powersync:core", version.ref = "powersync" }`). In `[plugins]`, declare: `android-application`, `kotlin-android`, `kotlin-compose`, `kotlin-serialization`, `hilt-android`, `ksp`. Create two `[bundles]`: `compose` (ui, material3, tooling-preview, activity) and `camerax` (core, lifecycle, view).
   - **Review Criteria:** No raw version string appears anywhere in any `build.gradle.kts` file. All `libs.*` accessors resolve without IDE errors. `android_gradlew(':app:dependencies')` outputs the full resolved dependency tree.
 
 - [ ] **Task 3: App Module Build Script (`app/build.gradle.kts`)**
-  - **Description:** Apply plugins from version catalog: `alias(libs.plugins.android.application)`, `alias(libs.plugins.kotlin.android)`, `alias(libs.plugins.kotlin.compose)`, `alias(libs.plugins.kotlin.serialization)`, `alias(libs.plugins.hilt.android)`, `alias(libs.plugins.ksp)`. Configure `android {}` block: `compileSdk = 36`, `minSdk = 36`, `targetSdk = 36`, `applicationId = "de.curlybracket.grocery"`, `versionCode = 1`, `versionName = "0.1.0"`, `testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"`. Enable `buildFeatures { compose = true; buildConfig = true }`. Add `BuildConfig` string fields:
+  - **Description:** Apply plugins from version catalog: `alias(libs.plugins.android.application)`, `alias(libs.plugins.kotlin.android)`, `alias(libs.plugins.kotlin.compose)`, `alias(libs.plugins.kotlin.serialization)`, `alias(libs.plugins.hilt.android)`, `alias(libs.plugins.ksp)`. Configure `android {}` block: `compileSdk = 37`, `minSdk = 35`, `targetSdk = 37`, `applicationId = "de.curlybracket.grocery"`, `versionCode = 1`, `versionName = "0.1.0"`, `testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"`. Enable `buildFeatures { compose = true; buildConfig = true }`. Add `BuildConfig` string fields:
     ```kotlin
     buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("supabase.url") ?: ""}\"")
     buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("supabase.anon.key") ?: ""}\"")
