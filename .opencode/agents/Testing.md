@@ -1,7 +1,7 @@
 ---
 description: "You are an agent used to test the agent harness"
 mode: primary
-disable: true
+disable: false
 model: manifest/medium
 permission:
   "*": allow

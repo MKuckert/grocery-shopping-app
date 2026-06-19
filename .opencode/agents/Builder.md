@@ -9,13 +9,12 @@ permission:
   glob: allow
   list: allow
   bash:
-    "*": allow
+    "*": ask
     git *: deny
+  android_*: allow
   question: allow
   task: allow
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
+  web_*: deny
   skill: allow
   todowrite: deny
   doom_loop: allow

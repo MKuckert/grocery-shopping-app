@@ -11,11 +11,10 @@ permission:
   glob: allow
   list: allow
   bash: deny
+  android_*: deny
   question: deny
   task: deny
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
+  web_*: deny
   skill:
     "*": deny
     create-projectmap: allow

@@ -13,11 +13,10 @@ permission:
     "git status": allow
     "git add *": allow
     "git commit *": allow
+  android_*: deny
   question: deny
   task: deny
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
+  web_*: deny
   skill: allow
   todowrite: deny
   doom_loop: allow

@@ -13,11 +13,10 @@ permission:
   glob: deny
   list: deny
   bash: deny
+  android_*: deny
   question: allow
   task: allow
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
+  web_*: deny
   skill: allow
   todowrite: deny
   doom_loop: allow
