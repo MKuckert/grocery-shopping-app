@@ -45,9 +45,9 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
 > Status Markers: [ ] Open, [/] In Progress, [x] Completed (set after accepted review only!)
 
 - [ ] **Task 1: Root Gradle Configuration**
-  - **Description:** Create the following root-level files:
+  - **Description:** Create or modify the following files in `src`:
     - `settings.gradle.kts` — project name `"GroceryShopping"`, `pluginManagement` block declaring `gradlePluginPortal()`, `google()`, `mavenCentral()` repos, and `dependencyResolutionManagement` pointing all repositories to the same three remotes.
-    - `build.gradle.kts` (root) — declares all top-level plugins with `apply false` only (no `dependencies {}` block at root level).
+    - `build.gradle.kts` — declares all top-level plugins with `apply false` only (no `dependencies {}` block at root level).
     - `gradle.properties` — sets `android.useAndroidX=true`, `kotlin.code.style=official`, `android.nonTransitiveRClass=true`, `org.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC`.
     - `gradle/wrapper/gradle-wrapper.properties` — pins Gradle wrapper to `8.14` (latest stable compatible with AGP 8.9.x).
   - **Review Criteria:** `android_gradlew('help')` runs to completion without error. `settings.gradle.kts` resolves all plugin IDs to be declared in Task 2.
