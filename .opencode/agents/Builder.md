@@ -9,8 +9,7 @@ permission:
   glob: allow
   list: allow
   bash:
-    "*": ask
-    git *: deny
+    "*": deny
   android_*: allow
   question: allow
   task: allow
