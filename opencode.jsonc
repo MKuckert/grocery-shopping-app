@@ -86,9 +86,15 @@
           },
         },
         "medium": {
-          "name": "Medium (local Gemma 4, Haiku, GPT-5.4-mini)",
+          "name": "Medium (Haiku, GPT-5.4-mini)",
           "headers": {
             "X-Manifest-Tier": "medium",
+          },
+        },
+        "medium-alt": {
+          "name": "Medium Alt (GPT-5.4-mini, Haiku)",
+          "headers": {
+            "X-Manifest-Tier": "medium-alt",
           },
         },
         "complex": {
