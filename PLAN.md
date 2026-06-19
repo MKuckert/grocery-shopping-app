@@ -53,7 +53,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     - `gradle/wrapper/gradle-wrapper.properties` — pins Gradle wrapper to `9.2.1`.
   - **Review Criteria:** `android_gradlew('help')` runs to completion without error. `settings.gradle.kts` resolves all plugin IDs to be declared in Task 2.
 
-- [ ] **Task 2: Gradle Version Catalog (`src/gradle/libs.versions.toml`)**
+- [x] **Task 2: Gradle Version Catalog (`src/gradle/libs.versions.toml`)**
   - **Description:** Centralise ALL dependency and plugin versions in the `[versions]` table. Minimum required entries: `agp` (9.2.1), `kotlin` (2.1.x), `composeBom`, `hilt`, `powersync`, `supabase`, `cameraX`, `mlkitBarcode`, `navigationCompose`, `coroutines`, `serialization`, `ksp`. In `[libraries]`, declare every individual artifact using the version refs (e.g., `powersync-core = { module = "com.powersync:core", version.ref = "powersync" }`). In `[plugins]`, declare: `android-application`, `kotlin-android`, `kotlin-compose`, `kotlin-serialization`, `hilt-android`, `ksp`. Create two `[bundles]`: `compose` (ui, material3, tooling-preview, activity) and `camerax` (core, lifecycle, view).
   - **Review Criteria:** No raw version string appears anywhere in any `build.gradle.kts` file. All `libs.*` accessors resolve without IDE errors. `android_gradlew(':app:dependencies')` outputs the full resolved dependency tree.
 
