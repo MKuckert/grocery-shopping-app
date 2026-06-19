@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -49,9 +50,9 @@ async def call_tool(name, arguments: dict) -> list[TextContent]:
     except ValueError as e:
         raise McpError(ErrorData(code=INVALID_PARAMS, message=str(e)))
     script_dir = Path(__file__).resolve().parent
-    project_dir = script_dir.parent.parent.parent / "src"
+    project_dir = script_dir.parent.parent.parent.parent / "src"
 
-    print(f"Executing command: {args.command} in project directory: {project_dir}")
+    print(f"Executing `{name} {args.command}` in project directory: {project_dir}")
 
     command = [""]
     if name == "gradlew":
