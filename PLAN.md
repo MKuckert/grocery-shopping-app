@@ -50,11 +50,11 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     - `build.gradle.kts` (root) — declares all top-level plugins with `apply false` only (no `dependencies {}` block at root level).
     - `gradle.properties` — sets `android.useAndroidX=true`, `kotlin.code.style=official`, `android.nonTransitiveRClass=true`, `org.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC`.
     - `gradle/wrapper/gradle-wrapper.properties` — pins Gradle wrapper to `8.14` (latest stable compatible with AGP 8.9.x).
-  - **Review Criteria:** `./gradlew help` runs to completion without error. `settings.gradle.kts` resolves all plugin IDs to be declared in Task 2.
+  - **Review Criteria:** `android_gradlew('help')` runs to completion without error. `settings.gradle.kts` resolves all plugin IDs to be declared in Task 2.
 
 - [ ] **Task 2: Gradle Version Catalog (`gradle/libs.versions.toml`)**
   - **Description:** Centralise ALL dependency and plugin versions in the `[versions]` table. Minimum required entries: `agp` (8.9.x), `kotlin` (2.1.x), `composeBom`, `hilt`, `powersync` (`1.13.0`), `supabase`, `cameraX`, `mlkitBarcode`, `navigationCompose`, `coroutines`, `serialization`, `ksp`. In `[libraries]`, declare every individual artifact using the version refs (e.g., `powersync-core = { module = "com.powersync:core", version.ref = "powersync" }`). In `[plugins]`, declare: `android-application`, `kotlin-android`, `kotlin-compose`, `kotlin-serialization`, `hilt-android`, `ksp`. Create two `[bundles]`: `compose` (ui, material3, tooling-preview, activity) and `camerax` (core, lifecycle, view).
-  - **Review Criteria:** No raw version string appears anywhere in any `build.gradle.kts` file. All `libs.*` accessors resolve without IDE errors. `./gradlew :app:dependencies` outputs the full resolved dependency tree.
+  - **Review Criteria:** No raw version string appears anywhere in any `build.gradle.kts` file. All `libs.*` accessors resolve without IDE errors. `android_gradlew(':app:dependencies')` outputs the full resolved dependency tree.
 
 - [ ] **Task 3: App Module Build Script (`app/build.gradle.kts`)**
   - **Description:** Apply plugins from version catalog: `alias(libs.plugins.android.application)`, `alias(libs.plugins.kotlin.android)`, `alias(libs.plugins.kotlin.compose)`, `alias(libs.plugins.kotlin.serialization)`, `alias(libs.plugins.hilt.android)`, `alias(libs.plugins.ksp)`. Configure `android {}` block: `compileSdk = 36`, `minSdk = 36`, `targetSdk = 36`, `applicationId = "de.curlybracket.grocery"`, `versionCode = 1`, `versionName = "0.1.0"`, `testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"`. Enable `buildFeatures { compose = true; buildConfig = true }`. Add `BuildConfig` string fields:
@@ -64,7 +64,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     buildConfigField("String", "POWERSYNC_URL", "\"${project.findProperty("powersync.url") ?: ""}\"")
     ```
     Add all `dependencies {}` using version catalog accessors (bundles for compose + camerax, individual entries for hilt, powersync, navigation, coroutines, serialization, mlkit). Use `ksp(libs.hilt.compiler)` (not `kapt`).
-  - **Review Criteria:** `./gradlew :app:assembleDebug` succeeds with zero warnings about deprecated kapt usage. `BuildConfig.SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `POWERSYNC_URL` are present and accessible in Kotlin code.
+  - **Review Criteria:** `android_gradlew(':app:assembleDebug')` succeeds with zero warnings about deprecated kapt usage. `BuildConfig.SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `POWERSYNC_URL` are present and accessible in Kotlin code.
 
 - [ ] **Task 4: Secrets Infrastructure**
   - **Description:** Add three placeholder key–value entries to `local.properties` (developer fills in real values):
@@ -74,11 +74,11 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     powersync.url=
     ```
     Verify `.gitignore` (already present in the repo) includes `local.properties` and `*.jks`. Document the three required keys in `README.md` under a new "Local Setup" section.
-  - **Review Criteria:** `git status` does not list `local.properties`. Deleting `local.properties` and running `./gradlew :app:assembleDebug` produces empty-string `BuildConfig` fields (not a compile error). `README.md` local setup section is present.
+  - **Review Criteria:** `git status` does not list `local.properties`. Deleting `local.properties` and running `android_gradlew(':app:assembleDebug')` produces empty-string `BuildConfig` fields (not a compile error). `README.md` local setup section is present.
 
 - [ ] **Task 5: Android Manifest**
   - **Description:** Create `app/src/main/AndroidManifest.xml`. Declare `<uses-permission android:name="android.permission.INTERNET"/>` and `<uses-permission android:name="android.permission.CAMERA"/>`. On the `<application>` element: `android:name=".GroceryApplication"`, `android:label="@string/app_name"`, `android:theme="@style/Theme.Grocery"` (Material3 theme, declared in Theme.kt via Compose — the XML theme only needs to be a plain `AppCompat` or `Theme.Material3` parent to avoid window background flicker). Declare `MainActivity` with `android:exported="true"` and the `MAIN`/`LAUNCHER` intent filter. Add `<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>` inside `<application>` for ML Kit pre-download.
-  - **Review Criteria:** `./gradlew :app:processDebugManifest` succeeds. CAMERA permission is present. Application `android:name` matches the Kotlin class name exactly.
+  - **Review Criteria:** `android_gradlew(':app:processDebugManifest')` succeeds. CAMERA permission is present. Application `android:name` matches the Kotlin class name exactly.
 
 - [ ] **Task 6: Application Class + Hilt DI Modules**
   - **Description:**
@@ -97,7 +97,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     | `product_kinds`  | `household_id` (text), `group_id` (text), `name` (text), `current_stock` (integer), `minimum_stock` (integer), `quantity_to_buy` (integer), `pending_stock` (integer), `image_path` (text), `unload_open` (integer), `deleted_at` (text) |
     | `barcodes`       | `household_id` (text), `product_kind_id` (text), `barcode_number` (text)                                                                                                                                                                 |
 
-  - **Review Criteria:** `AppSchema` compiles. Table and column names exactly match `DATABASE.md §1.1`. Both discrepancy `TODO` comments are present in code. No column is omitted.
+  - **Review Criteria:** `AppSchema` compiles. Table and column names exactly match `DATABASE.md §1.1`. No column is omitted.
 
 - [ ] **Task 8: Supabase + PowerSync Backend Connector (`data/remote/SupabasePowerSyncConnector.kt`)**
   - **Description:** `class SupabasePowerSyncConnector @Inject constructor(private val supabase: SupabaseClient) : PowerSyncBackendConnector`. Fields: `private val refreshMutex = Mutex()`.
@@ -154,7 +154,6 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
 - **Empty `households` table after first sync:** `HouseholdStateRouter` (defined in Task 10) maps a `null`/empty watch result to `Screen.Loading`, ensuring the user sees a spinner rather than crashing or routing to an undefined screen.
 - **Navigation authority conflict (Auth vs. Data State):** Auth is the outer gate — `MainActivity` routes to `Screen.Login` or hands off to the data-state layer. The data-state layer (`AppNavHost` watch query) only fires once a valid session exists. `MainActivity` always passes `Screen.Loading.route` as the start destination for authenticated users, so the data-state layer immediately assumes full routing control. The two layers never compete.
 - **`popUpTo` magic number:** Use `navController.graph.startDestinationRoute!!` instead of `popUpTo(0)` to clear the back stack in a named, explicit way.
-- **`current_state` vs `current_state` naming mismatch (DATABASE.md §1.1 vs §2.1):** Data dictionary `§1.1` is authoritative; the check constraint in `§2.1` contains a typo. Noted in code with `TODO`.
 - **Concurrent JWT refresh race condition:** `Mutex` in `SupabasePowerSyncConnector.fetchCredentials()` prevents thundering-herd refresh calls from parallel PowerSync background operations.
 - **Hilt KSP vs kapt:** Use `ksp` plugin exclusively — kapt is deprecated for Kotlin-only projects and incompatible with K2 compiler. No `kapt {}` block should appear anywhere.
 - **`uploadData` null batch:** PowerSync calls `uploadData` periodically; a `null` batch (no pending writes) must return immediately without any Supabase API calls to avoid unnecessary network traffic.

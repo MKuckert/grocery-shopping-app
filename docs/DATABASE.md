@@ -117,7 +117,7 @@ ALTER TABLE public.product_kinds ADD CONSTRAINT chk_quantity_to_buy_non_negative
 ALTER TABLE public.product_kinds ADD CONSTRAINT chk_pending_stock_non_negative CHECK (pending_stock >= 0);
 
 -- Table: households
-ALTER TABLE public.households ADD CONSTRAINT chk_shopping_state CHECK (current_state IN ('IDLE', 'SHOPPING', 'UNLOADING'));
+ALTER TABLE public.households ADD CONSTRAINT chk_current_state CHECK (current_state IN ('IDLE', 'SHOPPING', 'UNLOADING'));
 ```
 
 ### 2.2 Product Resurrection Trigger Architecture
