@@ -67,7 +67,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     Add all `dependencies {}` using version catalog accessors (bundles for compose + camerax, individual entries for hilt, powersync, navigation, coroutines, serialization, mlkit). Use `ksp(libs.hilt.compiler)` (not `kapt`).
   - **Review Criteria:** `android_gradlew(':app:assembleDebug')` succeeds with zero warnings about deprecated kapt usage. `BuildConfig.SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `POWERSYNC_URL` are present and accessible in Kotlin code.
 
-- [ ] **Task 4: Secrets Infrastructure**
+- [x] **Task 4: Secrets Infrastructure**
   - **Description:** Add three placeholder key–value entries to `local.properties` (developer fills in real values):
     ```
     supabase.url=

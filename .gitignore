@@ -1,5 +1,7 @@
 .env
 *.user
+local.properties
+*.jks
 
 # Build results
 [Dd]ebug/

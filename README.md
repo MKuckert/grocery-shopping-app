@@ -12,3 +12,18 @@ A local-first, real-time synchronized grocery and inventory tracking application
 
 - [Database & Backend Architecture](docs/DATABASE.md) — Relational schemas, Postgres check constraints, soft-deletion resurrection triggers, multi-tenant Row Level Security (RLS), and local SQLite indexing.
 - [User Interface & State Architecture](docs/UI.md) — Jetpack Compose view architectures, reactive query matrix filters, lifecycle state overlays, and hardware scanner integration boundaries.
+
+## Local Setup
+
+To build and run the app locally, configure the following secrets in `local.properties` (in the project root):
+
+```properties
+# Supabase API Configuration
+supabase.url=<your-supabase-project-url>
+supabase.anon.key=<your-supabase-public-anon-key>
+
+# PowerSync Service Configuration
+powersync.url=<your-powersync-service-url>
+```
+
+**Note:** `local.properties` is not tracked in version control. Each developer must provide their own configuration values.
