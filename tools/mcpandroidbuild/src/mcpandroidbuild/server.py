@@ -18,13 +18,13 @@ from starlette.applications import Starlette
 from starlette.routing import Mount, Route
 
 
-class GradleCommand(BaseModel):
+class GradleTask(BaseModel):
     """Parameters"""
 
-    command: Annotated[
+    task: Annotated[
         str,
         Field(
-            description="The gradle command to execute, e.g., 'assembleDebug', 'clean', 'test', etc.",
+            description="The gradle task to execute, e.g., ':app:assembleDebug', ':help', etc. . Important: This is not a shell command: No pipes, no redirections, no multiple commands. Just the gradle task name.",
         ),
     ]
 
@@ -37,8 +37,8 @@ async def list_tools() -> list[Tool]:
     return [
         Tool(
             name="gradlew",
-            description="Execute gradlew to build the Android project. You have to pass the command as an argument. Returns complete raw output of the command.",
-            inputSchema=GradleCommand.model_json_schema(),
+            description="Execute gradlew to build the Android project. You have to pass the task as an argument. Returns complete raw output of the command.",
+            inputSchema=GradleTask.model_json_schema(),
         ),
     ]
 
@@ -46,17 +46,17 @@ async def list_tools() -> list[Tool]:
 @server.call_tool()
 async def call_tool(name, arguments: dict) -> list[TextContent]:
     try:
-        args = GradleCommand(**arguments)
+        args = GradleTask(**arguments)
     except ValueError as e:
         raise McpError(ErrorData(code=INVALID_PARAMS, message=str(e)))
     script_dir = Path(__file__).resolve().parent
     project_dir = script_dir.parent.parent.parent.parent / "src"
 
-    print(f"Executing `{name} {args.command}` in project directory: {project_dir}")
+    print(f"Executing `{name} {args.task}` in project directory: {project_dir}")
 
     command = [""]
     if name == "gradlew":
-        command = [str(script_dir / "gradlew.sh"), args.command]
+        command = [str(script_dir / "gradlew.sh"), args.task]
 
     result = subprocess.run(
         command,
