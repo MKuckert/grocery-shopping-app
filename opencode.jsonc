@@ -122,5 +122,8 @@
     "quotaToast": {
       "enableToast": false,
     },
+    "batch_tool": true,
+    "disable_paste_summary": true,
+    "mcp_timeout": 600000,
   },
 }
