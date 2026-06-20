@@ -21,7 +21,7 @@ permission:
   skill: allow
   todowrite: deny
   doom_loop: allow
-steps: 50
+steps: 500
 ---
 
 <role>

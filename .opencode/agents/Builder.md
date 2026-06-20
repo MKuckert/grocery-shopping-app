@@ -18,7 +18,7 @@ permission:
   todowrite: deny
   doom_loop: allow
 color: "#00AA00"
-steps: 50
+steps: 500
 ---
 
 <role>

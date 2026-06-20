@@ -20,7 +20,7 @@ permission:
     create-projectmap: allow
   todowrite: deny
   doom_loop: allow
-steps: 20
+steps: 200
 ---
 
 <role>
