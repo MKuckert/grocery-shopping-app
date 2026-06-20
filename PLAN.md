@@ -77,7 +77,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     Verify `.gitignore` (already present in the repo) includes `local.properties` and `*.jks`. Document the three required keys in `README.md` under a new "Local Setup" section.
   - **Review Criteria:** `git status` does not list `local.properties`. Deleting `local.properties` and running `android_gradlew(':app:assembleDebug')` produces empty-string `BuildConfig` fields (not a compile error). `README.md` local setup section is present.
 
-- [ ] **Task 5: Android Manifest**
+- [x] **Task 5: Android Manifest**
   - **Description:** Modify `src/app/src/main/AndroidManifest.xml`. Declare `<uses-permission android:name="android.permission.INTERNET"/>` and `<uses-permission android:name="android.permission.CAMERA"/>`. On the `<application>` element: `android:name=".GroceryApplication"`, `android:label="@string/app_name"`, `android:theme="@style/Theme.Grocery"` (Material3 theme, declared in Theme.kt via Compose — the XML theme only needs to be a plain `AppCompat` or `Theme.Material3` parent to avoid window background flicker). Declare `MainActivity` with `android:exported="true"` and the `MAIN`/`LAUNCHER` intent filter. Add `<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>` inside `<application>` for ML Kit pre-download.
   - **Review Criteria:** `android_gradlew(':app:processDebugManifest')` succeeds. CAMERA permission is present. Application `android:name` matches the Kotlin class name exactly.
 
