@@ -62,6 +62,10 @@ Priority order:
 3. Fails with a clear error message
 4. Silently degrades to look "fine" — never do this
 
-## The skills
+## The Skills
 
 Research for project relevant facts has been done. Check your skills to load relevant information.
+
+## Implementation Hints
+
+- The package for supabase is not `io.github.jan_tennert.supabase` but `io.github.jan.supabase`.
