@@ -62,6 +62,8 @@ dependencies {
 
   // Supabase
   implementation(libs.supabase.kt)
+  implementation(libs.supabase.auth)
+  implementation(libs.supabase.postgrest)
 
   // CameraX
   implementation(libs.bundles.camerax)

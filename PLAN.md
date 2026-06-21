@@ -81,7 +81,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
   - **Description:** Modify `src/app/src/main/AndroidManifest.xml`. Declare `<uses-permission android:name="android.permission.INTERNET"/>` and `<uses-permission android:name="android.permission.CAMERA"/>`. On the `<application>` element: `android:name=".GroceryApplication"`, `android:label="@string/app_name"`, `android:theme="@style/Theme.Grocery"` (Material3 theme, declared in Theme.kt via Compose — the XML theme only needs to be a plain `AppCompat` or `Theme.Material3` parent to avoid window background flicker). Declare `MainActivity` with `android:exported="true"` and the `MAIN`/`LAUNCHER` intent filter. Add `<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>` inside `<application>` for ML Kit pre-download.
   - **Review Criteria:** `android_gradlew(':app:processDebugManifest')` succeeds. CAMERA permission is present. Application `android:name` matches the Kotlin class name exactly.
 
-- [ ] **Task 6: Application Class + Hilt DI Modules**
+- [x] **Task 6: Application Class + Hilt DI Modules**
   - **Description:**
     - `GroceryApplication.kt`: `@HiltAndroidApp class GroceryApplication : Application()`. No other logic needed at this stage.
     - `src/app/src/main/di/DatabaseModule.kt`: `@Module @InstallIn(SingletonComponent::class)` object. Provides `@Singleton PowerSyncDatabase` — instantiated with the `AppSchema` (from Task 7) and the `SupabasePowerSyncConnector`. Provides `@Singleton SupabasePowerSyncConnector` — instantiated with the injected Supabase auth client.

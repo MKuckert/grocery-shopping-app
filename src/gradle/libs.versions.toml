@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-kotlin = "2.4.0"
+kotlin = "2.0.20"
 composeBom = "2026.06.00"
 hilt = "2.59.2"
 powersync = "1.13.0"
@@ -52,6 +52,8 @@ powersync-connector-supabase = { module = "com.powersync:connector-supabase", ve
 
 # Supabase
 supabase-kt = { module = "io.github.jan-tennert.supabase:supabase-kt", version.ref = "supabase" }
+supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
+supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
 
 # ML Kit
 mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcode" }
