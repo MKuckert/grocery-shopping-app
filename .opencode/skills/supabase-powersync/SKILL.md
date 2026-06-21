@@ -565,6 +565,7 @@ db.watchStatus((status) => {
 ## References
 
 - [Supabase Documentation](https://supabase.com/docs)
-- [PowerSync Documentation](https://docs.powersync.co/)
-- [PowerSync + Supabase Integration Guide](https://docs.powersync.co/docs/supabase-integration)
+- [PowerSync Documentation](https://docs.powersync.com/intro/powersync-overview)
+- [PowerSync Documentation, LLM Index](https://docs.powersync.com/llms.txt)
+- [PowerSync + Supabase Integration Guide](https://docs.powersync.com/integrations/supabase/guide)
 - [Postgres Row Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
