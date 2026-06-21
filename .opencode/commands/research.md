@@ -36,6 +36,12 @@ Instead of guessing the format, you **must** use the `customize-opencode` skill 
 ### Step 4: Output Generation
 
 - Map your technical findings directly into the structural layout and markdown format retrieved from the `customize-opencode` skill in Step 2.
+- Add the following attributes to the `metadata` frontmatter and fill accordingly:
+  - `created`: The current date in format `YYYY-MM-DD`.
+  - `libraries`: Library names and version numbers, if applicable.
+  - `tags`: Relevant tags for categorization and discoverability.
+  - `sources`: Fill with URLs and inputs used to create the skill.
+  - `verified: false`: Add this tags to indicate that the skill has not yet been verified by a human.
 - Output the final `SKILL.md` file into the designated destination directory specified by the blueprint.
 - Give a short summary of the research findings and how they are reflected in the skill's structure and content. Also the name for the new skill.
 - Instruct the user to restart OpenCode in order to use the new skill.
