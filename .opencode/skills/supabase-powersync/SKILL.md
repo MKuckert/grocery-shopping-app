@@ -1,11 +1,17 @@
 ---
 name: supabase-powersync
-description: Use when implementing offline-first data sync with Supabase (PostgreSQL backend) and PowerSync (local SQLite sync engine). Covers initialization, authentication flow, schema design, RLS security, conflict resolution, and common pitfalls.
+description: Use when implementing offline-first data sync with Supabase (PostgreSQL backend) and PowerSync (local SQLite sync engine). Covers initialization, authentication flow, schema design, RLS security, conflict resolution, and common pitfalls. Includes Kotlin/Android-specific patterns.
 metadata:
   created: 2026-06-21
-  libraries: Supabase v3.6, PowerSync v1.13
-  tags: database, supabase, powersync, offline-first, data-sync, rls, conflict-resolution
+  updated: 2026-06-21
+  libraries: Supabase v3.6, PowerSync v1.12+, Kotlin KMP, AndroidX
+  tags: database, supabase, powersync, offline-first, data-sync, rls, conflict-resolution, kotlin, android, kmp, jetpack-compose
   verified: false
+  sources:
+    - https://docs.powersync.com/intro/powersync-overview
+    - https://docs.powersync.com/integrations/supabase/guide
+    - https://docs.powersync.com/llms.txt
+    - https://www.postgresql.org/docs/current/ddl-rowsecurity.html
 ---
 
 # Supabase & PowerSync Integration
@@ -17,6 +23,47 @@ metadata:
 **PowerSync** is an offline-first sync engine that replicates a subset of Postgres data to a local SQLite database on the client, enabling instant reads, reliable writes even when offline, and automatic cloud synchronization.
 
 **Integration Pattern:** Client ↔ PowerSync SDK ↔ PowerSync Service ↔ Supabase (Postgres)
+
+---
+
+## Kotlin/Android Implementation Stack
+
+### SDK & Dependencies
+
+**Official PowerSync Kotlin Multiplatform (KMP) SDK:**
+- `com.powersync:core` (v1.12.0+) — Core PowerSync engine
+- `com.powersync:connector-supabase` — Supabase-specific connector
+- `com.powersync:powersync-compose` — Jetpack Compose reactive integration
+- `com.powersync:room-integration` (Beta) — Room ORM bridge
+- `com.powersync:sqldelight-integration` (Beta) — SQLDelight ORM support
+
+**build.gradle.kts example:**
+
+```kotlin
+dependencies {
+    implementation("com.powersync:core:1.12.0")
+    implementation("com.powersync:connector-supabase:1.12.0")
+    implementation("com.powersync:powersync-compose:1.12.0")
+    
+    // Supabase
+    implementation("io.github.supabase:gotrue-kt:2.0+")
+    implementation("io.github.supabase:supabase-kt:2.0+")
+    
+    // AndroidX / Jetpack
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7+")
+    implementation("androidx.compose.runtime:runtime:1.6+")
+}
+```
+
+### Key Android-Specific Constraints
+
+1. **PowerSync Manages SQLite Lifecycle**: Unlike traditional Room apps where you own the database file, PowerSync manages the local SQLite instance. The synced "tables" are actually **SQLite Views** over PowerSync's internal sync layer. Do NOT attempt standard DDL (CREATE TABLE, DROP TABLE) on synced tables.
+
+2. **Background Sync & WorkManager**: PowerSync SDK supports background sync, but it does NOT automatically integrate with Android's `WorkManager`. For apps that must sync when backgrounded or killed, you must manually schedule PowerSync sync tasks via `WorkManager`.
+
+3. **Token Management in Android Context**: Unlike web/RN, Android's auth state (Supabase AuthClient) is typically tied to the app lifecycle. Implement a `PowerSyncBackendConnector` that fetches credentials on-demand, ensuring the SDK automatically refreshes expired tokens.
+
+4. **View vs. Table**: The most common pitfall in Kotlin implementations is attempting DML (INSERT/UPDATE) operations on what appears to be a table name but is actually a SQLite View. Always use `db.execute()` for DML; never use `db.createTable()` on synced data.
 
 ---
 
@@ -92,158 +139,272 @@ PowerSync uses a last-write-wins (LWW) strategy by default:
 
 Your local PowerSync schema must mirror the tables and columns you are syncing. Mismatch will cause sync errors.
 
-```typescript
-// PowerSync expects a schema object mapping table names to column definitions
-const schema = {
-  todos: {
-    columns: [
-      { name: "id", type: "text", isPrimary: true },
-      { name: "user_id", type: "text" },
-      { name: "title", type: "text" },
-      { name: "completed", type: "boolean" },
-      { name: "created_at", type: "text" },
-    ],
-  },
-};
-```
-
 ---
 
-## Initialization Boilerplate
+## Initialization Boilerplate (Kotlin/Android)
 
-### Supabase Client Setup
+**1. Define Schema (Kotlin):**
 
-```typescript
-import { createClient } from "@supabase/supabase-js";
+```kotlin
+import com.powersync.core.Schema
+import com.powersync.core.Table
+import com.powersync.core.Column
+import com.powersync.core.ColumnType
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || "https://your-project.supabase.co",
-  process.env.SUPABASE_ANON_KEY || "your-anon-key",
-);
+// Define the structure of synced tables
+val mySchema = Schema(
+    tables = listOf(
+        Table(
+            name = "todos",
+            columns = listOf(
+                Column("id", ColumnType.TEXT),
+                Column("task", ColumnType.TEXT),
+                Column("is_completed", ColumnType.INTEGER),
+                Column("user_id", ColumnType.TEXT),
+                Column("created_at", ColumnType.TEXT),
+                Column("updated_at", ColumnType.TEXT)
+            )
+        )
+    )
+)
 ```
 
-### PowerSync Client Setup (Web)
+**2. Implement PowerSyncBackendConnector (Supabase Integration):**
 
-```typescript
-import { PowerSyncDatabase } from "@powersync/web";
-import { IndexedDBStorage } from "@powersync/web/storage/indexeddb";
+```kotlin
+import com.powersync.core.PowerSyncBackendConnector
+import com.powersync.core.PowerSyncCredentials
+import io.github.supabase.gotrue.SupabaseAuthClient
 
-// 1. Define schema
-const schema = {
-  todos: {
-    columns: [
-      { name: "id", type: "text", isPrimary: true },
-      { name: "user_id", type: "text" },
-      { name: "title", type: "text" },
-      { name: "completed", type: "boolean" },
-      { name: "created_at", type: "text" },
-    ],
-  },
-};
-
-// 2. Initialize database
-const db = new PowerSyncDatabase({
-  schema,
-  database: {
-    storage: new IndexedDBStorage("my_app"),
-  },
-});
-
-// 3. Connect with Supabase JWT
-async function connectPowerSync() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
-
-  await db.connect(
-    process.env.POWERSYNC_URL || "https://your-powersync.supabase.co",
-    {
-      token: session.access_token,
-    },
-  );
-
-  console.log("PowerSync connected");
-}
-
-// 4. Use local database for queries
-async function getTodos() {
-  const result = await db.execute("SELECT * FROM todos WHERE user_id = ?", [
-    supabase.auth.user()?.id,
-  ]);
-  return result.rows;
-}
-
-// 5. Insert into local database (auto-syncs to Supabase)
-async function addTodo(title) {
-  const userId = supabase.auth.user()?.id;
-  await db.execute(
-    "INSERT INTO todos (id, user_id, title, completed, created_at) VALUES (?, ?, ?, ?, ?)",
-    [crypto.randomUUID(), userId, title, false, new Date().toISOString()],
-  );
-  // PowerSync detects the change and queues it for upload
+class SupabasePowerSyncConnector(
+    private val supabaseAuth: SupabaseAuthClient,
+    private val powerSyncUrl: String
+) : PowerSyncBackendConnector {
+    
+    override suspend fun fetchCredentials(): PowerSyncCredentials {
+        // Get the current session and JWT from Supabase
+        val session = supabaseAuth.currentSession
+            ?: throw IllegalStateException("User not authenticated")
+        
+        return PowerSyncCredentials(
+            url = powerSyncUrl,
+            token = session.accessToken,
+            expiresAt = session.expiresAt
+        )
+    }
+    
+    override suspend fun uploadData(data: ByteArray): Result<Unit> {
+        // Custom upload logic if needed; default is usually sufficient
+        return Result.success(Unit)
+    }
 }
 ```
 
-### PowerSync Client Setup (Mobile - React Native / Flutter)
+**3. Initialize PowerSync Database (in Repository or ViewModel):**
 
-The pattern is identical except storage backend:
+```kotlin
+import com.powersync.core.PowerSyncDatabase
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-**React Native:**
+class TodoRepository(
+    private val connector: SupabasePowerSyncConnector,
+    private val schema: Schema
+) : ViewModel() {
+    
+    private lateinit var db: PowerSyncDatabase
+    
+    suspend fun initialize() {
+        // PowerSync manages the SQLite instance internally
+        db = PowerSyncDatabase(
+            schema = schema,
+            connector = connector
+        )
+        
+        // Establish connection to PowerSync service
+        db.connect()
+    }
+    
+    // Reactive Query: Returns a Flow<List<Todo>> for Compose
+    fun observeTodos(userId: String): Flow<List<Todo>> {
+        return db.query(
+            "SELECT id, task, is_completed, created_at FROM todos WHERE user_id = ? ORDER BY created_at DESC",
+            listOf(userId)
+        ).asFlow()
+            .map { result ->
+                result.map { row ->
+                    Todo(
+                        id = row.getString("id"),
+                        task = row.getString("task"),
+                        isCompleted = row.getInt("is_completed") != 0,
+                        createdAt = row.getString("created_at")
+                    )
+                }
+            }
+    }
+    
+    // DML Operation: Inserting data (automatically syncs to Supabase)
+    suspend fun addTodo(userId: String, task: String) {
+        val id = java.util.UUID.randomUUID().toString()
+        val now = System.currentTimeMillis().toString()
+        
+        db.execute(
+            sql = "INSERT INTO todos (id, user_id, task, is_completed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            parameters = listOf(id, userId, task, 0, now, now)
+        )
+        // PowerSync detects the insert and queues it for upload
+    }
+    
+    // Update Operation
+    suspend fun updateTodo(id: String, isCompleted: Boolean) {
+        val now = System.currentTimeMillis().toString()
+        
+        db.execute(
+            sql = "UPDATE todos SET is_completed = ?, updated_at = ? WHERE id = ?",
+            parameters = listOf(if (isCompleted) 1 else 0, now, id)
+        )
+    }
+    
+    // Watch sync status (for UI feedback)
+    fun observeSyncStatus(): Flow<SyncStatus> {
+        return db.watchStatus()
+            .map { status ->
+                SyncStatus(
+                    isConnected = status.connected,
+                    uploadQueueSize = status.uploadQueue.size,
+                    dataFlowStatus = status.dataFlowStatus
+                )
+            }
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        // Disconnect when ViewModel is cleared
+        viewModelScope.launch {
+            db.disconnect()
+        }
+    }
+}
 
-```typescript
-import { PowerSyncDatabase } from "@powersync/react-native";
-import { SQLiteStorage } from "@powersync/react-native/storage/sqlite";
+data class Todo(
+    val id: String,
+    val task: String,
+    val isCompleted: Boolean,
+    val createdAt: String
+)
 
-const db = new PowerSyncDatabase({
-  schema,
-  database: {
-    storage: new SQLiteStorage("my_app"),
-  },
-});
+data class SyncStatus(
+    val isConnected: Boolean,
+    val uploadQueueSize: Int,
+    val dataFlowStatus: String
+)
 ```
 
-**Flutter:**
+**4. Use in Jetpack Compose UI:**
 
-```dart
-import 'package:powersync/powersync.dart';
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Column
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-final db = PowerSyncDatabase(
-  schema: schema,
-  storage: SqliteStorage('my_app'),
-);
+@Composable
+fun TodoScreen(repository: TodoRepository = viewModel()) {
+    val userId = "current-user-id" // Get from auth
+    
+    // Observe todos as reactive state
+    val todos = repository.observeTodos(userId).collectAsState(initial = emptyList()).value
+    val syncStatus = repository.observeSyncStatus().collectAsState(initial = null).value
+    
+    Column {
+        // Show sync status
+        syncStatus?.let {
+            Text(text = if (it.isConnected) "✓ Synced" else "⟳ Syncing")
+            Text(text = "Queue: ${it.uploadQueueSize}")
+        }
+        
+        // List todos
+        LazyColumn {
+            items(todos) { todo ->
+                TodoItem(
+                    todo = todo,
+                    onToggle = { 
+                        repository.updateTodo(todo.id, !todo.isCompleted)
+                    }
+                )
+            }
+        }
+        
+        // Add todo button
+        Button(onClick = {
+            repository.addTodo(userId, "New Task")
+        }) {
+            Text("Add Todo")
+        }
+    }
+}
 
-await db.connect(
-  url: 'https://your-powersync.supabase.co',
-  token: jwtToken,
-);
+@Composable
+fun TodoItem(todo: Todo, onToggle: () -> Unit) {
+    // Render individual todo item
+}
 ```
 
 ---
 
 ## Authentication Integration Patterns
 
-### Pattern 1: Token Refresh on Expiry
+### Pattern 1: Token Refresh on Expiry (Kotlin/Android)
 
-Supabase sessions expire. You **must** refresh the JWT before PowerSync attempts to sync with an expired token.
+Supabase sessions expire. You **must** refresh the JWT before PowerSync attempts to sync with an expired token. In Android, use Supabase's auth state listener to automatically refresh PowerSync connection:
 
-```typescript
-// Listen for Supabase auth state changes
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-    // Re-connect PowerSync with new token
-    db.connect(POWERSYNC_URL, {
-      token: session.access_token,
-    });
-  } else if (event === "SIGNED_OUT") {
-    // Disconnect PowerSync
-    db.disconnect();
-  }
-});
+```kotlin
+import io.github.supabase.gotrue.SupabaseAuthClient
+import io.github.supabase.gotrue.AuthState
+import kotlinx.coroutines.flow.collectLatest
+
+class AuthStateManager(
+    private val supabaseAuth: SupabaseAuthClient,
+    private val powerSyncDb: PowerSyncDatabase,
+    private val connector: SupabasePowerSyncConnector
+) {
+    
+    suspend fun observeAuthStateChanges() {
+        supabaseAuth.authStateFlow.collectLatest { state ->
+            when (state) {
+                is AuthState.SignedIn -> {
+                    // User signed in or token refreshed
+                    // PowerSync will auto-fetch new credentials via connector
+                    powerSyncDb.reconnect()
+                }
+                is AuthState.SignedOut -> {
+                    // User signed out
+                    powerSyncDb.disconnect()
+                }
+                else -> {
+                    // Handle other states (loading, etc.)
+                }
+            }
+        }
+    }
+}
 ```
+
+The `PowerSyncBackendConnector.fetchCredentials()` is called automatically by the SDK when:
+- The connection is initially established
+- The JWT is near expiry (typically before 5 min)
+- The app is backgrounded and resumes
+
+**No manual token passing needed.** The connector pattern eliminates the need to re-call `db.connect()` manually.
+
+---
 
 ### Pattern 2: Custom Claims in JWT (For Multi-Tenant)
 
@@ -273,32 +434,34 @@ bucket('org_data') {
 
 Avoid syncing large BLOBs or files. Instead, sync metadata and URLs.
 
-**Bad:**
+**Bad:** Including large binary data in synced tables
 
-```typescript
-const schema = {
-  posts: {
-    columns: [
-      { name: "id", type: "text", isPrimary: true },
-      { name: "content", type: "text" },
-      { name: "image_blob", type: "blob" }, // ❌ Large binary data
-    ],
-  },
-};
+```kotlin
+// ❌ DO NOT sync large blobs
+val schema = Schema(
+    tables = listOf(
+        Table("posts", listOf(
+            Column("id", ColumnType.TEXT),
+            Column("content", ColumnType.TEXT),
+            Column("image_blob", ColumnType.BLOB)  // Large binary data
+        ))
+    )
+)
 ```
 
-**Good:**
+**Good:** Store only metadata and URLs
 
-```typescript
-const schema = {
-  posts: {
-    columns: [
-      { name: "id", type: "text", isPrimary: true },
-      { name: "content", type: "text" },
-      { name: "image_url", type: "text" }, // ✅ URL only, fetch from Supabase Storage
-    ],
-  },
-};
+```kotlin
+// ✅ Use URLs instead
+val schema = Schema(
+    tables = listOf(
+        Table("posts", listOf(
+            Column("id", ColumnType.TEXT),
+            Column("content", ColumnType.TEXT),
+            Column("image_url", ColumnType.TEXT)  // URL only, fetch from Supabase Storage
+        ))
+    )
+)
 ```
 
 ### 2. Include Timestamp Columns
@@ -354,21 +517,26 @@ bucket('user_lists_and_todos') {
 }
 ```
 
-**Client-Side Query:**
+**Client-Side Query (Kotlin):**
 
-```typescript
-const lists = await db.execute("SELECT * FROM lists WHERE user_id = ?", [
-  userId,
-]);
-const todos = await db.execute("SELECT * FROM todos WHERE user_id = ?", [
-  userId,
-]);
+```kotlin
+val lists = db.execute(
+    "SELECT * FROM lists WHERE user_id = ?",
+    listOf(userId)
+)
+val todos = db.execute(
+    "SELECT * FROM todos WHERE user_id = ?",
+    listOf(userId)
+)
 
 // Join in memory
-const listsWithTodos = lists.rows._array.map((list) => ({
-  ...list,
-  todos: todos.rows._array.filter((t) => t.list_id === list.id),
-}));
+data class ListWithTodos(val list: List, val todos: List<Todo>)
+val listsWithTodos = lists.map { list ->
+    ListWithTodos(
+        list = list,
+        todos = todos.filter { t -> t.list_id == list.id }
+    )
+}
 ```
 
 ---
@@ -379,37 +547,46 @@ const listsWithTodos = lists.rows._array.map((list) => ({
 
 ❌ **Wrong:**
 
-```typescript
-// This will fail when offline
-const { data } = await supabase.from("todos").select("*");
+```kotlin
+// This will fail when offline - never query Supabase directly in offline-first app
+val response = supabase.from("todos").select("*").execute()
 ```
 
 ✅ **Right:**
 
-```typescript
-// Query local SQLite
-const result = await db.execute("SELECT * FROM todos WHERE user_id = ?", [
-  userId,
-]);
+```kotlin
+// Always query local SQLite via PowerSync
+val result = db.execute(
+    "SELECT * FROM todos WHERE user_id = ?",
+    listOf(userId)
+)
 ```
 
-### Pitfall 2: Forgetting to Refresh JWT Before Sync
+### Pitfall 2: Not Using PowerSync Connector for Token Management
 
-❌ **Wrong:**
+The `PowerSyncBackendConnector` handles token refresh automatically. Do NOT pass tokens manually.
 
-```typescript
-// JWT might be expired
-await db.connect(url, { token: session.access_token });
+❌ **Wrong (Manual token passing):**
+
+```kotlin
+// This loses token refresh capability
+val session = supabaseAuth.currentSession
+db.connect(credentials = PowerSyncCredentials(token = session.accessToken))
 ```
 
 ✅ **Right:**
 
-```typescript
-// Refresh first
-const {
-  data: { session },
-} = await supabase.auth.refreshSession();
-await db.connect(url, { token: session.access_token });
+```kotlin
+// Implement PowerSyncBackendConnector; SDK auto-refreshes tokens
+class MyConnector(private val auth: SupabaseAuthClient) : PowerSyncBackendConnector {
+    override suspend fun fetchCredentials(): PowerSyncCredentials {
+        val session = auth.currentSession ?: throw IllegalStateException("Not auth")
+        return PowerSyncCredentials(token = session.accessToken)
+    }
+}
+
+db = PowerSyncDatabase(schema = schema, connector = MyConnector(auth))
+db.connect() // SDK handles token refresh automatically
 ```
 
 ### Pitfall 3: RLS and Sync Rules Misalignment
@@ -473,6 +650,62 @@ bucket('user_data') {
 }
 ```
 
+### Pitfall 6: Attempting DDL (CREATE TABLE) on Synced Tables in Kotlin
+
+❌ **Wrong (Common Kotlin Mistake):**
+
+```kotlin
+// This WILL FAIL! Synced tables are SQLite Views, not real tables
+db.execute("CREATE TABLE todos (id TEXT PRIMARY KEY, title TEXT)")
+```
+
+✅ **Right:**
+
+```kotlin
+// Only use DML: INSERT, UPDATE, DELETE, SELECT
+db.execute("INSERT INTO todos (id, title) VALUES (?, ?)", listOf(id, title))
+db.execute("UPDATE todos SET title = ? WHERE id = ?", listOf(newTitle, id))
+db.execute("DELETE FROM todos WHERE id = ?", listOf(id))
+
+// Synced table schema is defined once during Schema initialization
+val schema = Schema(
+    tables = listOf(
+        Table(
+            name = "todos",
+            columns = listOf(
+                Column("id", ColumnType.TEXT),
+                Column("title", ColumnType.TEXT)
+            )
+        )
+    )
+)
+```
+
+### Pitfall 4: Ignoring Flow vs. Coroutine Scope
+
+❌ **Wrong (Not collecting Flow in correct scope):**
+
+```kotlin
+// This leaks if Fragment/Activity is destroyed
+val todos = repository.observeTodos(userId) // Not collected!
+```
+
+✅ **Right:**
+
+```kotlin
+// Collect Flow within lifecycle-aware scope
+val todos = repository.observeTodos(userId)
+    .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+    .collectAsState(initial = emptyList())
+```
+
+Or in ViewModel:
+
+```kotlin
+val todos: Flow<List<Todo>> = repository.observeTodos(userId)
+// Collect in Compose or lifecycle-aware observer
+```
+
 ---
 
 ## Conflict Resolution Strategies
@@ -512,22 +745,36 @@ Supabase Edge Functions can hook into PowerSync's API to intercept writes and ap
 
 ## Monitoring & Debugging
 
-### Checking Sync Status
+### Checking Sync Status (Kotlin/Android)
 
-```typescript
-// Observe sync status
-db.watchStatus((status) => {
-  console.log("Sync status:", status.connected ? "connected" : "disconnected");
-  console.log("Upload queue:", status.uploadQueue);
-  console.log("Download progress:", status.dataFlowStatus);
-});
+```kotlin
+// Observe sync status as a Flow
+viewModelScope.launch {
+    repository.observeSyncStatus().collect { status ->
+        println("Connected: ${status.isConnected}")
+        println("Upload queue size: ${status.uploadQueueSize}")
+        println("Data flow: ${status.dataFlowStatus}")
+    }
+}
+
+// Or in Compose UI (reactive):
+@Composable
+fun SyncStatusBadge(repository: TodoRepository) {
+    val syncStatus = repository.observeSyncStatus()
+        .collectAsState(initial = SyncStatus(false, 0, "idle")).value
+    
+    Text(
+        text = if (syncStatus.isConnected) "✓ Synced" else "⟳ Syncing",
+        color = if (syncStatus.isConnected) Color.Green else Color.Orange
+    )
+}
 ```
 
 ### Common Error Scenarios
 
 | Error                  | Cause                               | Solution                                                      |
 | ---------------------- | ----------------------------------- | ------------------------------------------------------------- |
-| `JWT invalid`          | Token expired or wrong secret       | Refresh JWT with `supabase.auth.refreshSession()`             |
+| `JWT invalid`          | Token expired or wrong secret       | Ensure JWT is fresh and signing secret matches Supabase config |
 | `RLS policy violation` | User lacks permission in Supabase   | Check RLS policy in Supabase console; ensure JWT claims match |
 | `Sync rule mismatch`   | User not allowed by Sync Rule       | Verify `request.auth.sub` in sync rule matches JWT sub claim  |
 | `Schema mismatch`      | Local schema doesn't match Postgres | Ensure all synced columns are defined in PowerSync schema     |
@@ -537,19 +784,29 @@ db.watchStatus((status) => {
 
 ## Supabase + PowerSync Version Compatibility
 
-| Supabase | PowerSync Web | PowerSync RN | Notes                                     |
-| -------- | ------------- | ------------ | ----------------------------------------- |
-| v1.0+    | v1.0+         | v1.0+        | Stable. JWKS validation is critical.      |
-| —        | v1.5+         | v1.5+        | Added support for custom claim filtering. |
+| Supabase | PowerSync Web | PowerSync RN | PowerSync Kotlin | Notes                                     |
+| -------- | ------------- | ------------ | --------------- | ----------------------------------------- |
+| v1.0+    | v1.0+         | v1.0+        | v1.12.0+        | Stable. JWKS validation is critical.      |
+| —        | v1.5+         | v1.5+        | v1.12.0+        | Added support for custom claim filtering. |
+
+**Kotlin-Specific Notes:**
+
+- PowerSync Kotlin uses **Kotlin Multiplatform (KMP)**, targeting both Android and iOS/Desktop.
+- Room ORM integration is in **Beta**; test thoroughly in production scenarios.
+- SQLDelight integration is also **Beta**; standard `db.execute()` is production-ready.
+- Android API 24+ recommended for SQLite compatibility.
 
 **Key Breaking Changes:**
 
 - Supabase rotates JWKS keys periodically. PowerSync Service must fetch keys dynamically, not cache them.
 - Upgrading Postgres extensions (e.g., pgvector) can change index structures; re-test sync rules.
+- PowerSync v1.12+ changed the `PowerSyncBackendConnector` interface; older custom connectors may not compile.
 
 ---
 
 ## Recommended Workflow for Implementation
+
+### General Workflow (All Platforms)
 
 1. **Define Database Schema** in Supabase (tables, columns, constraints, RLS policies)
 2. **Mirror Schema** in PowerSync client (define exactly which tables/columns to sync)
@@ -560,6 +817,26 @@ db.watchStatus((status) => {
 7. **Test Conflict Scenarios** (two clients writing same row, one goes offline, both retry)
 8. **Monitor Sync Queue** (observe upload queue in development)
 
+### Kotlin/Android-Specific Workflow
+
+1. **Set Up Supabase SDK** in Gradle with `io.github.supabase:supabase-kt` and auth module
+2. **Create PowerSync Schema** as a `Schema` object with all `Table` and `Column` definitions
+3. **Implement `PowerSyncBackendConnector`** with `fetchCredentials()` method tied to Supabase auth
+4. **Initialize Repository** with `PowerSyncDatabase`, `schema`, and `connector` in `init {}` block or factory
+5. **Expose Flows for UI** using `db.query().asFlow()` for reactive Compose state
+6. **Add Auth State Listener** to handle sign-in/sign-out/token refresh
+7. **Test DML Operations** (INSERT/UPDATE/DELETE); verify sync queue fills and auto-uploads
+8. **Wire Up UI** in Jetpack Compose using `.collectAsState()` for reactive rendering
+9. **Handle Background Sync** if needed: integrate with `WorkManager` for periodic background sync (not built-in to SDK)
+10. **Verify RLS Policies** match Sync Rules in the PowerSync Dashboard
+
+**Common Integration Points:**
+
+- **Supabase Auth** → `SupabaseAuthClient` from gotrue-kt
+- **Local Queries** → `db.execute()` or `db.query()`, no direct SQLite access
+- **UI Binding** → Use `Flow<List<Model>>` with `collectAsState()` in Compose
+- **Lifecycle** → Disconnect in `ViewModel.onCleared()`; connect in `initialize()` or app startup
+
 ---
 
 ## References
@@ -569,3 +846,8 @@ db.watchStatus((status) => {
 - [PowerSync Documentation, LLM Index](https://docs.powersync.com/llms.txt)
 - [PowerSync + Supabase Integration Guide](https://docs.powersync.com/integrations/supabase/guide)
 - [Postgres Row Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
+- [PowerSync Kotlin SDK (KMP)](https://github.com/powersync-ja/powersync-kotlin)
+- [Supabase Kotlin Client](https://github.com/supabase-community/supabase-kt)
+- [Jetpack Compose State Management](https://developer.android.com/jetpack/compose/state)
+- [Android Lifecycle & ViewModels](https://developer.android.com/topic/architecture/data-layer/repository-pattern)
+- [WorkManager for Background Tasks](https://developer.android.com/topic/libraries/architecture/workmanager)
