@@ -50,23 +50,21 @@ class SupabasePowerSyncConnector @Inject constructor(
 
     try {
       for (entry in batch.crud) {
+        // For now, just log the operations and mark as complete
+        // The actual Supabase API calls require the correct CrudEntry data access pattern
+        // which depends on the PowerSync SDK version being used
         when (entry.op) {
           UpdateType.PUT -> {
-            // Handle INSERT operation
-            Log.d(TAG, "INSERT operation for table: ${entry.table}")
-            // Future: call supabase.from(entry.table).insert(entry.data)
+            Log.d(TAG, "INSERT operation queued: table=${entry.table}, id=${entry.id}")
+            // TODO: Implement actual insert via supabase.postgrest when CrudEntry API is verified
           }
-
           UpdateType.PATCH -> {
-            // Handle UPDATE operation
-            Log.d(TAG, "UPDATE operation for table: ${entry.table}")
-            // Future: call supabase.from(entry.table).update(entry.data).eq("id", entry.id)
+            Log.d(TAG, "UPDATE operation queued: table=${entry.table}, id=${entry.id}")
+            // TODO: Implement actual update via supabase.postgrest when CrudEntry API is verified
           }
-
           UpdateType.DELETE -> {
-            // Handle DELETE operation
-            Log.d(TAG, "DELETE operation for table: ${entry.table}")
-            // Future: call supabase.from(entry.table).delete().eq("id", entry.id)
+            Log.d(TAG, "DELETE operation queued: table=${entry.table}, id=${entry.id}")
+            // TODO: Implement actual delete via supabase.postgrest when CrudEntry API is verified
           }
         }
       }

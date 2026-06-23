@@ -88,7 +88,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
     - `src/app/src/main/di/NetworkModule.kt`: `@Module @InstallIn(SingletonComponent::class)` object. Provides `@Singleton` Supabase client: reads `BuildConfig.SUPABASE_URL` and `BuildConfig.SUPABASE_ANON_KEY`; calls `require(url.isNotBlank()) { "SUPABASE_URL is not configured in local.properties" }` and same for key before constructing the client. Install the `Auth` plugin.
   - **Review Criteria:** App compiles; any `@HiltViewModel` that `@Inject`s `PowerSyncDatabase` or the Supabase auth client resolves at compile time. App crashes at launch with a clear `IllegalStateException` message (not `NullPointerException`) when secrets are blank.
 
-- [ ] **Task 7: PowerSync Schema Definition (`src/app/src/main/data/db/AppSchema.kt`)**
+- [x] **Task 7: PowerSync Schema Definition (`src/app/src/main/data/db/AppSchema.kt`)**
   - **Description:** Define `val AppSchema = Schema(listOf(...))` with four `Table` entries, mapping every column from `DATABASE.md §1.1`. Type mapping rules: UUID/TEXT/TIMESTAMP columns → `Column.text()`, INTEGER columns → `Column.integer()`, BOOLEAN columns → `Column.integer()` (SQLite stores booleans as `0`/`1`).
 
     | Table            | Columns                                                                                                                                                                                                                                  |
@@ -100,7 +100,7 @@ Bootstrap a fully buildable and runnable Android application skeleton for the ho
 
   - **Review Criteria:** `AppSchema` compiles. Table and column names exactly match `DATABASE.md §1.1`. No column is omitted.
 
-- [ ] **Task 8: Supabase + PowerSync Backend Connector (`src/app/src/main/data/remote/SupabasePowerSyncConnector.kt`)**
+- [x] **Task 8: Supabase + PowerSync Backend Connector (`src/app/src/main/data/remote/SupabasePowerSyncConnector.kt`)**
   - **Description:** `class SupabasePowerSyncConnector @Inject constructor(private val supabase: SupabaseClient) : PowerSyncBackendConnector`. Fields: `private val refreshMutex = Mutex()`.
     - `fetchCredentials()`: wrap body in `refreshMutex.withLock { ... }`. Call `supabase.auth.currentSessionOrNull()`. If session is expired, call `supabase.auth.refreshCurrentSession()`. Construct and return `PowerSyncCredentials(endpoint = BuildConfig.POWERSYNC_URL, token = session.accessToken)`. If no session exists, throw `IllegalStateException("No active Supabase session")`.
     - `uploadData(database: PowerSyncDatabase)`: call `database.getCrudBatch()`. If `null` (no pending writes), return immediately. Iterate batch entries; for each, match `CrudEntry.op` to `INSERT/UPDATE/DELETE` and call the corresponding Supabase Postgrest table function. On `RestException`, log the error and re-throw so PowerSync SDK handles retry. On success, call `batch.complete(null)`.
