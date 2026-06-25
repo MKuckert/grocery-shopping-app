@@ -48,10 +48,22 @@
       "enabled": true,
       "url": "http://host.docker.internal:12002/mcp",
     },
+    "supabase": {
+      "type": "remote",
+      "enabled": true,
+      "url": "https://mcp.supabase.com/mcp?project_ref=sajpprxmybjoozlgqdme&features=docs%2Cdatabase%2Cdebugging%2Cdevelopment%2Cstorage",
+    },
+    "powersync": {
+      "type": "remote",
+      "enabled": true,
+      "url": "https://docs.powersync.com/mcp",
+    },
   },
   "permission": {
     "webfetch": "deny",
     "websearch": "deny",
+    "supabase_*": "deny",
+    "powersync_*": "deny",
   },
   "disabled_providers": [
     "opencode",
