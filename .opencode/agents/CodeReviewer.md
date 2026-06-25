@@ -1,7 +1,7 @@
 ---
 description: "Reviews the work of Builder"
 mode: subagent
-model: manifest/medium
+model: manifest/complex
 permission:
   read: allow
   edit:
