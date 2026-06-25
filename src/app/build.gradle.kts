@@ -59,6 +59,7 @@ dependencies {
   // PowerSync
   implementation(libs.powersync.core)
   implementation(libs.powersync.connector.supabase)
+  implementation(libs.powersync.compose)
 
   // Supabase
   implementation(libs.supabase.kt)
@@ -78,8 +79,13 @@ dependencies {
 
   // AndroidX Core
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.appcompat)
   implementation(libs.material)
+
+  // Logging & utils
+  implementation(libs.kermit)
+  implementation(libs.uuid)
 
   // Testing
   testImplementation(libs.junit)

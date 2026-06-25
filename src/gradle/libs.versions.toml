@@ -11,6 +11,9 @@ navigationCompose = "2.9.8"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 ksp = "2.0.20-1.0.24"
+splashscreen = "1.0.1"
+kermit = "2.0.5"
+uuid = "0.8.4"
 
 # Testing & Android Framework
 coreKtx = "1.19.0"
@@ -49,6 +52,7 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hil
 # PowerSync
 powersync-core = { module = "com.powersync:core", version.ref = "powersync" }
 powersync-connector-supabase = { module = "com.powersync:connector-supabase", version.ref = "powersync" }
+powersync-compose = { module = "com.powersync:compose", version.ref = "powersync" }
 
 # Supabase
 supabase-kt = { module = "io.github.jan-tennert.supabase:supabase-kt", version.ref = "supabase" }
@@ -65,8 +69,15 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 
 # AndroidX Core
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
+
+# Kermit logging
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+
+# UUID (Kotlin multiplatform)
+uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

@@ -14,7 +14,7 @@ permission:
   question: allow
   task: allow
   web_*: deny
-  android_*: deny
+  android_*: allow
   skill: allow
   todowrite: deny
   doom_loop: allow
