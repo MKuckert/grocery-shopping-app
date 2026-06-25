@@ -9,8 +9,11 @@ import io.github.jan.supabase.SupabaseClient
 import de.curlybracket.grocery.BuildConfig
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.exceptions.RestException
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.jsonArray
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +43,8 @@ class SupabasePowerSyncConnector @Inject constructor(
 
       return PowerSyncCredentials(
         endpoint = BuildConfig.POWERSYNC_URL,
-        token = currentSession.accessToken
+        token = currentSession.accessToken,
+        userId = currentSession.user?.id
       )
     }
   }
@@ -57,6 +61,7 @@ class SupabasePowerSyncConnector @Inject constructor(
           UpdateType.PUT -> {
             Log.d(TAG, "INSERT operation queued: table=${entry.table}, id=${entry.id}")
             // TODO: Implement actual insert via supabase.postgrest when CrudEntry API is verified
+            supabase.from(entry.table).insert(entry.opData!!.jsonValues.jsonArray);
           }
           UpdateType.PATCH -> {
             Log.d(TAG, "UPDATE operation queued: table=${entry.table}, id=${entry.id}")
