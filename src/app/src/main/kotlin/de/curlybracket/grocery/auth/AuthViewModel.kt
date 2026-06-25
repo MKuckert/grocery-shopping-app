@@ -3,7 +3,6 @@ package de.curlybracket.grocery.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
-import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
@@ -18,9 +17,12 @@ sealed class AuthState {
     data object SignedIn : AuthState()
 }
 
+/**
+ * Tracks authentication state only. Connection management (db.connect / disconnectAndClear)
+ * is delegated to SyncService which runs as a foreground service.
+ */
 internal class AuthViewModel(
     private val supabase: SupabaseConnector,
-    private val db: PowerSyncDatabase,
     private val navController: NavController,
 ) : ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.SignedOut)
@@ -36,7 +38,6 @@ internal class AuthViewModel(
                     is SessionStatus.Authenticated -> {
                         _authState.value = AuthState.SignedIn
                         _userId.value = it.session.user?.id
-                        db.connect(supabase)
                         if (navController.currentScreen.value is Screen.SignIn ||
                             navController.currentScreen.value is Screen.SignUp
                         ) {
@@ -53,7 +54,6 @@ internal class AuthViewModel(
                         }
                     }
                     is SessionStatus.NotAuthenticated -> {
-                        db.disconnectAndClear()
                         _authState.value = AuthState.SignedOut
                         navController.navigate(Screen.SignIn)
                     }
@@ -64,12 +64,10 @@ internal class AuthViewModel(
 
     suspend fun signIn(email: String, password: String) {
         supabase.login(email, password)
-        _authState.value = AuthState.SignedIn
     }
 
     suspend fun signUp(email: String, password: String) {
         supabase.signUp(email, password)
-        _authState.value = AuthState.SignedIn
     }
 
     suspend fun signOut() {
@@ -77,8 +75,6 @@ internal class AuthViewModel(
             supabase.signOut()
         } catch (e: Exception) {
             Logger.e("Error signing out: $e")
-        } finally {
-            _authState.value = AuthState.SignedOut
         }
     }
 }

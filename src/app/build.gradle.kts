@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,17 @@ plugins {
   alias(libs.plugins.hilt.android)
   alias(libs.plugins.ksp)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = project.file("../local.properties")
+if (localPropertiesFile.exists()) {
+  localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
+fun getLocalProperty(
+  key: String,
+  defaultValue: String,
+): String = localProperties.getProperty(key, defaultValue)
 
 android {
   namespace = "de.curlybracket.grocery"
@@ -19,9 +32,9 @@ android {
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-    buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("supabase.url") ?: ""}\"")
-    buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("supabase.anon.key") ?: ""}\"")
-    buildConfigField("String", "POWERSYNC_URL", "\"${project.findProperty("powersync.url") ?: ""}\"")
+    buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("supabase.url", "")}\"")
+    buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("supabase.anon.key", "")}\"")
+    buildConfigField("String", "POWERSYNC_URL", "\"${getLocalProperty("powersync.url", "")}\"")
   }
 
   buildFeatures {
@@ -80,6 +93,7 @@ dependencies {
   // AndroidX Core
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.core.splashscreen)
+  implementation(libs.androidx.lifecycle.service)
   implementation(libs.androidx.appcompat)
   implementation(libs.material)
 

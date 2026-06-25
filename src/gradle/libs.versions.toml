@@ -15,6 +15,8 @@ splashscreen = "1.0.1"
 kermit = "2.0.5"
 uuid = "0.8.4"
 
+lifecycleService = "2.9.1"
+
 # Testing & Android Framework
 coreKtx = "1.19.0"
 junit = "4.13.2"
@@ -70,6 +72,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 # AndroidX Core
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycleService" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 

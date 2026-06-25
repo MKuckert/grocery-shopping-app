@@ -12,11 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.powersync.PowerSyncDatabase
-import com.powersync.compose.rememberDatabaseDriverFactory
 import com.powersync.connector.supabase.SupabaseConnector
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
-import de.curlybracket.grocery.data.db.AppSchema
 import de.curlybracket.grocery.powersync.ListContent
 import de.curlybracket.grocery.powersync.ListItem
 import de.curlybracket.grocery.powersync.Todo
@@ -29,50 +27,35 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun GroceryApp(
-    supabaseUrl: String,
-    supabaseKey: String,
-    powerSyncEndpoint: String,
+    supabase: SupabaseConnector,
+    database: PowerSyncDatabase,
 ) {
-    val driverFactory = rememberDatabaseDriverFactory()
-    val supabase = remember {
-        SupabaseConnector(
-            powerSyncEndpoint = powerSyncEndpoint,
-            supabaseUrl = supabaseUrl,
-            supabaseKey = supabaseKey,
-        )
-    }
-    val db = remember { PowerSyncDatabase(driverFactory, AppSchema) }
-
-    val syncStatus = db.currentStatus
+    val syncStatus = database.currentStatus
     val status by syncStatus.asFlow().collectAsState(syncStatus)
 
     val navController = remember { NavController(Screen.Home) }
-    val authViewModel = remember { AuthViewModel(supabase, db, navController) }
+    val authViewModel = remember { AuthViewModel(supabase, navController) }
 
     val authState by authViewModel.authState.collectAsState()
     val currentScreen by navController.currentScreen.collectAsState()
     val userId by authViewModel.userId.collectAsState()
     val currentUserId = rememberUpdatedState(userId)
 
-    val lists = remember { mutableStateOf(ListContent(db, userId)) }
+    val lists = remember { mutableStateOf(ListContent(database, userId)) }
     LaunchedEffect(currentUserId.value) {
-        lists.value = ListContent(db, currentUserId.value)
+        lists.value = ListContent(database, currentUserId.value)
     }
     val selectedListId by lists.value.selectedListId.collectAsState()
     val listItems by lists.value.watchItems().collectAsState(initial = emptyList())
     val listsInputText by lists.value.inputText.collectAsState()
 
-    val todos = remember { mutableStateOf(Todo(db, userId)) }
+    val todos = remember { mutableStateOf(Todo(database, userId)) }
     LaunchedEffect(currentUserId.value) {
-        todos.value = Todo(db, currentUserId.value)
+        todos.value = Todo(database, currentUserId.value)
     }
     val todoItems by todos.value.watchItems(selectedListId).collectAsState(initial = emptyList())
     val editingItem by todos.value.editingItem.collectAsState()
     val todosInputText by todos.value.inputText.collectAsState()
-
-    fun handleSignOut() {
-        runBlocking { authViewModel.signOut() }
-    }
 
     when (currentScreen) {
         is Screen.Home -> {
@@ -82,7 +65,7 @@ fun GroceryApp(
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
                 items = listItems,
                 status = status,
-                onSignOutSelected = { handleSignOut() },
+                onSignOutSelected = { runBlocking { authViewModel.signOut() } },
                 inputText = listsInputText,
                 onItemClicked = { item: ListItem ->
                     lists.value.onItemClicked(item)
