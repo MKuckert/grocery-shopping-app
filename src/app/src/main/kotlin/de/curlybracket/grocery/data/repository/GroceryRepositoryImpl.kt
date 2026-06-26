@@ -335,9 +335,9 @@ internal class GroceryRepositoryImpl @Inject constructor(
           INSERT INTO product_kinds
           (id, household_id, group_id, name, current_stock, minimum_stock,
            quantity_to_buy, pending_stock, image_path, unload_open, deleted_at)
-          VALUES (?, ?, ?, ?, 0, ?, 1, 0, null, 0, null)
+          VALUES (?, ?, ?, ?, 0, ?, ?, 0, null, 0, null)
         """,
-        parameters = listOf(productId, householdId, groupId, name, minimumStock)
+        parameters = listOf(productId, householdId, groupId, name, minimumStock, minimumStock)
       )
       tx.execute(
         sql = "INSERT INTO barcodes (id, household_id, product_kind_id, barcode_number) VALUES (?, ?, ?, ?)",
