@@ -43,7 +43,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | Status | File                                 | Task                                            |
 | ------ | ------------------------------------ | ----------------------------------------------- |
 | [x]    | `tasks/TASK_00_bootstrap.md`         | Application Bootstrap & DI Initialization Order |
-| [/]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
+| [x]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
 | [ ]    | `tasks/TASK_02_schema.md`            | Update PowerSync Schema                         |
 | [ ]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
 | [ ]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |

@@ -1,15 +1,16 @@
 # Task 1: Delete Demo Code & Establish Package Skeleton
 
 > **Depends on:** Task 0
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
 ## Description
 
 Remove all files specific to the demo todo-list feature that will not be reused:
+
 - `powersync/TodoSchema.kt`, `powersync/ListContent.kt`, `powersync/Todo.kt`
-- `ui/screens/HomeScreen.kt`, `ui/screens/TodosScreen.kt`
+- `ui/screens/HomeScreen.kt`, `ui/screens/TodosScreen.kt`, `ui/screens/SignUpScreen.kt`
 - `ui/components/TodoList.kt`, `ui/components/EditDialog.kt`, `ui/components/ListContent.kt`, `ui/components/ListItemRow.kt`, `ui/components/TodoItemRow.kt`, `ui/components/Input.kt`
 - `NavController.kt` (replaced by Compose Navigation)
 - `GroceryApp.kt` (rewritten in Task 6)
