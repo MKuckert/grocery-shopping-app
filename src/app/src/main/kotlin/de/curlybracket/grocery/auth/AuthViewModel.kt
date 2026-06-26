@@ -8,8 +8,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
 import javax.inject.Inject
 
 sealed class AuthState {
@@ -31,8 +35,24 @@ internal class AuthViewModel @Inject constructor(
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId
 
-    private val _householdId = MutableStateFlow<String?>(null)
-    val householdId: StateFlow<String?> = _householdId
+    val householdId: StateFlow<String?> = supabase.sessionStatus
+        .map { status ->
+            when (status) {
+                is SessionStatus.Authenticated -> {
+                    val metadata = status.session.user?.appMetadata
+                    val householdValue = metadata?.get("household_id")
+                    if (householdValue is JsonPrimitive && !householdValue.isString) {
+                        null
+                    } else if (householdValue is JsonPrimitive) {
+                        householdValue.content
+                    } else {
+                        null
+                    }
+                }
+                else -> null
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     init {
         viewModelScope.launch {
@@ -41,7 +61,6 @@ internal class AuthViewModel @Inject constructor(
                     is SessionStatus.Authenticated -> {
                         _authState.value = AuthState.SignedIn
                         _userId.value = it.session.user?.id
-                        _householdId.value = it.session.user?.userMetadata?.get("household_id") as? String
                     }
                     is SessionStatus.Initializing -> Logger.e("Loading from storage")
                     is SessionStatus.RefreshFailure -> {
@@ -55,7 +74,6 @@ internal class AuthViewModel @Inject constructor(
                     }
                     is SessionStatus.NotAuthenticated -> {
                         _authState.value = AuthState.SignedOut
-                        _householdId.value = null
                     }
                 }
             }

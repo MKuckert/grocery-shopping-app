@@ -91,6 +91,11 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.serialization.json)
 
+  // Ktor Client
+  implementation(libs.ktor.client.content.negotiation)
+  implementation(libs.ktor.serialization.json)
+  implementation(libs.ktor.client.android)
+
   // AndroidX Core
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.core.splashscreen)
