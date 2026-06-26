@@ -110,3 +110,4 @@ Research for project relevant facts has been done. Check your skills to load rel
 ## Implementation Hints
 
 - Supabase module and package: The modules id is `io.github.jan-tennert.supabase` but the kotlin package is `io.github.jan.supabase`.
+- application source is in `src/app`. Project file `build.gradle.kts`. Kotlin sources, AndroidManifest and resources in `src/app/src/main`.
