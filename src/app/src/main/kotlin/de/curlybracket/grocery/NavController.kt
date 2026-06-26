@@ -11,7 +11,7 @@ sealed class Screen {
     data object Todos : Screen()
 }
 
-internal class NavController(initialScreen: Screen) {
+class NavController(initialScreen: Screen) {
     private val _currentScreen = MutableStateFlow<Screen>(initialScreen)
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
 

@@ -11,8 +11,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
+import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.powersync.ListContent
@@ -29,17 +32,19 @@ import kotlinx.coroutines.runBlocking
 fun GroceryApp(
     supabase: SupabaseConnector,
     database: PowerSyncDatabase,
+    audioFeedback: AudioFeedback,
 ) {
     val syncStatus = database.currentStatus
     val status by syncStatus.asFlow().collectAsState(syncStatus)
 
     val navController = remember { NavController(Screen.Home) }
-    val authViewModel = remember { AuthViewModel(supabase, navController) }
+    val authViewModel: AuthViewModel = hiltViewModel()
 
     val authState by authViewModel.authState.collectAsState()
     val currentScreen by navController.currentScreen.collectAsState()
     val userId by authViewModel.userId.collectAsState()
     val currentUserId = rememberUpdatedState(userId)
+    val householdId by authViewModel.householdId.collectAsState()
 
     val lists = remember { mutableStateOf(ListContent(database, userId)) }
     LaunchedEffect(currentUserId.value) {
@@ -56,6 +61,20 @@ fun GroceryApp(
     val todoItems by todos.value.watchItems(selectedListId).collectAsState(initial = emptyList())
     val editingItem by todos.value.editingItem.collectAsState()
     val todosInputText by todos.value.inputText.collectAsState()
+
+    // Release AudioFeedback on composable dispose
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            audioFeedback.release()
+        }
+    }
+
+    // Handle sign-out navigation
+    LaunchedEffect(authState) {
+        if (authState == AuthState.SignedOut) {
+            navController.navigate(Screen.SignIn)
+        }
+    }
 
     when (currentScreen) {
         is Screen.Home -> {

@@ -16,6 +16,7 @@ kermit = "2.0.5"
 uuid = "0.8.4"
 
 lifecycleService = "2.9.1"
+lifecycleRuntimeCompose = "2.9.1"
 
 # Testing & Android Framework
 coreKtx = "1.19.0"
@@ -50,6 +51,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 # Hilt
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
 
 # PowerSync
 powersync-core = { module = "com.powersync:core", version.ref = "powersync" }
@@ -73,6 +75,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycleService" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 

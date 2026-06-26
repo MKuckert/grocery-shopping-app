@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.AndroidEntryPoint
+import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.sync.SyncService
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.launch
@@ -20,6 +21,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var supabase: SupabaseConnector
     @Inject lateinit var database: PowerSyncDatabase
+    @Inject lateinit var audioFeedback: AudioFeedback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -38,7 +40,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            GroceryApp(supabase = supabase, database = database)
+            GroceryApp(supabase = supabase, database = database, audioFeedback = audioFeedback)
         }
     }
 }

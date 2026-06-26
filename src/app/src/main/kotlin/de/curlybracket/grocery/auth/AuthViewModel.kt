@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.powersync.connector.supabase.SupabaseConnector
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
 import de.curlybracket.grocery.NavController
@@ -11,6 +12,7 @@ import de.curlybracket.grocery.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class AuthState {
     data object SignedOut : AuthState()
@@ -21,7 +23,8 @@ sealed class AuthState {
  * Tracks authentication state only. Connection management (db.connect / disconnectAndClear)
  * is delegated to SyncService which runs as a foreground service.
  */
-internal class AuthViewModel(
+@HiltViewModel
+internal class AuthViewModel @Inject constructor(
     private val supabase: SupabaseConnector,
     private val navController: NavController,
 ) : ViewModel() {
@@ -31,6 +34,9 @@ internal class AuthViewModel(
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId
 
+    private val _householdId = MutableStateFlow<String?>(null)
+    val householdId: StateFlow<String?> = _householdId
+
     init {
         viewModelScope.launch {
             supabase.sessionStatus.collect {
@@ -38,6 +44,7 @@ internal class AuthViewModel(
                     is SessionStatus.Authenticated -> {
                         _authState.value = AuthState.SignedIn
                         _userId.value = it.session.user?.id
+                        _householdId.value = it.session.user?.userMetadata?.get("household_id") as? String
                         if (navController.currentScreen.value is Screen.SignIn ||
                             navController.currentScreen.value is Screen.SignUp
                         ) {
@@ -46,6 +53,7 @@ internal class AuthViewModel(
                     }
                     is SessionStatus.Initializing -> Logger.e("Loading from storage")
                     is SessionStatus.RefreshFailure -> {
+                        @Suppress("DEPRECATION")
                         when (it.cause) {
                             is RefreshFailureCause.NetworkError ->
                                 Logger.e("Network error occurred")
@@ -55,6 +63,7 @@ internal class AuthViewModel(
                     }
                     is SessionStatus.NotAuthenticated -> {
                         _authState.value = AuthState.SignedOut
+                        _householdId.value = null
                         navController.navigate(Screen.SignIn)
                     }
                 }
