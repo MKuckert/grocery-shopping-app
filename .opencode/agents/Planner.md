@@ -6,12 +6,20 @@ permission:
   read:
     "*": deny
     PLAN.md: allow
+    tasks/*: allow
   edit:
     "*": deny
     PLAN.md: allow
+    tasks/*: allow
   grep: deny
-  glob: deny
-  list: deny
+  glob:
+    "*": deny
+    PLAN.md: allow
+    tasks/*: allow
+  list:
+    "*": deny
+    PLAN.md: allow
+    tasks/*: allow
   bash: deny
   android_*: deny
   question: allow
