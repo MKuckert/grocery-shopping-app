@@ -1,7 +1,7 @@
 # Task 4: Repository Layer
 
 > **Depends on:** Task 2, Task 3
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 

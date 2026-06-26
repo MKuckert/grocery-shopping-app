@@ -46,7 +46,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | [x]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
 | [x]    | `tasks/TASK_02_schema.md`            | Update PowerSync Schema                         |
 | [x]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
-| [/]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |
+| [x]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |
 | [ ]    | `tasks/TASK_05_hilt_di.md`           | Hilt DI Wiring                                  |
 | [ ]    | `tasks/TASK_06_navigation.md`        | Root Navigation (NavHost)                       |
 | [ ]    | `tasks/TASK_07_inventory_screen.md`  | InventoryScreen                                 |
@@ -98,3 +98,8 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 - **Round 1:** N/A
 - **Round 2:** N/A
 - **Round 3:** N/A
+
+## Task 04 Code Review Log
+
+- **Round 1 — REJECTED:** One critical bug. All other criteria pass (watch→Flow, mutations→execute/writeTransaction, no Supabase reads, submitUnloading atomic, ensureUnsortedGroup idempotent, findByBarcode single-shot, SQL fragments exact). **Bug:** `createProductKind` hardcodes `quantity_to_buy = 1` in the INSERT literal while binding `minimum_stock` from the parameter. When `minimumStock != 1` the inserted row is immediately inconsistent (`minimum_stock=N, current_stock=0, quantity_to_buy=1`). Since `current_stock = 0` on creation, the correct value is `minimumStock`. Fix: change `VALUES (?, ?, ?, ?, 0, ?, 1, 0, null, 0, null)` → `VALUES (?, ?, ?, ?, 0, ?, ?, 0, null, 0, null)` and append a second `minimumStock` to the parameters list.
+- **Round 2 — APPROVED:** Fix confirmed. `quantity_to_buy` correctly bound to `minimumStock` (6th `?` → 6th parameter). Insert row is internally consistent on creation. All review criteria satisfied. Task 04 closed.
