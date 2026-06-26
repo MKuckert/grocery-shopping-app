@@ -1,7 +1,7 @@
 # Task 6: Root Navigation (NavHost)
 
 > **Depends on:** Task 5
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
@@ -76,9 +76,11 @@ fun GroceryApp() {
 ```
 
 ### `MainActivity` update
+
 Remove `supabase` and `database` parameters from the `GroceryApp(...)` call site. `GroceryApp` now takes zero parameters — dependencies flow through Hilt.
 
 ### Navigation rule
+
 DetailScreen is reachable from all three main screens. Back navigation returns the user to wherever they came from (default back stack behavior).
 
 ---
