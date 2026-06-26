@@ -109,4 +109,4 @@ Research for project relevant facts has been done. Check your skills to load rel
 
 ## Implementation Hints
 
-- The package for supabase is not `io.github.jan_tennert.supabase` but `io.github.jan.supabase`.
+- Supabase module and package: The modules id is `io.github.jan-tennert.supabase` but the kotlin package is `io.github.jan.supabase`.
