@@ -28,16 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import de.curlybracket.grocery.NavController
-import de.curlybracket.grocery.Screen
 import de.curlybracket.grocery.auth.AuthViewModel
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun SignInScreen(
-    navController: NavController,
     authViewModel: AuthViewModel,
+    onSignUpClicked: () -> Unit,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -112,7 +110,7 @@ internal fun SignInScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(
-            onClick = { navController.navigate(Screen.SignUp) },
+            onClick = onSignUpClicked,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
             Text("Don't have an account? Sign Up")

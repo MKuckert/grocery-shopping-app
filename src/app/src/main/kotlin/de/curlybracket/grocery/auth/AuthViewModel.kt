@@ -7,8 +7,6 @@ import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
-import de.curlybracket.grocery.NavController
-import de.curlybracket.grocery.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,7 +24,6 @@ sealed class AuthState {
 @HiltViewModel
 internal class AuthViewModel @Inject constructor(
     private val supabase: SupabaseConnector,
-    private val navController: NavController,
 ) : ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.SignedOut)
     val authState: StateFlow<AuthState> = _authState
@@ -45,11 +42,6 @@ internal class AuthViewModel @Inject constructor(
                         _authState.value = AuthState.SignedIn
                         _userId.value = it.session.user?.id
                         _householdId.value = it.session.user?.userMetadata?.get("household_id") as? String
-                        if (navController.currentScreen.value is Screen.SignIn ||
-                            navController.currentScreen.value is Screen.SignUp
-                        ) {
-                            navController.navigate(Screen.Home)
-                        }
                     }
                     is SessionStatus.Initializing -> Logger.e("Loading from storage")
                     is SessionStatus.RefreshFailure -> {
@@ -64,7 +56,6 @@ internal class AuthViewModel @Inject constructor(
                     is SessionStatus.NotAuthenticated -> {
                         _authState.value = AuthState.SignedOut
                         _householdId.value = null
-                        navController.navigate(Screen.SignIn)
                     }
                 }
             }

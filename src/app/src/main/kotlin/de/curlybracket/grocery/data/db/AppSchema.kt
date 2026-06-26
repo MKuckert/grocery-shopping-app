@@ -1,12 +1,16 @@
 package de.curlybracket.grocery.data.db
 
 import com.powersync.db.schema.*
-import de.curlybracket.grocery.powersync.listsTable
-import de.curlybracket.grocery.powersync.todosTable
+
+// TODO (Task 2): Complete schema definition for grocery domain
+// This is a temporary placeholder. The full schema with all tables
+// (households, product_groups, product_kinds, barcodes) will be
+// defined in Task 2: Update PowerSync Schema.
 
 val AppSchema = Schema(
   tables = listOf(
-    // --- Grocery domain tables ---
+    // --- Temporary demo schema ---
+    // Will be replaced in Task 2
     Table(
       name = "households",
       columns = listOf(
@@ -14,38 +18,5 @@ val AppSchema = Schema(
         Column.text("shopping_started_at")
       )
     ),
-    Table(
-      name = "product_groups",
-      columns = listOf(
-        Column.text("household_id"),
-        Column.text("name"),
-        Column.text("deleted_at")
-      )
-    ),
-    Table(
-      name = "product_kinds",
-      columns = listOf(
-        Column.text("household_id"),
-        Column.text("group_id"),
-        Column.text("name"),
-        Column.integer("current_stock"),
-        Column.integer("minimum_stock"),
-        Column.integer("quantity_to_buy"),
-        Column.integer("pending_stock"),
-        Column.text("image_path"),
-        Column.integer("unload_open"),
-        Column.text("deleted_at")
-      )
-    ),
-    Table(
-      name = "barcodes",
-      columns = listOf(
-        Column.text("household_id"),
-        Column.text("product_kind_id"),
-        Column.text("barcode_number")
-      )
-    ),
-    listsTable,
-    todosTable,
   )
 )

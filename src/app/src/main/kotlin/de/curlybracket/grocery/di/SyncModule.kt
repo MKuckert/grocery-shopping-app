@@ -10,8 +10,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import de.curlybracket.grocery.BuildConfig
-import de.curlybracket.grocery.NavController
-import de.curlybracket.grocery.Screen
 import de.curlybracket.grocery.data.db.AppSchema
 import javax.inject.Singleton
 
@@ -35,8 +33,4 @@ object SyncModule {
         val factory = DatabaseDriverFactory(context)
         return PowerSyncDatabase(factory = factory, schema = AppSchema, dbFilename = "grocery.db")
     }
-
-    @Singleton
-    @Provides
-    fun provideNavController(): NavController = NavController(Screen.SignIn)
 }

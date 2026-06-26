@@ -1,21 +1,6 @@
 package de.curlybracket.grocery
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-
-sealed class Screen {
-    data object Home : Screen()
-    data object SignIn : Screen()
-    data object SignUp : Screen()
-    data object Todos : Screen()
-}
-
-class NavController(initialScreen: Screen) {
-    private val _currentScreen = MutableStateFlow<Screen>(initialScreen)
-    val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
-
-    fun navigate(screen: Screen) {
-        _currentScreen.value = screen
-    }
-}
+// DEPRECATED: This file is part of the demo code removal (Task 1).
+// Navigation will be replaced by Compose Navigation (androidx.navigation:navigation-compose)
+// in Task 6: Root Navigation (NavHost).
+// Files kept as empty stubs to prevent import errors during refactoring.

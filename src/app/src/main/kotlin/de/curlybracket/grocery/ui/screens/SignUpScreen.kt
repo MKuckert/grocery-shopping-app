@@ -26,15 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import de.curlybracket.grocery.NavController
-import de.curlybracket.grocery.Screen
 import de.curlybracket.grocery.auth.AuthViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun SignUpScreen(
-    navController: NavController,
     authViewModel: AuthViewModel,
+    onSignInClicked: () -> Unit,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -118,7 +116,7 @@ internal fun SignUpScreen(
         }
 
         TextButton(
-            onClick = { navController.navigate(Screen.SignIn) },
+            onClick = onSignInClicked,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
             Text("Already have an account? Sign In")
