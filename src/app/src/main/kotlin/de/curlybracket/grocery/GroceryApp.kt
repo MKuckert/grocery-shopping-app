@@ -1,33 +1,63 @@
 package de.curlybracket.grocery
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import com.powersync.PowerSyncDatabase
-import com.powersync.connector.supabase.SupabaseConnector
-import de.curlybracket.grocery.audio.AudioFeedback
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import de.curlybracket.grocery.auth.AuthViewModel
+import de.curlybracket.grocery.domain.model.HouseholdState
+import de.curlybracket.grocery.ui.navigation.Route
+import de.curlybracket.grocery.ui.screens.SignInScreen
 
 /**
- * Root app composable. Currently a placeholder.
- * Will be fully implemented in Task 6: Root Navigation (NavHost).
+ * Root app composable. Implements the navigation hub with three main screens
+ * driven by household state (IDLE -> Inventory, SHOPPING -> Shopping, UNLOADING -> Unloading).
+ * Auth screens are the start destination.
  */
 @Composable
-fun GroceryApp(
-    supabase: SupabaseConnector,
-    database: PowerSyncDatabase,
-    audioFeedback: AudioFeedback,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Grocery App - Under Construction")
+fun GroceryApp() {
+  val appViewModel: AppViewModel = hiltViewModel()
+  val authViewModel: AuthViewModel = hiltViewModel()
+  val navController = rememberNavController()
+  val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
+
+  // Root router: swap screen based on householdState
+  LaunchedEffect(householdState?.currentState) {
+    when (householdState?.currentState) {
+      HouseholdState.IDLE -> navController.navigate(Route.Inventory.path) { popUpTo(0) }
+      HouseholdState.SHOPPING -> navController.navigate(Route.Shopping.path) { popUpTo(0) }
+      HouseholdState.UNLOADING -> navController.navigate(Route.Unloading.path) { popUpTo(0) }
+      null -> { /* auth screens handle this */ }
     }
+  }
+
+  NavHost(navController, startDestination = Route.SignIn.path) {
+    composable(Route.SignIn.path) {
+      SignInScreen(
+        authViewModel = authViewModel,
+        onSignUpClicked = { navController.navigate(Route.SignUp.path) }
+      )
+    }
+    composable(Route.SignUp.path) {
+      // TODO: SignUpScreen to be implemented
+    }
+    composable(Route.Inventory.path) {
+      // TODO: InventoryScreen to be implemented
+    }
+    composable(Route.Shopping.path) {
+      // TODO: ShoppingScreen to be implemented
+    }
+    composable(Route.Unloading.path) {
+      // TODO: UnloadingScreen to be implemented
+    }
+    composable(Route.Detail.TEMPLATE) { backStack ->
+      val productId = backStack.arguments!!.getString("productId")!!
+      // TODO: DetailScreen to be implemented
+    }
+  }
 }

@@ -2,20 +2,23 @@ package de.curlybracket.grocery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.curlybracket.grocery.auth.AuthState
+import de.curlybracket.grocery.domain.model.Household
+import de.curlybracket.grocery.domain.repository.GroceryRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /**
- * App-level ViewModel that provides access to authentication state.
- * This ViewModel can be injected into composables that need app-wide state.
+ * App-level ViewModel that owns root navigation state (household state).
+ * Injects into GroceryApp to drive screen transitions.
  */
 @HiltViewModel
 class AppViewModel @Inject constructor(
-    private val connector: SupabaseConnector,
-) : ViewModel()
-
+    private val repository: GroceryRepository,
+) : ViewModel() {
+  val householdState: StateFlow<Household?> =
+    repository.watchHousehold()
+      .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+}
