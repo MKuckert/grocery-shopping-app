@@ -1,13 +1,13 @@
 # Task 2: Update PowerSync Schema (`AppSchema.kt`)
 
 > **Depends on:** Task 1
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
 ## Description
 
-Rewrite `data/db/AppSchema.kt`. Remove `listsTable` / `todosTable` imports and entries. Add the full grocery schema.
+Rewrite `data/db/AppSchema.kt`. Remove `listsTable` / `todosTable` imports and entries. Ensure to include the full grocery schema.
 
 **Note:** PowerSync `Column` type has no `boolean` — use `Column.integer` for boolean columns; 0 = false, 1 = true.
 
@@ -56,7 +56,8 @@ val AppSchema = Schema(
 )
 ```
 
-Also add local SQLite index hints via PowerSync `Table.indexes` parameter as defined in `DATABASE.md §1.2`:
+Also add local SQLite index hints via PowerSync `Table.indexes` parameter as defined in `src/DATABASE.md` §1.2:
+
 - `idx_barcodes_lookup`: unique index on `barcodes(household_id, barcode_number)`.
 - `idx_product_kinds_active_group`: index on `product_kinds(household_id, group_id)`.
 - `idx_product_kinds_shopping_state`: index on `product_kinds(household_id, quantity_to_buy, pending_stock)`.
