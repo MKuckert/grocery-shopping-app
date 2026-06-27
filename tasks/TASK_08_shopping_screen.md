@@ -45,6 +45,10 @@ Create `ui/screens/shopping/ShoppingViewModel.kt` and `ui/screens/shopping/Shopp
 - **Full-fulfillment shortcut:** tap anywhere on the row body (not the steppers) → `fulfillFull`.
 - **Barcode scanner:** FAB or toolbar icon → opens `ShoppingScannerSheet` (same `BarcodeScannerBottomSheet` from Task 11, but with `ScannerMode.Shopping` — increments `pending_stock` instead of decrementing `current_stock`; new barcode spawns an Unsorted impulse buy).
 
+### Navigation
+
+- Replace the corresponding TODO comment for `Route.Shopping.path` route in `GroceryApp.kt` with a navigation to `ShoppingScreen`.
+
 ---
 
 ## Review Criteria
