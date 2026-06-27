@@ -14,6 +14,7 @@ import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
+import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 
 /**
  * Root app composable. Implements the navigation hub with three main screens
@@ -51,7 +52,11 @@ fun GroceryApp() {
       )
     }
     composable(Route.Shopping.path) {
-      // TODO: ShoppingScreen to be implemented
+      ShoppingScreen(
+        onNavigateToDetail = { productId ->
+          navController.navigate(Route.Detail(productId).path)
+        }
+      )
     }
     composable(Route.Unloading.path) {
       // TODO: UnloadingScreen to be implemented
