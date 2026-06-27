@@ -40,12 +40,8 @@ fun GroceryApp() {
   NavHost(navController, startDestination = Route.SignIn.path) {
     composable(Route.SignIn.path) {
       SignInScreen(
-        authViewModel = authViewModel,
-        onSignUpClicked = { navController.navigate(Route.SignUp.path) }
+        authViewModel = authViewModel
       )
-    }
-    composable(Route.SignUp.path) {
-      // TODO: SignUpScreen to be implemented
     }
     composable(Route.Inventory.path) {
       InventoryScreen(
