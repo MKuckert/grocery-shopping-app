@@ -16,6 +16,7 @@ import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
+import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
 
 /**
  * Root app composable. Implements the navigation hub with three main screens
@@ -66,7 +67,7 @@ fun GroceryApp() {
       )
     }
     composable(Route.Unloading.path) {
-      // TODO: UnloadingScreen to be implemented
+      UnloadingScreen()
     }
     composable(Route.Detail.TEMPLATE) { backStack ->
       val productId = backStack.arguments!!.getString("productId")!!
