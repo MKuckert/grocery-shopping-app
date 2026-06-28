@@ -74,7 +74,7 @@ fun GroceryApp() {
         }
       )
     }
-    composable(Route.Detail.TEMPLATE) { backStack ->
+    composable(Route.Detail.TEMPLATE) {
       DetailScreen(onBack = { navController.popBackStack() })
     }
   }

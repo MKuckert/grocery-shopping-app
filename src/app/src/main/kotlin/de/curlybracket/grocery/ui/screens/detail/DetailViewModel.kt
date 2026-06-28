@@ -30,7 +30,9 @@ internal class DetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-  private val productId: String = checkNotNull(savedStateHandle["productId"])
+  // Get productId from SavedStateHandle; hilt-navigation-compose populates this from route args
+  private val productId: String = savedStateHandle.get<String>("productId")
+    ?: error("productId argument is required but was not found in SavedStateHandle")
 
   private val householdId: StateFlow<String?> = supabase.sessionStatus
     .map { status ->
