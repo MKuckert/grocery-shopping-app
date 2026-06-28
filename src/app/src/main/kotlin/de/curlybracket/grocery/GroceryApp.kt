@@ -68,7 +68,11 @@ fun GroceryApp() {
       )
     }
     composable(Route.Unloading.path) {
-      UnloadingScreen()
+      UnloadingScreen(
+        onNavigateToDetail = { productId ->
+          navController.navigate(Route.Detail(productId).path)
+        }
+      )
     }
     composable(Route.Detail.TEMPLATE) { backStack ->
       DetailScreen(onBack = { navController.popBackStack() })

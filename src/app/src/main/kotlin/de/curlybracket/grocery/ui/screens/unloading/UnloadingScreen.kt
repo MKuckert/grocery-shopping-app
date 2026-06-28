@@ -1,5 +1,6 @@
 package de.curlybracket.grocery.ui.screens.unloading
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,7 +94,8 @@ internal fun UnloadingScreen(
             product = product,
             onToggleUnloadOpen = { viewModel.setUnloadOpen(product, it) },
             onIncrement = { viewModel.incrementPending(product) },
-            onDecrement = { viewModel.decrementPending(product) }
+            onDecrement = { viewModel.decrementPending(product) },
+            onTap = { onNavigateToDetail(product.id) }
           )
         }
       }
@@ -114,7 +117,8 @@ private fun UnloadingRow(
   product: de.curlybracket.grocery.domain.model.ProductKind,
   onToggleUnloadOpen: (Boolean) -> Unit,
   onIncrement: () -> Unit,
-  onDecrement: () -> Unit
+  onDecrement: () -> Unit,
+  onTap: () -> Unit = {}
 ) {
   val total = product.currentStock + product.pendingStock
   val isDisabled = !product.unloadOpen
@@ -123,7 +127,10 @@ private fun UnloadingRow(
     modifier = Modifier
       .fillMaxWidth()
       .height(72.dp)
-      .padding(horizontal = 16.dp, vertical = 8.dp),
+      .padding(horizontal = 16.dp, vertical = 8.dp)
+      .pointerInput(Unit) {
+        detectTapGestures(onTap = { onTap() })
+      },
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
