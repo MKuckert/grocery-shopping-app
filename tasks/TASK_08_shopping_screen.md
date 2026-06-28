@@ -1,7 +1,7 @@
 # Task 8: ShoppingScreen
 
 > **Depends on:** Task 6, Task 11 (scanner)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 

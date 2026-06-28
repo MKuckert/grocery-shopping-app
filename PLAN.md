@@ -50,7 +50,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | [x]    | `tasks/TASK_05_hilt_di.md`           | Hilt DI Wiring                                  |
 | [x]    | `tasks/TASK_06_navigation.md`        | Root Navigation (NavHost)                       |
 | [x]    | `tasks/TASK_07_inventory_screen.md`  | InventoryScreen                                 |
-| [/]    | `tasks/TASK_08_shopping_screen.md`   | ShoppingScreen                                  |
+| [x]    | `tasks/TASK_08_shopping_screen.md`   | ShoppingScreen                                  |
 | [ ]    | `tasks/TASK_09_unloading_screen.md`  | UnloadingScreen                                 |
 | [ ]    | `tasks/TASK_10_detail_screen.md`     | DetailScreen                                    |
 | [ ]    | `tasks/TASK_11_scanner.md`           | Barcode Scanner Infrastructure                  |

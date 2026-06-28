@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
@@ -25,14 +28,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -41,9 +46,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -67,7 +77,7 @@ internal fun ShoppingScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
   var showScannerSheet by remember { mutableStateOf(false) }
-  var showSearchResults by remember { mutableStateOf(false) }
+  var searchExpanded by rememberSaveable { mutableStateOf(false) }
 
   // Collect snackbar messages
   LaunchedEffect(Unit) {
@@ -108,65 +118,98 @@ internal fun ShoppingScreen(
     },
     snackbarHost = { SnackbarHost(snackbarHostState) }
   ) { paddingValues ->
-    Column(
+    Box(
       modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)
+        .semantics { isTraversalGroup = true }
     ) {
-      // Search bar
-      TextField(
-        value = searchQuery,
-        onValueChange = {
-          viewModel.updateSearchQuery(it)
-          showSearchResults = it.isNotEmpty()
-        },
-        placeholder = { Text("Search products") },
-        leadingIcon = {
-          Icon(
-            imageVector = Icons.Default.Search,
-            contentDescription = "Search"
+      // Material 3 SearchBar with proper API
+      SearchBar(
+        modifier = Modifier
+          .align(Alignment.TopCenter)
+          .semantics { traversalIndex = 0f }
+          .padding(horizontal = 8.dp, vertical = 8.dp),
+        inputField = {
+          SearchBarDefaults.InputField(
+            query = searchQuery,
+            onQueryChange = { viewModel.updateSearchQuery(it) },
+            onSearch = {
+              viewModel.updateSearchQuery(it)
+              searchExpanded = false
+            },
+            expanded = searchExpanded,
+            onExpandedChange = { searchExpanded = it },
+            placeholder = { Text("Search products") },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search"
+              )
+            },
+            trailingIcon = {
+              if (searchQuery.isNotEmpty()) {
+                IconButton(onClick = {
+                  viewModel.updateSearchQuery("")
+                }) {
+                  Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Clear search"
+                  )
+                }
+              }
+            }
           )
         },
-        trailingIcon = {
-          if (searchQuery.isNotEmpty()) {
-            IconButton(onClick = {
-              viewModel.updateSearchQuery("")
-              showSearchResults = false
-            }) {
-              Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "Clear search"
+        expanded = searchExpanded,
+        onExpandedChange = { searchExpanded = it }
+      ) {
+        // Search results content
+        if (searchResults.isNotEmpty()) {
+          Column(Modifier.verticalScroll(rememberScrollState())) {
+            searchResults.forEach { product ->
+              ListItem(
+                headlineContent = { Text(product.name) },
+                supportingContent = {
+                  Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                  ) {
+                    Button(
+                      onClick = {
+                        viewModel.forceAddToCart(product)
+                        searchExpanded = false
+                      },
+                      modifier = Modifier.height(32.dp)
+                    ) {
+                      Text("Force Add", style = MaterialTheme.typography.labelSmall)
+                    }
+                    TextButton(
+                      onClick = {
+                        onNavigateToDetail(product.id)
+                        searchExpanded = false
+                      },
+                      modifier = Modifier.height(32.dp)
+                    ) {
+                      Text("Details", style = MaterialTheme.typography.labelSmall)
+                    }
+                  }
+                },
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(horizontal = 16.dp, vertical = 4.dp)
               )
             }
           }
-        },
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 8.dp),
-        singleLine = true
-      )
+        }
+      }
 
-      // Search results or main content
-      if (showSearchResults && searchResults.isNotEmpty()) {
+      // Main content (visible when SearchBar is not expanded)
+      if (!searchExpanded) {
         LazyColumn(
           modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
-        ) {
-          items(
-            items = searchResults,
-            key = { product -> product.id }
-          ) { product ->
-            SearchResultCard(
-              product = product,
-              onForceAdd = { viewModel.forceAddToCart(product) },
-              onNavigateToDetail = { onNavigateToDetail(product.id) }
-            )
-          }
-        }
-      } else {
-        LazyColumn(
-          modifier = Modifier.fillMaxSize()
+            .padding(top = 72.dp),
+          contentPadding = PaddingValues(bottom = 16.dp)
         ) {
           // Active Shopping List section
           if (activeShopping.isNotEmpty()) {
@@ -359,42 +402,6 @@ private fun ShoppingProductRow(
             modifier = Modifier.padding(8.dp)
           )
         }
-      }
-    }
-  }
-}
-
-@Composable
-private fun SearchResultCard(
-  product: ProductKind,
-  onForceAdd: () -> Unit,
-  onNavigateToDetail: () -> Unit
-) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 8.dp),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween
-  ) {
-    Column(
-      modifier = Modifier.weight(1f)
-    ) {
-      Text(
-        text = product.name,
-        style = MaterialTheme.typography.bodyLarge,
-        fontWeight = FontWeight.Medium
-      )
-    }
-
-    Row(
-      horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-      Button(onClick = onForceAdd, modifier = Modifier.height(32.dp)) {
-        Text("Force Add", style = MaterialTheme.typography.labelSmall)
-      }
-      TextButton(onClick = onNavigateToDetail, modifier = Modifier.height(32.dp)) {
-        Text("Details", style = MaterialTheme.typography.labelSmall)
       }
     }
   }
