@@ -36,7 +36,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun UnloadingScreen(
-  viewModel: UnloadingViewModel = hiltViewModel()
+  viewModel: UnloadingViewModel = hiltViewModel(),
+  onNavigateToDetail: (String) -> Unit = {}
 ) {
   val items by viewModel.items.collectAsStateWithLifecycle()
   val showDialog by viewModel.showWarningDialog.collectAsStateWithLifecycle()

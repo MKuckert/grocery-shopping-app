@@ -108,6 +108,9 @@ dependencies {
   implementation(libs.kermit)
   implementation(libs.uuid)
 
+  // Coil
+  implementation(libs.coil.compose)
+
   // Testing
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)

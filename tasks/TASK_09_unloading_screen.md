@@ -1,7 +1,7 @@
 # Task 9: UnloadingScreen
 
 > **Depends on:** Task 6
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 

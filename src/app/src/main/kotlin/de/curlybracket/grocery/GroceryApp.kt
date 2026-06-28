@@ -14,6 +14,7 @@ import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
+import de.curlybracket.grocery.ui.screens.detail.DetailScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
@@ -70,8 +71,7 @@ fun GroceryApp() {
       UnloadingScreen()
     }
     composable(Route.Detail.TEMPLATE) { backStack ->
-      val productId = backStack.arguments!!.getString("productId")!!
-      // TODO: DetailScreen to be implemented
+      DetailScreen(onBack = { navController.popBackStack() })
     }
   }
 }
