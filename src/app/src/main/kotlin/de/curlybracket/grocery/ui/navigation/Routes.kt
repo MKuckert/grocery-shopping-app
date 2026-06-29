@@ -5,7 +5,7 @@ sealed class Route(val path: String) {
   data object Inventory : Route("inventory")
   data object Shopping : Route("shopping")
   data object Unloading : Route("unloading")
-  data class Detail(val productId: String) : Route("detail/{productId}") {
+  data class Detail(val productId: String) : Route("detail/$productId") {
     companion object {
       const val TEMPLATE = "detail/{productId}"
     }
