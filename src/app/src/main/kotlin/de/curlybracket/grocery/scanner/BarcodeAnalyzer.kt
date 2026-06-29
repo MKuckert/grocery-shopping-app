@@ -32,27 +32,34 @@ class BarcodeAnalyzer(
 
     try {
       val inputImage = InputImage.fromMediaImage(imageProxy.image!!, imageProxy.imageInfo.rotationDegrees)
-      val barcodes = BarcodeScanning.getClient().process(inputImage).result
+      
+      // Use addOnSuccessListener for async processing
+      BarcodeScanning.getClient().process(inputImage)
+        .addOnSuccessListener { barcodes ->
+          if (barcodes.isNotEmpty()) {
+            val barcode = barcodes[0]
+            val rawValue = barcode.rawValue ?: return@addOnSuccessListener
 
-      if (barcodes.isNotEmpty()) {
-        val barcode = barcodes[0]
-        val rawValue = barcode.rawValue ?: return
+            val locks = barcodeLocksRef.get()
+            val lastDetectedTime = locks[rawValue]
 
-        val locks = barcodeLocksRef.get()
-        val lastDetectedTime = locks[rawValue]
+            // Cooldown gate: only fire if barcode not detected within cooldown window
+            if (lastDetectedTime == null || currentTime - lastDetectedTime >= COOLDOWN_DURATION_MS) {
+              // Update locks with new detection time
+              val updatedLocks = locks.toMutableMap()
+              updatedLocks[rawValue] = currentTime
+              barcodeLocksRef.set(updatedLocks)
 
-        // Cooldown gate: only fire if barcode not detected within cooldown window
-        if (lastDetectedTime == null || currentTime - lastDetectedTime >= COOLDOWN_DURATION_MS) {
-          // Update locks with new detection time
-          val updatedLocks = locks.toMutableMap()
-          updatedLocks[rawValue] = currentTime
-          barcodeLocksRef.set(updatedLocks)
-
-          // Fire the callback
-          lastDetectionTime = currentTime
-          onBarcodeDetected(rawValue)
+              // Fire the callback
+              lastDetectionTime = currentTime
+              onBarcodeDetected(rawValue)
+            }
+          }
         }
-      }
+        .addOnFailureListener { exception ->
+          // Log the exception but don't crash - just skip this frame
+          exception.printStackTrace()
+        }
     } finally {
       imageProxy.close()
     }
