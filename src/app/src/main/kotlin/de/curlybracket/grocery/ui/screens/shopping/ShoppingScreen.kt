@@ -60,12 +60,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.curlybracket.grocery.domain.model.ProductKind
+import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
+import de.curlybracket.grocery.scanner.ScanResult
+import de.curlybracket.grocery.scanner.ScannerMode
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ShoppingScreen(
   viewModel: ShoppingViewModel = hiltViewModel(),
+  appViewModel: de.curlybracket.grocery.AppViewModel = hiltViewModel(),
   onNavigateToDetail: (String) -> Unit
 ) {
   val activeShopping by viewModel.activeShopping.collectAsStateWithLifecycle()
@@ -73,6 +77,7 @@ internal fun ShoppingScreen(
   val impulseBuys by viewModel.impulseBuys.collectAsStateWithLifecycle()
   val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
   val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+  val householdId by viewModel.householdId.collectAsStateWithLifecycle()
 
   val snackbarHostState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
@@ -317,9 +322,30 @@ internal fun ShoppingScreen(
   }
 
   if (showScannerSheet) {
-    ShoppingScannerBottomSheet(
-      onDismiss = { showScannerSheet = false }
-    )
+    if (householdId != null) {
+      BarcodeScannerBottomSheet(
+        mode = ScannerMode.Shopping(householdId!!),
+        isOpen = showScannerSheet,
+        onDismiss = { showScannerSheet = false },
+        onResult = { result ->
+          when (result) {
+            is ScanResult.Hit -> {
+              viewModel.incrementPending(result.product)
+              showScannerSheet = false
+            }
+            is ScanResult.Restored -> {
+              viewModel.incrementPending(result.product)
+              showScannerSheet = false
+            }
+            is ScanResult.Miss -> {
+              // Will be handled in Task 12 (Open Food Facts)
+              // For now, the scanner stays in CaptureRequired state
+            }
+          }
+        },
+        processor = appViewModel.scannerProcessor
+      )
+    }
   }
 }
 
@@ -407,23 +433,3 @@ private fun ShoppingProductRow(
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ShoppingScannerBottomSheet(
-  onDismiss: () -> Unit
-) {
-  // Placeholder for ShoppingScannerBottomSheet (Task 11)
-  // For now, display a message that it will be implemented
-  ModalBottomSheet(
-    onDismissRequest = onDismiss
-  ) {
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp),
-      contentAlignment = Alignment.Center
-    ) {
-      Text("Scanner to be implemented in Task 11")
-    }
-  }
-}

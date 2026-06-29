@@ -31,7 +31,7 @@ internal class InventoryViewModel @Inject constructor(
   private val supabase: SupabaseConnector
 ) : ViewModel() {
 
-  private val householdId: StateFlow<String?> = supabase.sessionStatus
+  val householdId: StateFlow<String?> = supabase.sessionStatus
     .map { status ->
       when (status) {
         is SessionStatus.Authenticated -> {

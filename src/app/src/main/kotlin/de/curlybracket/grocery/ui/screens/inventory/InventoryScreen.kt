@@ -46,15 +46,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.ProductKind
+import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
+import de.curlybracket.grocery.scanner.ScanResult
+import de.curlybracket.grocery.scanner.ScannerMode
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun InventoryScreen(
   viewModel: InventoryViewModel = hiltViewModel(),
+  appViewModel: de.curlybracket.grocery.AppViewModel = hiltViewModel(),
   onNavigateToDetail: (String) -> Unit
 ) {
   val groupsWithProducts by viewModel.groupsWithProducts.collectAsStateWithLifecycle()
+  val householdId by viewModel.householdId.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
   var showScannerSheet by remember { mutableStateOf(false) }
@@ -152,13 +157,30 @@ internal fun InventoryScreen(
   }
 
   if (showScannerSheet) {
-    InventoryScannerBottomSheet(
-      onDismiss = { showScannerSheet = false },
-      onProductScanned = { product ->
-        viewModel.decrementStock(product)
-        showScannerSheet = false
-      }
-    )
+    if (householdId != null) {
+      BarcodeScannerBottomSheet(
+        mode = ScannerMode.Inventory(householdId!!),
+        isOpen = showScannerSheet,
+        onDismiss = { showScannerSheet = false },
+        onResult = { result ->
+          when (result) {
+            is ScanResult.Hit -> {
+              viewModel.decrementStock(result.product)
+              showScannerSheet = false
+            }
+            is ScanResult.Restored -> {
+              viewModel.decrementStock(result.product)
+              showScannerSheet = false
+            }
+            is ScanResult.Miss -> {
+              // Will be handled in Task 12 (Open Food Facts)
+              // For now, the scanner stays in CaptureRequired state
+            }
+          }
+        },
+        processor = appViewModel.scannerProcessor
+      )
+    }
   }
 }
 
@@ -213,24 +235,3 @@ private fun InventoryProductRow(
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun InventoryScannerBottomSheet(
-  onDismiss: () -> Unit,
-  onProductScanned: (ProductKind) -> Unit
-) {
-  // Placeholder for InventoryScannerBottomSheet (Task 11)
-  // For now, display a message that it will be implemented
-  ModalBottomSheet(
-    onDismissRequest = onDismiss
-  ) {
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp),
-      contentAlignment = Alignment.Center
-    ) {
-      Text("Scanner to be implemented in Task 11")
-    }
-  }
-}
