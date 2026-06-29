@@ -26,3 +26,5 @@
 - [ ] Replace foreground service with workmanager
 - [ ] `@Suppress("DEPRECATION")` in `AuthViewModel`
 - [ ] Pin to portrait orientation
+- [ ] Move OpenFoodFactsClient.baseUrl and OpenFoodFactsClient.userAgent to proper constants place
+- [ ] Extract some magic numbers like timeouts into central constants file

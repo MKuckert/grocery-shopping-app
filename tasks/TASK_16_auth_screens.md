@@ -7,29 +7,9 @@
 
 ## Description
 
-The existing `SignInScreen.kt` and `SignUpScreen.kt` are functionally correct but reference the old `NavController`. Update them to use the new `NavHostController` from Task 6. No visual redesign required.
+The existing `SignInScreen.kt` is functionally correct but reference the old `NavController`. Update them to use the new `NavHostController` from Task 6. No visual redesign required.
 
 After successful sign-in, the `householdState` flow in `GroceryApp` automatically routes to `InventoryScreen` — the auth screens must NOT call `navController.navigate(...)` on success.
-
-### `households` row creation on first sign-up
-
-This is a backend concern (Supabase Postgres trigger on `auth.users` insert). The builder must verify — or document for the backend team — that the following trigger exists:
-
-```sql
-CREATE OR REPLACE FUNCTION create_household_for_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.households (id, current_state)
-  VALUES ('00000000-0000-0000-0000-000000000001', 'IDLE')
-  ON CONFLICT (id) DO NOTHING;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE create_household_for_new_user();
-```
 
 ### Null-household guard in `GroceryApp`
 
