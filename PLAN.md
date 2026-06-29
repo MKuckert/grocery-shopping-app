@@ -54,8 +54,8 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | [x]    | `tasks/TASK_09_unloading_screen.md`  | UnloadingScreen                                 |
 | [x]    | `tasks/TASK_10_detail_screen.md`     | DetailScreen                                    |
 | [x]    | `tasks/TASK_11_scanner.md`           | Barcode Scanner Infrastructure                  |
-| [/]    | `tasks/TASK_12_openfoodfacts.md`     | Open Food Facts Integration                     |
-| [ ]    | `tasks/TASK_13_audio.md`             | Audio Feedback                                  |
+| [x]    | `tasks/TASK_12_openfoodfacts.md`     | Open Food Facts Integration                     |
+| [/]    | `tasks/TASK_13_audio.md`             | Audio Feedback                                  |
 | [ ]    | `tasks/TASK_14_convergence.md`       | Automated Convergence Engine                    |
 | [ ]    | `tasks/TASK_15_camera_permission.md` | Camera Permission Handling                      |
 | [ ]    | `tasks/TASK_16_auth_screens.md`      | Auth Screens (Minimal Updates)                  |

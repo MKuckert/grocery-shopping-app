@@ -1,0 +1,3 @@
+# Placeholder for beep_success.mp3
+# This is a minimal MP3 file header that can be recognized by Android
+# In production, replace with an actual high-pitched short beep (~200 ms)

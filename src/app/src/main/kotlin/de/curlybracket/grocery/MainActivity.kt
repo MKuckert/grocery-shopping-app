@@ -9,6 +9,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.AndroidEntryPoint
+import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.sync.SyncService
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.launch
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var supabase: SupabaseConnector
+    @Inject lateinit var audioFeedback: AudioFeedback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -36,7 +38,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            GroceryApp()
+            GroceryApp(audioFeedback = audioFeedback)
         }
     }
 }

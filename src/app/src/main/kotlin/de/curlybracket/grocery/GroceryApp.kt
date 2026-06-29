@@ -1,6 +1,7 @@
 package de.curlybracket.grocery
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -9,6 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.domain.model.HouseholdState
@@ -25,12 +27,17 @@ import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
  * Auth screens are the start destination.
  */
 @Composable
-fun GroceryApp() {
+fun GroceryApp(audioFeedback: AudioFeedback? = null) {
   val appViewModel: AppViewModel = hiltViewModel()
   val authViewModel: AuthViewModel = hiltViewModel()
   val navController = rememberNavController()
   val authState by authViewModel.authState.collectAsStateWithLifecycle()
   val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
+
+  // Release AudioFeedback SoundPool when app is disposed
+  DisposableEffect(Unit) {
+    onDispose { audioFeedback?.release() }
+  }
 
   // Root router: swap screen based on householdState (for signed-in users)
   LaunchedEffect(householdState?.currentState) {
