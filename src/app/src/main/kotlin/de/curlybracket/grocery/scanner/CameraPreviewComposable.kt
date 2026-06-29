@@ -9,8 +9,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -69,6 +67,14 @@ fun CameraPreviewComposable(
       }
 
       cameraProviderFuture.addListener(listener, ContextCompat.getMainExecutor(context))
+    },
+    onRelease = { previewView ->
+      try {
+        val cameraProvider = ProcessCameraProvider.getInstance(context).get()
+        cameraProvider.unbindAll()
+      } catch (e: Exception) {
+        Log.e("CameraPreview", "Camera unbind failed on release", e)
+      }
     }
   )
 }
