@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <external-files-path name="pictures" path="Pictures/" />
-    <cache-path name="photos" path="photos/" />
+    <files-path name="product_images" path="product_images/" />
+    <cache-path name="scanner_photos" path="scanner_photos/" />
 </paths>
