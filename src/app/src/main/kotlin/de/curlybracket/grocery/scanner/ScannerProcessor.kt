@@ -2,22 +2,32 @@ package de.curlybracket.grocery.scanner
 
 import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.domain.repository.GroceryRepository
+import de.curlybracket.grocery.network.OpenFoodFactsClient
+import de.curlybracket.grocery.network.OFResult
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
 
+data class OpenFoodFactsLookupResult(
+  val barcode: String,
+  val prefillName: String
+)
+
 class ScannerProcessor @Inject constructor(
   private val repository: GroceryRepository,
-  private val audioFeedback: AudioFeedback
+  private val audioFeedback: AudioFeedback,
+  private val openFoodFactsClient: OpenFoodFactsClient
 ) {
 
   private val _scanResultFlow = MutableSharedFlow<ScanResult>(extraBufferCapacity = 1)
   val scanResultFlow = _scanResultFlow.asSharedFlow()
 
+  private val _openFoodFactsResultFlow = MutableSharedFlow<OpenFoodFactsLookupResult>(extraBufferCapacity = 1)
+  val openFoodFactsResultFlow = _openFoodFactsResultFlow.asSharedFlow()
+
   suspend fun processScan(
     barcode: String,
-    mode: ScannerMode,
-    onOpenFoodFactsLookupStart: (String) -> Unit
+    mode: ScannerMode
   ) {
     val householdId = when (mode) {
       is ScannerMode.Inventory -> mode.householdId
@@ -47,7 +57,16 @@ class ScannerProcessor @Inject constructor(
       // Miss: no local match, trigger Open Food Facts lookup
       else -> {
         audioFeedback.playFailure()
-        onOpenFoodFactsLookupStart(barcode)
+        
+        // Perform Open Food Facts lookup
+        val prefillName = when (val result = openFoodFactsClient.lookupBarcode(barcode)) {
+          is OFResult.Hit -> result.productName
+          is OFResult.Miss -> "Unknown Item"
+          else -> "Unknown Item"  // RateLimit is internal and never returned from lookupBarcode
+        }
+        
+        // Emit the lookup result to update UI with prefilled name
+        _openFoodFactsResultFlow.emit(OpenFoodFactsLookupResult(barcode, prefillName))
         _scanResultFlow.emit(ScanResult.Miss(barcode))
       }
     }

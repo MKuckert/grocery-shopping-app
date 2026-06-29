@@ -71,6 +71,17 @@ fun BarcodeScannerBottomSheet(
   val cameraProvider = remember { mutableStateOf<androidx.camera.lifecycle.ProcessCameraProvider?>(null) }
   val imageCapture = remember { mutableStateOf<ImageCapture?>(null) }
 
+  // Listen for Open Food Facts lookup results
+  LaunchedEffect(Unit) {
+    processor.openFoodFactsResultFlow.collect { result ->
+      // Update the CaptureRequired state with the prefilled name from the API
+      val currentState = scannerState
+      if (currentState is ScannerState.CaptureRequired && currentState.barcode == result.barcode) {
+        scannerState = currentState.copy(prefillName = result.prefillName)
+      }
+    }
+  }
+
   // Camera permission launcher
   val cameraPermissionLauncher = rememberLauncherForActivityResult(
     ActivityResultContracts.RequestPermission()
@@ -106,10 +117,13 @@ fun BarcodeScannerBottomSheet(
         }
 
         is ScanResult.Miss -> {
-          // Start Open Food Facts lookup; stay in scanner for now
+          // Open Food Facts lookup is now performed in processScan
+          // We wait for the next state update to populate prefillName
+          // The processor calls onOpenFoodFactsLookupComplete which sets state in ScanningState
+          // For now, default to "Unknown Item" until the state is updated by the processor
           scannerState = ScannerState.CaptureRequired(
             barcode = result.barcode,
-            prefillName = "Unknown Item",
+            prefillName = "Unknown Item",  // Will be updated by processor
             photoPath = null
           )
         }
@@ -178,7 +192,7 @@ private fun ScanningState(
   val barcodeAnalyzer = remember {
     BarcodeAnalyzer { barcode ->
       scope.launch {
-        processor.processScan(barcode, mode) { /* OFFs lookup triggers CaptureRequired */ }
+        processor.processScan(barcode, mode)
       }
     }
   }
