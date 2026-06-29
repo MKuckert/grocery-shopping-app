@@ -6,6 +6,8 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
@@ -15,6 +17,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.findViewTreeLifecycleOwner
+import android.util.Size
 
 @Composable
 fun CameraPreviewComposable(
@@ -42,7 +45,18 @@ fun CameraPreviewComposable(
             .also { it.setSurfaceProvider(previewView.surfaceProvider) }
 
           // ImageAnalysis use case (barcode detection)
+          // Set target resolution for better barcode detection
+          val resolutionSelector = ResolutionSelector.Builder()
+            .setResolutionStrategy(
+              ResolutionStrategy(
+                Size(1280, 720),
+                ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+              )
+            )
+            .build()
+          
           val imageAnalysisUseCase = ImageAnalysis.Builder()
+            .setResolutionSelector(resolutionSelector)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .also { it.setAnalyzer(ContextCompat.getMainExecutor(context), imageAnalyzer) }

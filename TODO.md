@@ -25,3 +25,4 @@
 - [ ] Database schema has to include `created_at` and `updated_at` for every table to enable proper synchronization and conflict resolution.
 - [ ] Replace foreground service with workmanager
 - [ ] `@Suppress("DEPRECATION")` in `AuthViewModel`
+- [ ] Pin to portrait orientation
