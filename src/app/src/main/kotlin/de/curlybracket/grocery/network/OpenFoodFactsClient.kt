@@ -36,7 +36,7 @@ class OpenFoodFactsClient @Inject constructor(
         return when (response.status.value) {
             200 -> {
                 val body = response.body<OFResponse>()
-                if (body.status == "ok") {
+                if (body.status == "success") {
                     val name = body.product?.productName?.takeIf { it.isNotBlank() }
                         ?: body.product?.brands?.takeIf { it.isNotBlank() }
                         ?: "Unknown Item"
