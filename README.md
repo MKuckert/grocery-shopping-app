@@ -27,3 +27,8 @@ powersync.url=<your-powersync-service-url>
 ```
 
 **Note:** `local.properties` is not tracked in version control. Each developer must provide their own configuration values.
+
+## Credits
+
+- beep_success.mp3: Positive Blip Effect by CogFireStudios -- https://freesound.org/s/531512/ -- License: Creative Commons 0
+- beep_failure.mp3: sfx_wrong_generic.wav by Mihacappy -- https://freesound.org/s/844147/ -- License: Creative Commons 0
