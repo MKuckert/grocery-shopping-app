@@ -32,6 +32,23 @@ val AppSchema = Schema(
         Column.text("image_path"),
         Column.integer("unload_open"),
         Column.text("deleted_at")
+      ),
+      indexes = listOf(
+        Index(
+          name = "idx_product_kinds_active_group",
+          columns = listOf(
+            IndexedColumn.ascending("household_id"),
+            IndexedColumn.ascending("group_id")
+          )
+        ),
+        Index(
+          name = "idx_product_kinds_shopping_state",
+          columns = listOf(
+            IndexedColumn.ascending("household_id"),
+            IndexedColumn.ascending("quantity_to_buy"),
+            IndexedColumn.ascending("pending_stock")
+          )
+        )
       )
     ),
     Table(
@@ -40,6 +57,15 @@ val AppSchema = Schema(
         Column.text("household_id"),
         Column.text("product_kind_id"),
         Column.text("barcode_number")
+      ),
+      indexes = listOf(
+        Index(
+          name = "idx_barcodes_lookup",
+          columns = listOf(
+            IndexedColumn.ascending("household_id"),
+            IndexedColumn.ascending("barcode_number")
+          )
+        )
       )
     ),
   )

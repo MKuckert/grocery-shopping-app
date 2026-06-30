@@ -1,7 +1,7 @@
 # Task 2: Update PowerSync Schema (`AppSchema.kt`)
 
 > **Depends on:** Task 1
-> **Status:** [ ]
+> **Status:** [/]
 
 ---
 
