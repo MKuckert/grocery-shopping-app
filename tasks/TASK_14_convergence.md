@@ -1,7 +1,7 @@
 # Task 14: Automated Convergence Engine
 
 > **Depends on:** Task 4 (Repository Layer)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
@@ -12,6 +12,7 @@ Per spec §5.1: `quantity_to_buy = MAX(0, minimum_stock - current_stock)` must b
 This is handled **entirely client-side** (no Postgres trigger is involved in the PowerSync flow).
 
 The three enforcement points are:
+
 1. `repository.decrementStock` — calls `recalculateQuantityToBuy` after decrement.
 2. `repository.updateProductKind` — calls `recalculateQuantityToBuy` if `currentStock` or `minimumStock` changed.
 3. `repository.submitUnloading` transaction — recalculates for all affected rows after stock merge.
