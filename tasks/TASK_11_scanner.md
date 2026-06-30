@@ -18,6 +18,7 @@ Create reusable scanner components consumed by InventoryScreen, ShoppingScreen, 
 - The `ImageAnalysis` analyzer is injected as a lambda `(ImageProxy) -> Unit`.
 
 **Lifecycle binding — exact pattern:**
+
 ```kotlin
 val lifecycleOwner = LocalLifecycleOwner.current
 val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
@@ -44,6 +45,7 @@ DisposableEffect(lifecycleOwner) {
   - **Cooldown Gate:** once a barcode `rawValue` is detected, lock that string for 3 seconds via a `HashMap<String, Long>`.
   - **Clear-Frame Gate:** if no barcode detected for 400 ms (tracked by timestamp), reset all locks immediately.
 - Thread-safe via `AtomicReference` for the lock map + timestamps.
+- Put those throttle timeouts in easily adjustable constants.
 
 ---
 
@@ -59,6 +61,7 @@ sealed class ScannerMode {
 ```
 
 **Flow:**
+
 1. `repository.findByBarcode(rawValue, householdId)` — O(1) lookup.
 2. **Hit:** play success beep; apply mode-specific mutation (decrement stock for Inventory / increment pending for Shopping); emit `ScanResult.Hit(product)`.
 3. **Miss:** play failure boop; switch internal `ScannerState` to `CaptureRequired`; start Open Food Facts lookup (Task 12); emit `ScanResult.Miss(barcode)`.
@@ -88,6 +91,7 @@ sealed class ScannerState {
 - Internal `scannerState: MutableState<ScannerState>` managed via `remember { mutableStateOf(ScannerState.Scanning) }`.
 
 **State machine (explicit transitions):**
+
 ```
 Scanning
   ├─ barcode hit (local lookup) → play beep → apply DB mutation → show Snackbar → stay Scanning

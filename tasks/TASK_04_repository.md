@@ -14,6 +14,7 @@ Create `GroceryRepository` interface in `domain/repository/GroceryRepository.kt`
 ## PowerSync API Reference
 
 **Reactive queries:**
+
 ```kotlin
 // Returns Flow<List<T>> that re-emits when any table in the query changes
 db.watch(
@@ -25,12 +26,14 @@ db.watch(
 ```
 
 **Single-shot reads:**
+
 ```kotlin
 db.getAll(sql, params) { cursor -> ... }
 db.get(sql, params) { cursor -> ... }   // throws if no row found
 ```
 
 **Mutations:**
+
 ```kotlin
 db.execute(sql, params)                         // single statement
 db.writeTransaction { execute(...); execute(...) }  // atomic multi-statement
@@ -79,11 +82,13 @@ suspend fun findByBarcode(barcodeNumber: String, householdId: String): ProductKi
 ## SQL Fragments
 
 **`watchHousehold`:**
+
 ```sql
 SELECT id, current_state, shopping_started_at FROM households LIMIT 1
 ```
 
 **`watchProductsWithGroups` — denormalized JOIN (the only approach; N+1 multi-query is NOT to be implemented):**
+
 ```sql
 SELECT
   pk.id, pk.household_id, pk.group_id, pk.name,
@@ -97,6 +102,7 @@ ORDER BY pg.name ASC NULLS LAST, pk.name ASC
 ```
 
 **`watchActiveShopping`:**
+
 ```sql
 SELECT id, household_id, group_id, name, current_stock, minimum_stock,
        quantity_to_buy, pending_stock, image_path, unload_open, deleted_at
@@ -107,6 +113,7 @@ ORDER BY name ASC
 ```
 
 **`watchStruckThrough`:**
+
 ```sql
 SELECT ... FROM product_kinds
 WHERE household_id = ? AND deleted_at IS NULL
@@ -115,6 +122,7 @@ ORDER BY name ASC
 ```
 
 **`watchImpulseBuys`:**
+
 ```sql
 SELECT ... FROM product_kinds
 WHERE household_id = ? AND deleted_at IS NULL
@@ -123,6 +131,7 @@ ORDER BY name ASC
 ```
 
 **`watchUnloadingItems`:**
+
 ```sql
 SELECT ... FROM product_kinds
 WHERE household_id = ? AND deleted_at IS NULL AND pending_stock > 0
@@ -130,6 +139,7 @@ ORDER BY name ASC
 ```
 
 **`watchSearch`:**
+
 ```sql
 SELECT ... FROM product_kinds
 WHERE household_id = ? AND deleted_at IS NULL AND name LIKE ?
@@ -138,6 +148,7 @@ ORDER BY name ASC
 ```
 
 **`findByBarcode`** (single-shot `db.get`, not `db.watch`):
+
 ```sql
 SELECT pk.* FROM product_kinds pk
 INNER JOIN barcodes b ON b.product_kind_id = pk.id

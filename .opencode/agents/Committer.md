@@ -1,7 +1,7 @@
 ---
 description: "Commits changes to git"
 mode: subagent
-model: manifest/small
+model: manifest/ultra
 permission:
   read: allow
   edit: deny
@@ -13,6 +13,8 @@ permission:
     "git status": allow
     "git add *": allow
     "git commit *": allow
+    "git diff *": allow
+    "git log *": allow
   android_*: deny
   question: deny
   task: deny

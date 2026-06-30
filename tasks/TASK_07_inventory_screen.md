@@ -44,6 +44,10 @@ Create `ui/screens/inventory/InventoryViewModel.kt` and `ui/screens/inventory/In
 - On barcode detected → delegate to `ScannerProcessor` (Task 11); result surfaced via Snackbar.
 - Throttling state managed via `BarcodeAnalyzer` (Task 11).
 
+### Navigation
+
+- Replace the corresponding TODO comment for `Route.Inventory.path` route in `GroceryApp.kt` with a navigation to `InventoryScreen`.
+
 ---
 
 ## Review Criteria

@@ -29,7 +29,7 @@
     "title": {
       "mode": "primary",
       "hidden": true,
-      "model": "manifest/small",
+      "model": "manifest/mini",
     },
     "summary": {
       "mode": "primary",
@@ -86,19 +86,20 @@
       },
       "models": {
         "mini": {
-          "name": "Mini (apple on device)",
+          "name": "Mini (apple-on-device)",
           "headers": {
             "X-Manifest-Tier": "mini",
           },
+          "limit": { "context": 2048, "input": 1024, "output": 1024 },
         },
         "small": {
-          "name": "Small (Qwen3.6-27B, GPT-5-mini)",
+          "name": "Small (omlx, GPT-5-mini)",
           "headers": {
             "X-Manifest-Tier": "small",
           },
         },
         "medium": {
-          "name": "Medium (Qwen3.6-27B, Haiku, GPT-5.4-mini)",
+          "name": "Medium (Haiku, GPT-5.4-mini)",
           "headers": {
             "X-Manifest-Tier": "medium",
           },

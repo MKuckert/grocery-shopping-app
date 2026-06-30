@@ -1,12 +1,13 @@
 ---
 description: "Reviews the work of Builder"
 mode: subagent
-model: manifest/complex
+model: manifest/ultra
 permission:
   read: allow
   edit:
     "*": deny
-    "PLAN.md": allow
+    PLAN.md: allow
+    tasks/*: allow
   grep: allow
   glob: allow
   list: allow

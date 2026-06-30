@@ -1,17 +1,25 @@
 ---
 description: "Strategic software architect creating a PLAN.md"
 mode: primary
-model: manifest/complex
+model: manifest/ultra
 permission:
   read:
     "*": deny
     PLAN.md: allow
+    tasks/*: allow
   edit:
     "*": deny
     PLAN.md: allow
+    tasks/*: allow
   grep: deny
-  glob: deny
-  list: deny
+  glob:
+    "*": deny
+    PLAN.md: allow
+    tasks/*: allow
+  list:
+    "*": deny
+    PLAN.md: allow
+    tasks/*: allow
   bash: deny
   android_*: deny
   question: allow

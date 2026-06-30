@@ -41,6 +41,10 @@ Create `ui/screens/unloading/UnloadingViewModel.kt` and `ui/screens/unloading/Un
   - `"Submit Anyway"` → `confirmSubmit()`
 - On `confirmSubmit`: `repository.submitUnloading` → household state becomes `IDLE` → `LaunchedEffect` in `GroceryApp` re-routes to `InventoryScreen` automatically.
 
+### Navigation
+
+- Replace the corresponding TODO comment for `Route.Unloading.path` route in `GroceryApp.kt` with a navigation to `UnloadingScreen`.
+
 ---
 
 ## Review Criteria

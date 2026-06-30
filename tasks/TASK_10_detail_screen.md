@@ -47,6 +47,7 @@ Create `ui/screens/detail/DetailViewModel.kt` and `ui/screens/detail/DetailScree
 ### Coil dependency
 
 Add to `libs.versions.toml`:
+
 ```toml
 [versions]
 coil = "3.2.0"
@@ -56,6 +57,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 ```
 
 Add to `app/build.gradle.kts`:
+
 ```kotlin
 implementation(libs.coil.compose)
 ```
