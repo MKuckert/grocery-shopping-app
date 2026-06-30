@@ -11,6 +11,8 @@ import de.curlybracket.grocery.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 sealed class AuthState {
     data object SignedOut : AuthState()
@@ -31,6 +33,9 @@ internal class AuthViewModel(
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId
 
+    private val _householdId = MutableStateFlow<String?>(null)
+    val householdId: StateFlow<String?> = _householdId
+
     init {
         viewModelScope.launch {
             supabase.sessionStatus.collect {
@@ -38,6 +43,10 @@ internal class AuthViewModel(
                     is SessionStatus.Authenticated -> {
                         _authState.value = AuthState.SignedIn
                         _userId.value = it.session.user?.id
+                        _householdId.value = it.session.user?.appMetadata
+                            ?.get("household_id")
+                            ?.jsonPrimitive
+                            ?.contentOrNull
                         if (navController.currentScreen.value is Screen.SignIn ||
                             navController.currentScreen.value is Screen.SignUp
                         ) {

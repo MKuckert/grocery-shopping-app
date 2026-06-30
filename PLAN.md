@@ -42,7 +42,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 
 | Status | File                                 | Task                                            |
 | ------ | ------------------------------------ | ----------------------------------------------- |
-| [ ]    | `tasks/TASK_00_bootstrap.md`         | Application Bootstrap & DI Initialization Order |
+| [x]    | `tasks/TASK_00_bootstrap.md`         | Application Bootstrap & DI Initialization Order |
 | [ ]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
 | [ ]    | `tasks/TASK_02_schema.md`            | Update PowerSync Schema                         |
 | [ ]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
@@ -95,6 +95,6 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 
 ## Final Status (Code Review)
 
-- **Round 1:** N/A
+- **Round 1 (Task 0):** Approved — existing codebase satisfies all four criteria without code changes. `database.connect()` exclusively in `SyncService`; `householdId` is a lazy `StateFlow` (no Hilt binding); `AudioFeedback` deferred to Task 13; DI initialization order is safe.
 - **Round 2:** N/A
 - **Round 3:** N/A

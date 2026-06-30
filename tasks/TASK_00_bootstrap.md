@@ -1,7 +1,7 @@
 # Task 0: Application Bootstrap & DI Initialization Order
 
 > **Depends on:** nothing (foundation task)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
