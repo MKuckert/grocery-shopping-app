@@ -1,12 +1,9 @@
 package de.curlybracket.grocery.data.db
 
 import com.powersync.db.schema.*
-import de.curlybracket.grocery.powersync.listsTable
-import de.curlybracket.grocery.powersync.todosTable
 
 val AppSchema = Schema(
   tables = listOf(
-    // --- Grocery domain tables ---
     Table(
       name = "households",
       columns = listOf(
@@ -45,7 +42,5 @@ val AppSchema = Schema(
         Column.text("barcode_number")
       )
     ),
-    listsTable,
-    todosTable,
   )
 )

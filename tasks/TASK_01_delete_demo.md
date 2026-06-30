@@ -1,7 +1,7 @@
 # Task 1: Delete Demo Code & Establish Package Skeleton
 
 > **Depends on:** Task 0
-> **Status:** [ ]
+> **Status:** [/]
 
 ---
 

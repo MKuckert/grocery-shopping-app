@@ -6,8 +6,6 @@ import co.touchlab.kermit.Logger
 import com.powersync.connector.supabase.SupabaseConnector
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
-import de.curlybracket.grocery.NavController
-import de.curlybracket.grocery.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -19,13 +17,8 @@ sealed class AuthState {
     data object SignedIn : AuthState()
 }
 
-/**
- * Tracks authentication state only. Connection management (db.connect / disconnectAndClear)
- * is delegated to SyncService which runs as a foreground service.
- */
 internal class AuthViewModel(
     private val supabase: SupabaseConnector,
-    private val navController: NavController,
 ) : ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.SignedOut)
     val authState: StateFlow<AuthState> = _authState
@@ -47,11 +40,6 @@ internal class AuthViewModel(
                             ?.get("household_id")
                             ?.jsonPrimitive
                             ?.contentOrNull
-                        if (navController.currentScreen.value is Screen.SignIn ||
-                            navController.currentScreen.value is Screen.SignUp
-                        ) {
-                            navController.navigate(Screen.Home)
-                        }
                     }
                     is SessionStatus.Initializing -> Logger.e("Loading from storage")
                     is SessionStatus.RefreshFailure -> {
@@ -64,7 +52,6 @@ internal class AuthViewModel(
                     }
                     is SessionStatus.NotAuthenticated -> {
                         _authState.value = AuthState.SignedOut
-                        navController.navigate(Screen.SignIn)
                     }
                 }
             }
