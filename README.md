@@ -28,6 +28,21 @@ powersync.url=<your-powersync-service-url>
 
 **Note:** `local.properties` is not tracked in version control. Each developer must provide their own configuration values.
 
+## Implementation
+
+The app is implemented by heavily relying on AI. Google Gemini and I wrote docs/UI.md and docs/DATABASE.md, Claude Sonnet drafted the plan and broke it into tasks. Claude Haiku did the majority of the coding, while I (the human) provided the initial project structure, guidance, and oversight. The AI was responsible for generating the majority of the codebase, including database schemas, UI components, and synchronization logic. A local model (first Gemma 4 26B, than Qwen3.6 27B) supported as Explorer, Librarian and Committer.
+
+Rough breakdown:
+
+| model                     | tokens   |
+| ------------------------- | -------- |
+| claude-haiku-4.5          | ~60M     |
+| claude-sonnet-4.6         | ~19M     |
+| qwen3.6-27B               | ~5M      |
+| gemma-4-26B-A4B           | ~4M      |
+| other models sporadically | ~5M      |
+| **total**                 | **~91M** |
+
 ## Credits
 
 - beep_success.mp3: Positive Blip Effect by CogFireStudios -- https://freesound.org/s/531512/ -- License: Creative Commons 0
