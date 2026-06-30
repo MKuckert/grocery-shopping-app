@@ -111,6 +111,9 @@ dependencies {
   // Coil
   implementation(libs.coil.compose)
 
+  // Permissions
+  implementation(libs.accompanist.permissions)
+
   // Testing
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)

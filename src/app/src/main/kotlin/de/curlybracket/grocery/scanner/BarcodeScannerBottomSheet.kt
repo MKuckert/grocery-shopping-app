@@ -51,6 +51,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import de.curlybracket.grocery.scanner.internal.CaptureRequiredOverlay
 import de.curlybracket.grocery.scanner.internal.ScanningOverlay
+import de.curlybracket.grocery.ui.components.CameraPermissionHandler
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -63,9 +64,31 @@ fun BarcodeScannerBottomSheet(
   onResult: (ScanResult) -> Unit,
   processor: ScannerProcessor,
 ) {
+  if (!isOpen) return
+
+  ModalBottomSheet(
+    onDismissRequest = onDismiss
+  ) {
+    CameraPermissionHandler {
+      BarcodeScannerContent(
+        mode = mode,
+        onDismiss = onDismiss,
+        onResult = onResult,
+        processor = processor
+      )
+    }
+  }
+}
+
+@Composable
+private fun BarcodeScannerContent(
+  mode: ScannerMode,
+  onDismiss: () -> Unit,
+  onResult: (ScanResult) -> Unit,
+  processor: ScannerProcessor,
+) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val sheetState = rememberModalBottomSheetState()
 
   var scannerState by remember { mutableStateOf<ScannerState>(ScannerState.Scanning) }
   val cameraProvider = remember { mutableStateOf<androidx.camera.lifecycle.ProcessCameraProvider?>(null) }
@@ -78,26 +101,6 @@ fun BarcodeScannerBottomSheet(
       val currentState = scannerState
       if (currentState is ScannerState.CaptureRequired && currentState.barcode == result.barcode) {
         scannerState = currentState.copy(prefillName = result.prefillName)
-      }
-    }
-  }
-
-  // Camera permission launcher
-  val cameraPermissionLauncher = rememberLauncherForActivityResult(
-    ActivityResultContracts.RequestPermission()
-  ) { isGranted ->
-    if (!isGranted) {
-      Log.w("Scanner", "Camera permission denied")
-      onDismiss()
-    }
-  }
-
-  // Check camera permission on sheet open
-  LaunchedEffect(isOpen) {
-    if (isOpen) {
-      val permission = Manifest.permission.CAMERA
-      if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-        cameraPermissionLauncher.launch(permission)
       }
     }
   }
@@ -132,48 +135,39 @@ fun BarcodeScannerBottomSheet(
   }
 
   // Cleanup temp directory on dismiss
-  DisposableEffect(isOpen) {
+  DisposableEffect(Unit) {
     onDispose {
-      if (!isOpen) {
-        try {
-          context.cacheDir.resolve("scanner_photos").deleteRecursively()
-        } catch (e: Exception) {
-          Log.w("Scanner", "Failed to cleanup scanner photos", e)
-        }
+      try {
+        context.cacheDir.resolve("scanner_photos").deleteRecursively()
+      } catch (e: Exception) {
+        Log.w("Scanner", "Failed to cleanup scanner photos", e)
       }
     }
   }
 
-  if (isOpen) {
-    ModalBottomSheet(
-      onDismissRequest = onDismiss,
-      sheetState = sheetState
-    ) {
-      Box(modifier = Modifier.fillMaxSize()) {
-        when (scannerState) {
-          is ScannerState.Scanning -> {
-            ScanningState(
-              mode = mode,
-              processor = processor,
-              onScannerStateChange = { newState -> scannerState = newState }
-            )
-          }
+  Box(modifier = Modifier.fillMaxSize()) {
+    when (scannerState) {
+      is ScannerState.Scanning -> {
+        ScanningState(
+          mode = mode,
+          processor = processor,
+          onScannerStateChange = { newState -> scannerState = newState }
+        )
+      }
 
-          is ScannerState.CaptureRequired -> {
-            val captureState = scannerState as ScannerState.CaptureRequired
-            CaptureRequiredState(
-              barcode = captureState.barcode,
-              prefillName = captureState.prefillName,
-              photoPath = captureState.photoPath,
-              mode = mode,
-              processor = processor,
-              context = context,
-              onStateChange = { newState -> scannerState = newState },
-              onResult = onResult,
-              onCancel = { scannerState = ScannerState.Scanning }
-            )
-          }
-        }
+      is ScannerState.CaptureRequired -> {
+        val captureState = scannerState as ScannerState.CaptureRequired
+        CaptureRequiredState(
+          barcode = captureState.barcode,
+          prefillName = captureState.prefillName,
+          photoPath = captureState.photoPath,
+          mode = mode,
+          processor = processor,
+          context = context,
+          onStateChange = { newState -> scannerState = newState },
+          onResult = onResult,
+          onCancel = { scannerState = ScannerState.Scanning }
+        )
       }
     }
   }

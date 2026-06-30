@@ -1,15 +1,24 @@
-# Task 15: Camera Permission Handling
+package de.curlybracket.grocery.ui.components
 
-> **Depends on:** Task 6 (Navigation)
-> **Status:** [x]
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 
----
-
-## Description
-
-The `CAMERA` permission is already declared in `AndroidManifest.xml`. Runtime permission must be requested before opening the `BarcodeScannerBottomSheet`. Implement a reusable `CameraPermissionHandler` composable:
-
-```kotlin
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraPermissionHandler(
   onGranted: @Composable () -> Unit
@@ -18,14 +27,14 @@ fun CameraPermissionHandler(
   var rationaleShown by remember { mutableStateOf(false) }
 
   when {
-    permissionState.status.isGranted -> onGranted()
+    permissionState.status == PermissionStatus.Granted -> onGranted()
 
-    permissionState.status.shouldShowRationale -> {
+    permissionState.status == PermissionStatus.Denied(shouldShowRationale = true) -> {
       rationaleShown = true
       AlertDialog(
         onDismissRequest = {},
         title = { Text("Camera Required") },
-        text  = { Text("The camera is needed to scan barcodes. Please grant camera access.") },
+        text = { Text("The camera is needed to scan barcodes. Please grant camera access.") },
         confirmButton = {
           TextButton(onClick = { permissionState.launchPermissionRequest() }) { Text("Grant") }
         },
@@ -41,7 +50,7 @@ fun CameraPermissionHandler(
       AlertDialog(
         onDismissRequest = {},
         title = { Text("Camera Permission Required") },
-        text  = { Text("Camera access was denied. Open Settings to grant it.") },
+        text = { Text("Camera access was denied. Open Settings to grant it.") },
         confirmButton = {
           TextButton(onClick = {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -59,29 +68,4 @@ fun CameraPermissionHandler(
     }
   }
 }
-```
 
-**Usage:** Wrap `BarcodeScannerBottomSheet` content with `CameraPermissionHandler { /* scanner content */ }`.
-
-### Dependency
-
-Add `accompanist-permissions` if not already in `libs.versions.toml`:
-
-```toml
-[versions]
-accompanist = "0.36.0"
-
-[libraries]
-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
-```
-
-Add `implementation(libs.accompanist.permissions)` to `app/build.gradle.kts`.
-
----
-
-## Review Criteria
-
-- Camera is only opened after permission is granted.
-- First denial shows rationale dialog with "Grant" button.
-- Permanent denial shows settings redirect dialog.
-- No crash on cold start with permission denied.
