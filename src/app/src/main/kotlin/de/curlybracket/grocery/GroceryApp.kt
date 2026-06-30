@@ -1,9 +1,13 @@
 package de.curlybracket.grocery
 
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -20,6 +24,7 @@ import de.curlybracket.grocery.ui.screens.detail.DetailScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
+import kotlinx.coroutines.delay
 
 /**
  * Root app composable. Implements the navigation hub with three main screens
@@ -31,12 +36,30 @@ fun GroceryApp(audioFeedback: AudioFeedback? = null) {
   val appViewModel: AppViewModel = hiltViewModel()
   val authViewModel: AuthViewModel = hiltViewModel()
   val navController = rememberNavController()
+  val snackbarHostState = remember { SnackbarHostState() }
   val authState by authViewModel.authState.collectAsStateWithLifecycle()
   val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
 
   // Release AudioFeedback SoundPool when app is disposed
   DisposableEffect(Unit) {
     onDispose { audioFeedback?.release() }
+  }
+
+  // Route to SignIn when signed out
+  LaunchedEffect(authState) {
+    if (authState == AuthState.SignedOut) {
+      navController.navigate(Route.SignIn.path) { popUpTo(0) }
+    }
+  }
+
+  // Null-household guard: show warning if still null 5 seconds after sign-in
+  LaunchedEffect(authState, householdState) {
+    if (authState == AuthState.SignedIn && householdState == null) {
+      delay(5_000)
+      if (householdState == null) {
+        snackbarHostState.showSnackbar("Setup incomplete: contact support")
+      }
+    }
   }
 
   // Root router: swap screen based on householdState (for signed-in users)
@@ -49,40 +72,35 @@ fun GroceryApp(audioFeedback: AudioFeedback? = null) {
     }
   }
 
-  NavHost(navController, startDestination = Route.SignIn.path) {
-    composable(Route.SignIn.path) {
-      SignInScreen(
-        authViewModel = authViewModel,
-        onSignedIn = {
-          navController.navigate(Route.Inventory.path) {
-            popUpTo(Route.SignIn.path) { inclusive = true }
+  Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) {
+    NavHost(navController, startDestination = Route.SignIn.path) {
+      composable(Route.SignIn.path) {
+        SignInScreen(authViewModel = authViewModel)
+      }
+      composable(Route.Inventory.path) {
+        InventoryScreen(
+          onNavigateToDetail = { productId ->
+            navController.navigate(Route.Detail(productId).path)
           }
-        }
-      )
-    }
-    composable(Route.Inventory.path) {
-      InventoryScreen(
-        onNavigateToDetail = { productId ->
-          navController.navigate(Route.Detail(productId).path)
-        }
-      )
-    }
-    composable(Route.Shopping.path) {
-      ShoppingScreen(
-        onNavigateToDetail = { productId ->
-          navController.navigate(Route.Detail(productId).path)
-        }
-      )
-    }
-    composable(Route.Unloading.path) {
-      UnloadingScreen(
-        onNavigateToDetail = { productId ->
-          navController.navigate(Route.Detail(productId).path)
-        }
-      )
-    }
-    composable(Route.Detail.TEMPLATE) {
-      DetailScreen(onBack = { navController.popBackStack() })
+        )
+      }
+      composable(Route.Shopping.path) {
+        ShoppingScreen(
+          onNavigateToDetail = { productId ->
+            navController.navigate(Route.Detail(productId).path)
+          }
+        )
+      }
+      composable(Route.Unloading.path) {
+        UnloadingScreen(
+          onNavigateToDetail = { productId ->
+            navController.navigate(Route.Detail(productId).path)
+          }
+        )
+      }
+      composable(Route.Detail.TEMPLATE) {
+        DetailScreen(onBack = { navController.popBackStack() })
+      }
     }
   }
 }

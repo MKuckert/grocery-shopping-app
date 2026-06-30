@@ -15,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,17 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun SignInScreen(
-    authViewModel: AuthViewModel,
-    onSignedIn: () -> Unit = {},
-) {
+internal fun SignInScreen(authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -44,13 +38,6 @@ internal fun SignInScreen(
 
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    val authState by authViewModel.authState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(authState) {
-        if (authState is AuthState.SignedIn) {
-            onSignedIn()
-        }
-    }
 
     Column(
         modifier = Modifier
