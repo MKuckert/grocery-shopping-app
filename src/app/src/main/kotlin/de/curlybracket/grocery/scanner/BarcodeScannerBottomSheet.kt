@@ -278,36 +278,47 @@ private fun CaptureRequiredState(
         Text("Cancel")
       }
 
-      if (productName != "Unknown Item" || photoPath != null) {
-        Button(
-          onClick = {
-            scope.launch {
-              val householdId = when (mode) {
-                is ScannerMode.Inventory -> mode.householdId
-                is ScannerMode.Shopping -> mode.householdId
-              }
+       if (productName != "Unknown Item" || photoPath != null) {
+         Button(
+           onClick = {
+             scope.launch {
+               try {
+                 val householdId = when (mode) {
+                   is ScannerMode.Inventory -> mode.householdId
+                   is ScannerMode.Shopping -> mode.householdId
+                 }
 
-              // Move photo to permanent storage if captured
-              var finalPhotoPath: String? = null
-              if (photoPath != null) {
-                val sourceFile = File(photoPath)
-                val destDir = context.filesDir.resolve("product_images").also { it.mkdirs() }
-                val destFile = File(destDir, "prod_${System.currentTimeMillis()}.jpg")
-                sourceFile.copyTo(destFile, overwrite = true)
-                finalPhotoPath = destFile.absolutePath
-              }
+                 // Move photo to permanent storage if captured
+                 var finalPhotoPath: String? = null
+                 if (photoPath != null) {
+                   val sourceFile = File(photoPath)
+                   val destDir = context.filesDir.resolve("product_images").also { it.mkdirs() }
+                   val destFile = File(destDir, "prod_${System.currentTimeMillis()}.jpg")
+                   sourceFile.copyTo(destFile, overwrite = true)
+                   finalPhotoPath = destFile.absolutePath
+                 }
 
-              // Create the new product
-              // This will call repository.ensureUnsortedGroup -> repository.createProductKind -> emit Hit
-              // For now, we'll let the processor handle it via commitNewProduct integration
-              // (Note: ScannerProcessor needs to be extended with commitNewProduct logic)
-            }
-          },
-          modifier = Modifier.weight(1f)
-        ) {
-          Text("Save")
-        }
-      }
+                 // Create the new product via the processor
+                 val newProduct = processor.createNewProduct(
+                   barcode = barcode,
+                   productName = productName,
+                   householdId = householdId,
+                   mode = mode
+                 )
+
+                 if (newProduct != null) {
+                   onResult(ScanResult.Hit(newProduct))
+                 }
+               } catch (e: Exception) {
+                 Log.e("CaptureRequired", "Error creating product", e)
+               }
+             }
+           },
+           modifier = Modifier.weight(1f)
+         ) {
+           Text("Save")
+         }
+       }
     }
   }
 }

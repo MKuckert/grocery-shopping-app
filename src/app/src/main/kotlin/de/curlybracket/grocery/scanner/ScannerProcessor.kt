@@ -1,6 +1,7 @@
 package de.curlybracket.grocery.scanner
 
 import de.curlybracket.grocery.audio.AudioFeedback
+import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import de.curlybracket.grocery.network.OpenFoodFactsClient
 import de.curlybracket.grocery.network.OFResult
@@ -83,6 +84,32 @@ class ScannerProcessor @Inject constructor(
         // Increment pending for Shopping mode
         repository.incrementPendingStock(productId)
       }
+    }
+  }
+
+  suspend fun createNewProduct(
+    barcode: String,
+    productName: String,
+    householdId: String,
+    mode: ScannerMode
+  ): ProductKind? {
+    return try {
+      // Ensure "Unsorted" group exists
+      val groupId = repository.ensureUnsortedGroup(householdId)
+      
+      // Create the product
+      repository.createProductKind(
+        householdId = householdId,
+        name = productName,
+        groupId = groupId,
+        minimumStock = 1,
+        barcodeNumber = barcode
+      )
+      
+      // Fetch and return the newly created product
+      repository.findByBarcode(barcode, householdId)
+    } catch (e: Exception) {
+      null
     }
   }
 }
