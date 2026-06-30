@@ -1,7 +1,7 @@
 # Task 16: Auth Screens (Minimal Updates)
 
 > **Depends on:** Task 6 (Navigation)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 

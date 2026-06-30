@@ -58,7 +58,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | [x]    | `tasks/TASK_13_audio.md`             | Audio Feedback                                  |
 | [x]    | `tasks/TASK_14_convergence.md`       | Automated Convergence Engine                    |
 | [x]    | `tasks/TASK_15_camera_permission.md` | Camera Permission Handling                      |
-| [ ]    | `tasks/TASK_16_auth_screens.md`      | Auth Screens (Minimal Updates)                  |
+| [x]    | `tasks/TASK_16_auth_screens.md`      | Auth Screens (Minimal Updates)                  |
 | [ ]    | `tasks/TASK_17_qa.md`                | End-to-End Integration & Manual QA              |
 
 ---
