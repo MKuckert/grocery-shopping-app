@@ -102,6 +102,7 @@ dependencies {
   // Logging & utils
   implementation(libs.kermit)
   implementation(libs.uuid)
+  implementation(libs.coil.compose)
 
   // Testing
   testImplementation(libs.junit)
