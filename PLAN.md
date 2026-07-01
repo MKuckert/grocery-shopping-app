@@ -46,7 +46,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | [x]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
 | [x]    | `tasks/TASK_02_schema.md`            | Update PowerSync Schema                         |
 | [x]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
-| [ ]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |
+| [/]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |
 | [ ]    | `tasks/TASK_05_hilt_di.md`           | Hilt DI Wiring                                  |
 | [ ]    | `tasks/TASK_06_navigation.md`        | Root Navigation (NavHost)                       |
 | [ ]    | `tasks/TASK_07_inventory_screen.md`  | InventoryScreen                                 |
