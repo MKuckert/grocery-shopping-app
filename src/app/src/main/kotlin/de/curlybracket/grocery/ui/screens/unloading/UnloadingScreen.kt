@@ -1,16 +1,159 @@
 package de.curlybracket.grocery.ui.screens.unloading
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import de.curlybracket.grocery.domain.model.ProductKind
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun UnloadingScreen(navController: NavController) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("UnloadingScreen — TODO Task 9")
+    val viewModel: UnloadingViewModel = hiltViewModel()
+
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val showWarningDialog by viewModel.showWarningDialog.collectAsStateWithLifecycle()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.snackbarMessage.collect { msg ->
+            snackbarHostState.showSnackbar(msg)
+        }
+    }
+
+    if (showWarningDialog) {
+        val openCount = items.count { it.unloadOpen }
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissDialog() },
+            title = { Text("Unverified Items") },
+            text = { Text("$openCount item(s) still have open adjustments. Submit anyway?") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.confirmSubmit() }) {
+                    Text("Submit Anyway")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissDialog() }) {
+                    Text("Go Back")
+                }
+            },
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Unloading") },
+                actions = {
+                    TextButton(onClick = { viewModel.requestSubmit() }) {
+                        Text("Submit Unloading")
+                    }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            items(
+                items = items,
+                key = { it.id },
+            ) { product ->
+                UnloadingRow(
+                    product = product,
+                    onCheckedChange = { checked -> viewModel.toggleUnloadOpen(product, checked) },
+                    onIncrement = { viewModel.incrementPending(product) },
+                    onDecrement = { viewModel.decrementPending(product) },
+                    modifier = Modifier.animateItem(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnloadingRow(
+    product: ProductKind,
+    onCheckedChange: (Boolean) -> Unit,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isLocked = !product.unloadOpen
+    val contentAlpha = if (isLocked) 0.38f else 1f
+
+    CompositionLocalProvider(LocalContentColor provides LocalContentColor.current.copy(alpha = contentAlpha)) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(
+                checked = isLocked,
+                onCheckedChange = onCheckedChange,
+            )
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "${product.currentStock} + ${product.pendingStock} = ${product.currentStock + product.pendingStock}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+            IconButton(
+                onClick = onDecrement,
+                enabled = product.unloadOpen,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Remove,
+                    contentDescription = "Decrease ${product.name}",
+                )
+            }
+            IconButton(
+                onClick = onIncrement,
+                enabled = product.unloadOpen,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Increase ${product.name}",
+                )
+            }
+        }
     }
 }

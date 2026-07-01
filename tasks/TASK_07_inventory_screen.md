@@ -1,7 +1,7 @@
 # Task 7: InventoryScreen
 
 > **Depends on:** Task 6
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
