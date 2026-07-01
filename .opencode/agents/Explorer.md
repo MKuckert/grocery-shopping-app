@@ -1,7 +1,7 @@
 ---
 description: "Provides read access to the local code"
 mode: subagent
-model: manifest/ultra
+model: manifest/medium
 permission:
   read: allow
   edit:

@@ -1,7 +1,7 @@
 ---
 description: "Commits changes to git"
 mode: subagent
-model: manifest/ultra
+model: manifest/medium
 permission:
   read: allow
   edit: deny
