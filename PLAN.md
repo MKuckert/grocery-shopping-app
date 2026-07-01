@@ -45,7 +45,7 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 | [x]    | `tasks/TASK_00_bootstrap.md`         | Application Bootstrap & DI Initialization Order |
 | [x]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
 | [x]    | `tasks/TASK_02_schema.md`            | Update PowerSync Schema                         |
-| [/]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
+| [x]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
 | [ ]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |
 | [ ]    | `tasks/TASK_05_hilt_di.md`           | Hilt DI Wiring                                  |
 | [ ]    | `tasks/TASK_06_navigation.md`        | Root Navigation (NavHost)                       |
@@ -98,3 +98,4 @@ Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo)
 - **Round 1 (Task 0):** Approved — existing codebase satisfies all four criteria without code changes. `database.connect()` exclusively in `SyncService`; `householdId` is a lazy `StateFlow` (no Hilt binding); `AudioFeedback` deferred to Task 13; DI initialization order is safe.
 - **Round 2 (Task 1):** Approved — all 13 demo files reduced to package-only stubs; `GroceryApp.kt` rewritten as minimal auth-state switch; `AuthViewModel`/`SignInScreen` cleaned of NavController/Screen deps; `AppSchema` free of `listsTable`/`todosTable`; grep confirms zero `ListItem`/`TodoItem`/`LISTS_TABLE`/`TODOS_TABLE` references in source; all 13 skeleton directories present.
 - **Round 3 (Task 2):** Approved — `AppSchema.kt` declares all four tables (`households`, `product_groups`, `product_kinds`, `barcodes`) with correct column types matching spec; three indexes (`idx_barcodes_lookup`, `idx_product_kinds_active_group`, `idx_product_kinds_shopping_state`) present with correct columns and table placement; zero `listsTable`/`todosTable` references confirmed via grep; build passes.
+- **Round 4 (Task 3):** Approved — all 7 domain model classes created across 5 files; `@Immutable` annotation on every data class; `unloadOpen` is `Boolean` mapped via `getBoolean()`; `fromCursor` factories use name-based `SqlCursor` extensions (`getString`, `getStringOptional`, `getLong`, `getBoolean`); nullable TEXT columns correctly use `getStringOptional` returning `null`; all fields match `AppSchema.kt` columns including implicit `id` PK; `GroupWithProducts` has no `fromCursor` (aggregate); `ProductWithGroup.fromCursor` delegates to `ProductKind.fromCursor` and reads JOIN alias `group_name`; build passes.

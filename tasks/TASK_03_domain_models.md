@@ -1,7 +1,7 @@
 # Task 3: Domain Models
 
 > **Depends on:** Task 1
-> **Status:** [/]
+> **Status:** [x]
 
 ---
 
