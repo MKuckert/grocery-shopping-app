@@ -1,37 +1,70 @@
 package de.curlybracket.grocery
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
+import de.curlybracket.grocery.domain.model.HouseholdState
+import de.curlybracket.grocery.ui.navigation.AppViewModel
+import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
+import de.curlybracket.grocery.ui.screens.SignUpScreen
+import de.curlybracket.grocery.ui.screens.detail.DetailScreen
+import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
+import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
+import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
 
 @Composable
-fun GroceryApp(
-    authViewModel: AuthViewModel = hiltViewModel(),
-) {
-    val authState by authViewModel.authState.collectAsState()
+fun GroceryApp() {
+    val appViewModel: AppViewModel = hiltViewModel()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val navController = rememberNavController()
+
+    val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
+    val authState by authViewModel.authState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.SignedOut) {
+            navController.navigate(Route.SignIn.path) { popUpTo(0) }
+        }
+    }
+
+    LaunchedEffect(householdState?.currentState) {
+        when (householdState?.currentState) {
+            HouseholdState.IDLE -> navController.navigate(Route.Inventory.path) { popUpTo(0) }
+            HouseholdState.SHOPPING -> navController.navigate(Route.Shopping.path) { popUpTo(0) }
+            HouseholdState.UNLOADING -> navController.navigate(Route.Unloading.path) { popUpTo(0) }
+            null -> { /* auth screens handle this */ }
+        }
+    }
 
     MaterialTheme {
-        when (authState) {
-            is AuthState.SignedIn -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("Grocery App")
-                }
-            }
-            is AuthState.SignedOut -> {
+        NavHost(navController = navController, startDestination = Route.SignIn.path) {
+            composable(Route.SignIn.path) {
                 SignInScreen(authViewModel = authViewModel)
+            }
+            composable(Route.SignUp.path) {
+                SignUpScreen(authViewModel = authViewModel)
+            }
+            composable(Route.Inventory.path) {
+                InventoryScreen(navController = navController)
+            }
+            composable(Route.Shopping.path) {
+                ShoppingScreen(navController = navController)
+            }
+            composable(Route.Unloading.path) {
+                UnloadingScreen(navController = navController)
+            }
+            composable(Route.Detail.TEMPLATE) { backStack ->
+                val productId = backStack.arguments!!.getString("productId")!!
+                DetailScreen(productId = productId, navController = navController)
             }
         }
     }
