@@ -7,21 +7,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.powersync.PowerSyncDatabase
-import com.powersync.connector.supabase.SupabaseConnector
+import androidx.hilt.navigation.compose.hiltViewModel
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.ui.screens.SignInScreen
 
 @Composable
 fun GroceryApp(
-    supabase: SupabaseConnector,
-    database: PowerSyncDatabase,
+    authViewModel: AuthViewModel = hiltViewModel(),
 ) {
-    val authViewModel = remember { AuthViewModel(supabase) }
     val authState by authViewModel.authState.collectAsState()
 
     MaterialTheme {

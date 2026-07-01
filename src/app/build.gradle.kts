@@ -67,6 +67,7 @@ dependencies {
 
   // Hilt
   implementation(libs.hilt.android)
+  implementation(libs.hilt.navigation.compose)
   ksp(libs.hilt.compiler)
 
   // PowerSync
@@ -94,6 +95,7 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.lifecycle.service)
+  implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.appcompat)
   implementation(libs.material)
 

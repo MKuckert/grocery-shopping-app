@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.AndroidEntryPoint
 import de.curlybracket.grocery.sync.SyncService
@@ -19,14 +18,12 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var supabase: SupabaseConnector
-    @Inject lateinit var database: PowerSyncDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Start the foreground sync service once the user is authenticated
         lifecycleScope.launch {
             supabase.sessionStatus.collect { status ->
                 if (status is SessionStatus.Authenticated) {
@@ -38,7 +35,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            GroceryApp(supabase = supabase, database = database)
+            GroceryApp()
         }
     }
 }

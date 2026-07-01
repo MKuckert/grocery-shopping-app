@@ -4,42 +4,53 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.powersync.connector.supabase.SupabaseConnector
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import javax.inject.Inject
 
 sealed class AuthState {
     data object SignedOut : AuthState()
     data object SignedIn : AuthState()
 }
 
-internal class AuthViewModel(
-    private val supabase: SupabaseConnector,
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val connector: SupabaseConnector,
 ) : ViewModel() {
+
     private val _authState = MutableStateFlow<AuthState>(AuthState.SignedOut)
     val authState: StateFlow<AuthState> = _authState
 
     private val _userId = MutableStateFlow<String?>(null)
     val userId: StateFlow<String?> = _userId
 
-    private val _householdId = MutableStateFlow<String?>(null)
-    val householdId: StateFlow<String?> = _householdId
+    val householdId: StateFlow<String?> = connector.sessionStatus
+        .map { status ->
+            when (status) {
+                is SessionStatus.Authenticated ->
+                    status.session.user?.appMetadata?.get("household_id")
+                        ?.jsonPrimitive?.contentOrNull
+                else -> null
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     init {
         viewModelScope.launch {
-            supabase.sessionStatus.collect {
+            connector.sessionStatus.collect {
                 when (it) {
                     is SessionStatus.Authenticated -> {
                         _authState.value = AuthState.SignedIn
                         _userId.value = it.session.user?.id
-                        _householdId.value = it.session.user?.appMetadata
-                            ?.get("household_id")
-                            ?.jsonPrimitive
-                            ?.contentOrNull
                     }
                     is SessionStatus.Initializing -> Logger.e("Loading from storage")
                     is SessionStatus.RefreshFailure -> {
@@ -59,16 +70,16 @@ internal class AuthViewModel(
     }
 
     suspend fun signIn(email: String, password: String) {
-        supabase.login(email, password)
+        connector.login(email, password)
     }
 
     suspend fun signUp(email: String, password: String) {
-        supabase.signUp(email, password)
+        connector.signUp(email, password)
     }
 
     suspend fun signOut() {
         try {
-            supabase.signOut()
+            connector.signOut()
         } catch (e: Exception) {
             Logger.e("Error signing out: $e")
         }
