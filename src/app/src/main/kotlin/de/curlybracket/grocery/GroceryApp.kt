@@ -2,13 +2,20 @@ package de.curlybracket.grocery
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.domain.model.HouseholdState
@@ -21,11 +28,26 @@ import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
 
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface AudioFeedbackEntryPoint {
+    fun audioFeedback(): AudioFeedback
+}
+
 @Composable
 fun GroceryApp() {
     val appViewModel: AppViewModel = hiltViewModel()
     val authViewModel: AuthViewModel = hiltViewModel()
     val navController = rememberNavController()
+
+    val context = LocalContext.current
+    val audioFeedback = EntryPointAccessors
+        .fromApplication(context.applicationContext, AudioFeedbackEntryPoint::class.java)
+        .audioFeedback()
+
+    DisposableEffect(Unit) {
+        onDispose { audioFeedback.release() }
+    }
 
     val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()

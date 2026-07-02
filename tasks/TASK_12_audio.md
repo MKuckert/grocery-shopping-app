@@ -1,7 +1,7 @@
 # Task 12: Audio Feedback (`audio/`)
 
 > **Depends on:** Task 5 (Hilt DI)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
