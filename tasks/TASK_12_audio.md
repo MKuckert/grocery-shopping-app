@@ -1,4 +1,4 @@
-# Task 13: Audio Feedback (`audio/`)
+# Task 12: Audio Feedback (`audio/`)
 
 > **Depends on:** Task 5 (Hilt DI)
 > **Status:** [ ]
@@ -50,9 +50,9 @@ class AudioFeedback @Inject constructor(@ApplicationContext context: Context) {
 
 ### Audio files
 
-Add two short audio files to `src/main/res/raw/`:
+Use the two short audio files in `src/main/res/raw/`:
 
-- `beep_success.mp3` — high-pitched short beep (~200 ms). Source a royalty-free file.
+- `beep_success.mp3` — high-pitched short beep (~200 ms).
 - `beep_failure.mp3` — lower-pitched short boop (~200 ms).
 
 ### Release lifecycle
