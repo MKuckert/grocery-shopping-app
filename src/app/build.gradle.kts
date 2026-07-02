@@ -91,6 +91,11 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.serialization.json)
 
+  // Ktor (Open Food Facts)
+  implementation(libs.ktor.client.android)
+  implementation(libs.ktor.client.content.negotiation)
+  implementation(libs.ktor.serialization.json)
+
   // AndroidX Core
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.core.splashscreen)

@@ -1,7 +1,7 @@
 # Task 11: Open Food Facts Integration (`network/`)
 
 > **Depends on:** Task 5 (Hilt DI)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 
