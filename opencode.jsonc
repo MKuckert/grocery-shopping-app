@@ -41,7 +41,7 @@
     "android": {
       "type": "remote",
       "enabled": true,
-      "url": "http://localhost:12001",
+      "url": "http://localhost:12001/sse",
     },
     "web": {
       "type": "remote",
