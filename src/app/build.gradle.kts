@@ -104,6 +104,9 @@ dependencies {
   implementation(libs.androidx.appcompat)
   implementation(libs.material)
 
+  // Permissions
+  implementation(libs.accompanist.permissions)
+
   // Logging & utils
   implementation(libs.kermit)
   implementation(libs.uuid)

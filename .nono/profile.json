@@ -45,6 +45,7 @@
   "network": {
     "allow_domain": [
       "localhost",
+      "models.dev",
       "mcp.supabase.com",
       "api.supabase.com",
       "docs.powersync.com"
@@ -53,7 +54,7 @@
   },
   "open_urls": { "allow_origins": ["https://api.supabase.com"] },
   "environment": {
-    "allow_vars": ["HOME"],
+    "allow_vars": ["HOME", "OPENCODE_SERVER_PASSWORD"],
     "set_vars": {
       "GIT_CONFIG_GLOBAL": "~/.gitconfig-agents"
     }

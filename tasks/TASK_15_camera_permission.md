@@ -1,7 +1,7 @@
 # Task 15: Camera Permission Handling
 
 > **Depends on:** Task 6 (Navigation)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 

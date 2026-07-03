@@ -102,43 +102,45 @@ fun BarcodeScannerBottomSheet(
         },
         sheetState = sheetState,
     ) {
-        when (val state = scannerState) {
-            is ScannerState.Scanning -> {
-                ScanningContent(
-                    analyzer = analyzer,
-                    imageCapture = imageCapture,
-                    isProcessing = isProcessing,
-                    onDismiss = {
-                        cleanupScannerPhotos(context)
-                        onDismiss()
-                    },
-                )
-            }
+        CameraPermissionHandler {
+            when (val state = scannerState) {
+                is ScannerState.Scanning -> {
+                    ScanningContent(
+                        analyzer = analyzer,
+                        imageCapture = imageCapture,
+                        isProcessing = isProcessing,
+                        onDismiss = {
+                            cleanupScannerPhotos(context)
+                            onDismiss()
+                        },
+                    )
+                }
 
-            is ScannerState.CaptureRequired -> {
-                CaptureRequiredContent(
-                    state = state,
-                    imageCapture = imageCapture,
-                    onNameChange = { scannerState = state.copy(prefillName = it) },
-                    onPhotoCapture = { path -> scannerState = state.copy(photoPath = path) },
-                    onSave = {
-                        scope.launch {
-                            isProcessing = true
-                            processor.commitNewProduct(
-                                context = context,
-                                state = state,
-                                mode = mode,
-                                onResult = { result ->
-                                    onResult(result)
-                                    scannerState = ScannerState.Scanning
-                                },
-                            )
-                            isProcessing = false
-                        }
-                    },
-                    onCancel = { scannerState = ScannerState.Scanning },
-                    isProcessing = isProcessing,
-                )
+                is ScannerState.CaptureRequired -> {
+                    CaptureRequiredContent(
+                        state = state,
+                        imageCapture = imageCapture,
+                        onNameChange = { scannerState = state.copy(prefillName = it) },
+                        onPhotoCapture = { path -> scannerState = state.copy(photoPath = path) },
+                        onSave = {
+                            scope.launch {
+                                isProcessing = true
+                                processor.commitNewProduct(
+                                    context = context,
+                                    state = state,
+                                    mode = mode,
+                                    onResult = { result ->
+                                        onResult(result)
+                                        scannerState = ScannerState.Scanning
+                                    },
+                                )
+                                isProcessing = false
+                            }
+                        },
+                        onCancel = { scannerState = ScannerState.Scanning },
+                        isProcessing = isProcessing,
+                    )
+                }
             }
         }
     }

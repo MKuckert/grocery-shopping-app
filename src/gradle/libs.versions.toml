@@ -20,6 +20,7 @@ lifecycleService = "2.9.1"
 lifecycleRuntimeCompose = "2.9.1"
 hiltNavigationCompose = "1.2.0"
 coil = "3.2.0"
+accompanist = "0.36.0"
 
 # Testing & Android Framework
 coreKtx = "1.19.0"
@@ -93,6 +94,9 @@ kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 # Coil
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+
+# Accompanist
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 # UUID (Kotlin multiplatform)
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
