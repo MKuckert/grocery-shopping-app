@@ -1,0 +1,61 @@
+{
+  "$schema": "/Users/mkuckert/.config/nono/nono-profile.schema.json",
+  "extends": "opencode",
+  "meta": {
+    "author": "Martin Kuckert",
+    "name": "opencode-grocery-shopping-app-opus-rebuild"
+  },
+  "groups": {
+    "include": []
+  },
+  "workdir": {
+    "access": "readwrite"
+  },
+  "filesystem": {
+    "read_file": [
+      "~/.aliases",
+      "~/.bash_profile",
+      "~/.bash_prompt",
+      "~/.editorconfig",
+      "~/.extra",
+      "~/.exports",
+      "~/.gitconfig-agents",
+      "~/.gitconfig-private",
+      "~/.gitconfig-work",
+      "~/.gitignore",
+      "~/.path",
+      "~/.tigrc",
+      "~/.vimrc"
+    ],
+    "read": [
+      "~/.cache",
+      "~/.config",
+      "~/.config/nono",
+      "~/private",
+      "~/private/dev"
+    ],
+    "allow": [
+      "~/.npm/_cacache/tmp",
+      "~/private/dev/grocery-shopping-app-opus-rebuild"
+    ],
+    "deny": ["~/.gitconfig"]
+  },
+  "network": {
+    "allow_domain": ["localhost"],
+    "allow_port": [11438, 12001, 12002]
+  },
+  "environment": {
+    "allow_vars": ["HOME"],
+    "set_vars": {
+      "GIT_CONFIG_GLOBAL": "~/.gitconfig-agents"
+    }
+  },
+  "session_hooks": {
+    "before": {
+      "script": "/Users/mkuckert/private/dev/grocery-shopping-app-opus-rebuild/.nono/hooks/before.sh"
+    },
+    "after": {
+      "script": "/Users/mkuckert/private/dev/grocery-shopping-app-opus-rebuild/.nono/hooks/after.sh"
+    }
+  }
+}

@@ -41,12 +41,12 @@
     "android": {
       "type": "remote",
       "enabled": true,
-      "url": "http://host.docker.internal:12001",
+      "url": "http://localhost:12001",
     },
     "web": {
       "type": "remote",
       "enabled": true,
-      "url": "http://host.docker.internal:12002/mcp",
+      "url": "http://localhost:12002/mcp",
     },
     "supabase": {
       "type": "remote",
@@ -81,7 +81,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Manifest",
       "options": {
-        "baseURL": "http://host.docker.internal:11438/v1",
+        "baseURL": "http://localhost:11438/v1",
         "apiKey": "mnfst_LWrVcNQ-QbyLAlKphpqlR9u6D-DvCrjSAMAry02TGO8",
       },
       "models": {
