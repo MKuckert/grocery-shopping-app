@@ -41,7 +41,7 @@
     "android": {
       "type": "remote",
       "enabled": true,
-      "url": "http://host.docker.internal:12001/sse",
+      "url": "http://host.docker.internal:12001",
     },
     "web": {
       "type": "remote",

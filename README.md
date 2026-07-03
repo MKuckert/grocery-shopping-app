@@ -27,3 +27,7 @@ powersync.url=<your-powersync-service-url>
 ```
 
 **Note:** `local.properties` is not tracked in version control. Each developer must provide their own configuration values.
+
+## MCP commands
+
+Uses [mcp-commands](https://github.com/MKuckert/mcp-commands) to integrate `gradlew` as a MCP tool.
