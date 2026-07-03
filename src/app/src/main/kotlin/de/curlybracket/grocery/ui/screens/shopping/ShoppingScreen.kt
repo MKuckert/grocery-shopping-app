@@ -1,7 +1,6 @@
 package de.curlybracket.grocery.ui.screens.shopping
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +18,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -29,12 +27,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,20 +43,28 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import de.curlybracket.grocery.domain.model.ProductKind
+import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
+import de.curlybracket.grocery.scanner.ScanResult
+import de.curlybracket.grocery.scanner.ScannerMode
+import de.curlybracket.grocery.scanner.ScannerViewModel
 import de.curlybracket.grocery.ui.navigation.Route
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ShoppingScreen(navController: NavController) {
     val viewModel: ShoppingViewModel = hiltViewModel()
+    val scannerViewModel: ScannerViewModel = hiltViewModel()
 
     val activeShopping by viewModel.activeShopping.collectAsStateWithLifecycle()
     val struckThrough by viewModel.struckThrough.collectAsStateWithLifecycle()
     val impulseBuys by viewModel.impulseBuys.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val householdId by viewModel.householdIdFlow.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var searchExpanded by rememberSaveable { mutableStateOf(false) }
     var showScanner by remember { mutableStateOf(false) }
 
@@ -191,8 +197,26 @@ internal fun ShoppingScreen(navController: NavController) {
         }
     }
 
-    if (showScanner) {
-        ShoppingScannerBottomSheet(onDismiss = { showScanner = false })
+    val hid = householdId
+    if (showScanner && hid != null) {
+        BarcodeScannerBottomSheet(
+            mode = ScannerMode.Shopping(hid),
+            repository = scannerViewModel.repository,
+            audioFeedback = scannerViewModel.audioFeedback,
+            openFoodFactsClient = scannerViewModel.openFoodFactsClient,
+            onResult = { result ->
+                when (result) {
+                    is ScanResult.Hit -> scope.launch {
+                        snackbarHostState.showSnackbar("Added: ${result.product.name}")
+                    }
+                    is ScanResult.Restored -> scope.launch {
+                        snackbarHostState.showSnackbar("Restored: ${result.product.name}")
+                    }
+                    is ScanResult.Miss -> { /* CaptureRequired overlay handles this in-sheet */ }
+                }
+            },
+            onDismiss = { showScanner = false },
+        )
     }
 }
 
@@ -290,29 +314,6 @@ private fun SearchResultCard(
         }
         TextButton(onClick = onDetails) {
             Text("Details")
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ShoppingScannerBottomSheet(onDismiss: () -> Unit) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(32.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "Scanner — available in Task 11",
-                style = MaterialTheme.typography.bodyLarge,
-            )
         }
     }
 }

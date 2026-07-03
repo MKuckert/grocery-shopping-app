@@ -1,7 +1,7 @@
 # Task 13: Barcode Scanner Infrastructure (`scanner/`)
 
 > **Depends on:** Task 4, Task 11 (Open Food Facts), Task 12 (Audio)
-> **Status:** [ ]
+> **Status:** [x]
 
 ---
 

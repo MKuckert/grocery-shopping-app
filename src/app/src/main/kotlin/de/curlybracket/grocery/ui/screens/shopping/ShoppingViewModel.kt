@@ -30,7 +30,7 @@ class ShoppingViewModel @Inject constructor(
     private val connector: SupabaseConnector,
 ) : ViewModel() {
 
-    private val householdIdFlow: StateFlow<String?> = connector.sessionStatus
+    val householdIdFlow: StateFlow<String?> = connector.sessionStatus
         .map { status ->
             when (status) {
                 is SessionStatus.Authenticated ->
