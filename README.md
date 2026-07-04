@@ -31,3 +31,16 @@ powersync.url=<your-powersync-service-url>
 ## MCP commands
 
 Uses [mcp-commands](https://github.com/MKuckert/mcp-commands) to integrate `gradlew` as a MCP tool.
+
+## Implementation
+
+The app is implemented by heavily relying on AI. Google Gemini and I wrote docs/UI.md and docs/DATABASE.md, Claude Sonnet drafted the plan and broke it into tasks. Claude Sonnet did the majority of the coding, while I (the human) provided the initial project structure, guidance, and oversight. Claude Opus did code reviews. The AI was responsible for generating the majority of the codebase, including database schemas, UI components, and synchronization logic. Claude Haiku supported as Explorer, Librarian and Committer.
+
+Rough breakdown:
+
+| model             | tokens   |
+| ----------------- | -------- |
+| claude-sonnet-4.6 | ~12M     |
+| claude-opus-4.6   | ~5.5M    |
+| claude-haiku-4.5  | ~3.5M    |
+| **total**         | **~21M** |
