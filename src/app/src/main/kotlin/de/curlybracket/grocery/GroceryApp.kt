@@ -1,10 +1,14 @@
 package de.curlybracket.grocery
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +31,7 @@ import de.curlybracket.grocery.ui.screens.detail.DetailScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
+import kotlinx.coroutines.delay
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
@@ -51,6 +56,7 @@ fun GroceryApp() {
 
     val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(authState) {
         if (authState is AuthState.SignedOut) {
@@ -67,7 +73,19 @@ fun GroceryApp() {
         }
     }
 
+    LaunchedEffect(authState, householdState) {
+        if (authState == AuthState.SignedIn && householdState == null) {
+            delay(5_000)
+            if (householdState == null) {
+                snackbarHostState.showSnackbar("Setup incomplete: contact support")
+            }
+        }
+    }
+
     MaterialTheme {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+        ) { _ ->
         NavHost(navController = navController, startDestination = Route.SignIn.path) {
             composable(Route.SignIn.path) {
                 SignInScreen(authViewModel = authViewModel)
@@ -89,5 +107,6 @@ fun GroceryApp() {
                 DetailScreen(productId = productId, navController = navController)
             }
         }
+        } // end Scaffold
     }
 }
