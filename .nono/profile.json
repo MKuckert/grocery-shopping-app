@@ -41,7 +41,13 @@
       "~/private/dev/grocery-shopping-app/main/.git",
       "~/private/dev/grocery-shopping-app/feature/impl-merge"
     ],
-    "deny": ["~/.gitconfig"]
+    "deny": ["~/.gitconfig",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/gradlew",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/gradlew.bat",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/.env",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/local.properties",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/tools"
+    ]
   },
   "network": {
     "allow_domain": [

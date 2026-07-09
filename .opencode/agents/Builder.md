@@ -10,6 +10,7 @@ permission:
   list: allow
   bash:
     "*": deny
+    "nono why *": allow
   android_*: allow
   question: allow
   task: allow

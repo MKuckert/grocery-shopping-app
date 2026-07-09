@@ -10,6 +10,7 @@ permission:
   list: allow
   bash:
     "*": allow
+    "nono why *": allow
     git *: deny
   question: allow
   task: allow

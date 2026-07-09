@@ -258,7 +258,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 4: Delete `ScannerViewModel` — inject `ScannerProcessor` directly**
+- [/] **Task 4: Delete `ScannerViewModel` — inject `ScannerProcessor` directly**
   - **Description:** The `ScannerViewModel` (15 lines) exists solely because the Rebuild moved to passing raw dependencies. With `ScannerProcessor` restored as a Hilt-injectable class, the ViewModel is redundant.
 
     Delete `scanner/ScannerViewModel.kt`.

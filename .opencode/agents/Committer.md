@@ -10,8 +10,10 @@ permission:
   list: allow
   bash:
     "*": deny
+    "nono why *": allow
     "git status": allow
     "git add *": allow
+    "git rm *": allow
     "git commit *": allow
     "git diff *": allow
     "git log *": allow
