@@ -32,13 +32,13 @@
       "~/.cache",
       "~/.config",
       "~/.config/nono",
-      "~/private",
-      "~/private/dev",
+      "~/private/dev/grocery-shopping-app/main",
       "~/private/dev/grocery-shopping-app/feature/initial-impl",
       "~/private/dev/grocery-shopping-app/feature/opus-rebuild"
     ],
     "allow": [
       "~/.npm/_cacache/tmp",
+      "~/private/dev/grocery-shopping-app/main/.git",
       "~/private/dev/grocery-shopping-app/feature/impl-merge"
     ],
     "deny": ["~/.gitconfig"]
@@ -58,14 +58,6 @@
     "allow_vars": ["HOME", "OPENCODE_SERVER_PASSWORD"],
     "set_vars": {
       "GIT_CONFIG_GLOBAL": "~/.gitconfig-agents"
-    }
-  },
-  "session_hooks": {
-    "before": {
-      "script": "/Users/mkuckert/private/dev/grocery-shopping-app/feature/impl-merge/.nono/hooks/before.sh"
-    },
-    "after": {
-      "script": "/Users/mkuckert/private/dev/grocery-shopping-app/feature/impl-merge/.nono/hooks/after.sh"
     }
   }
 }
