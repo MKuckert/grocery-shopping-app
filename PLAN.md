@@ -93,7 +93,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [/] **Task 3: Revert ScannerProcessor to Flow-based API with error handling**
+- [x] **Task 3: Revert ScannerProcessor to Flow-based API with error handling**
   - **Description:** Merge the Original's Flow-based communication with the Rebuild's try-catch coverage. The result is a Hilt-injectable class that emits to `SharedFlow` properties and wraps every operation in error handling.
 
     Replace `scanner/ScannerProcessor.kt` entirely:
@@ -606,4 +606,4 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 - **Round 1:** Task 1 approved (2026-07-09). Domain model restored, all four ViewModels emit typed `SnackbarMessage`, all screen composables consume `.text` and `.actionLabel`, no raw `String` snackbar flows remain. `actionLabel = "Details"` confirmed on `InventoryViewModel.decrementStock()`.
 - **Round 2:** Task 2 approved (2026-07-09). All screens use callback lambdas; zero `NavController`/`Route` imports in screen files; argument extraction uses safe `?: error()` pattern.
-- **Round 3:** [N/A]
+- **Round 3:** Task 3 approved (2026-07-09). `ScannerProcessor` is `@Singleton @Inject`-constructed with Flow-based API (`scanResultFlow`, `openFoodFactsResultFlow`). All 7 catch blocks log via `co.touchlab.kermit.Logger`. Zero callback lambdas on `processScan()`. Photo handling preserved (`createNewProduct` with graceful photo-move failure). `BarcodeScannerBottomSheet` collects flows via `LaunchedEffect`, receives `ScannerProcessor` as parameter (no direct repository/audio/OFF imports). `ScannerViewModel.kt` untouched (Task 4 scope). Screens receive `ScannerProcessor` from `AppViewModel` via `GroceryApp.kt`.
