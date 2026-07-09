@@ -45,14 +45,16 @@ import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
 import de.curlybracket.grocery.scanner.ScanResult
 import de.curlybracket.grocery.scanner.ScannerMode
-import de.curlybracket.grocery.scanner.ScannerViewModel
+import de.curlybracket.grocery.scanner.ScannerProcessor
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ShoppingScreen(onNavigateToDetail: (String) -> Unit) {
+internal fun ShoppingScreen(
+    onNavigateToDetail: (String) -> Unit,
+    scannerProcessor: ScannerProcessor,
+) {
     val viewModel: ShoppingViewModel = hiltViewModel()
-    val scannerViewModel: ScannerViewModel = hiltViewModel()
 
     val activeShopping by viewModel.activeShopping.collectAsStateWithLifecycle()
     val struckThrough by viewModel.struckThrough.collectAsStateWithLifecycle()
@@ -199,9 +201,8 @@ internal fun ShoppingScreen(onNavigateToDetail: (String) -> Unit) {
     if (showScanner && hid != null) {
         BarcodeScannerBottomSheet(
             mode = ScannerMode.Shopping(hid),
-            repository = scannerViewModel.repository,
-            audioFeedback = scannerViewModel.audioFeedback,
-            openFoodFactsClient = scannerViewModel.openFoodFactsClient,
+            isOpen = showScanner,
+            onDismiss = { showScanner = false },
             onResult = { result ->
                 when (result) {
                     is ScanResult.Hit -> scope.launch {
@@ -213,7 +214,7 @@ internal fun ShoppingScreen(onNavigateToDetail: (String) -> Unit) {
                     is ScanResult.Miss -> { /* CaptureRequired overlay handles this in-sheet */ }
                 }
             },
-            onDismiss = { showScanner = false },
+            processor = scannerProcessor,
         )
     }
 }

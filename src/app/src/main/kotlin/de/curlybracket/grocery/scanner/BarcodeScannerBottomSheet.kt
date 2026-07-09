@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,9 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import de.curlybracket.grocery.BuildConfig
-import de.curlybracket.grocery.audio.AudioFeedback
-import de.curlybracket.grocery.domain.repository.GroceryRepository
-import de.curlybracket.grocery.network.OpenFoodFactsClient
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
@@ -51,47 +49,52 @@ import java.util.concurrent.Executors
 @Composable
 fun BarcodeScannerBottomSheet(
     mode: ScannerMode,
-    repository: GroceryRepository,
-    audioFeedback: AudioFeedback,
-    openFoodFactsClient: OpenFoodFactsClient,
-    onResult: (ScanResult) -> Unit,
+    isOpen: Boolean,
     onDismiss: () -> Unit,
+    onResult: (ScanResult) -> Unit,
+    processor: ScannerProcessor,
 ) {
+    if (!isOpen) return
+
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
-
-    val processor = remember {
-        ScannerProcessor(
-            repository = repository,
-            audioFeedback = audioFeedback,
-            openFoodFactsClient = openFoodFactsClient,
-        )
-    }
 
     var scannerState by remember { mutableStateOf<ScannerState>(ScannerState.Scanning) }
     var isProcessing by remember { mutableStateOf(false) }
 
     val imageCapture = remember { ImageCapture.Builder().build() }
 
+    LaunchedEffect(Unit) {
+        processor.scanResultFlow.collect { result ->
+            isProcessing = false
+            onResult(result)
+            when (result) {
+                is ScanResult.Hit, is ScanResult.Restored -> {
+                    scannerState = ScannerState.Scanning
+                }
+                is ScanResult.Miss -> {
+                    // State transition handled by openFoodFactsResultFlow
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        processor.openFoodFactsResultFlow.collect { lookupResult ->
+            scannerState = ScannerState.CaptureRequired(
+                barcode = lookupResult.barcode,
+                prefillName = lookupResult.prefillName,
+                photoPath = null,
+            )
+        }
+    }
+
     val analyzer = remember {
         BarcodeAnalyzer { barcode ->
             if (!isProcessing) {
                 isProcessing = true
-                scope.launch {
-                    processor.process(
-                        barcode = barcode,
-                        mode = mode,
-                        onStateChange = { scannerState = it },
-                        onResult = { result ->
-                            onResult(result)
-                            if (result is ScanResult.Hit || result is ScanResult.Restored) {
-                                scannerState = ScannerState.Scanning
-                            }
-                        },
-                    )
-                    isProcessing = false
-                }
+                scope.launch { processor.processScan(barcode, mode) }
             }
         }
     }
@@ -126,16 +129,18 @@ fun BarcodeScannerBottomSheet(
                         onSave = {
                             scope.launch {
                                 isProcessing = true
-                                processor.commitNewProduct(
+                                val newProduct = processor.createNewProduct(
                                     context = context,
-                                    state = state,
-                                    mode = mode,
-                                    onResult = { result ->
-                                        onResult(result)
-                                        scannerState = ScannerState.Scanning
-                                    },
+                                    barcode = state.barcode,
+                                    productName = state.prefillName,
+                                    householdId = mode.householdId,
+                                    photoPath = state.photoPath,
                                 )
                                 isProcessing = false
+                                if (newProduct != null) {
+                                    onResult(ScanResult.Hit(newProduct))
+                                }
+                                scannerState = ScannerState.Scanning
                             }
                         },
                         onCancel = { scannerState = ScannerState.Scanning },

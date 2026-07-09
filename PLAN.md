@@ -93,7 +93,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 3: Revert ScannerProcessor to Flow-based API with error handling**
+- [/] **Task 3: Revert ScannerProcessor to Flow-based API with error handling**
   - **Description:** Merge the Original's Flow-based communication with the Rebuild's try-catch coverage. The result is a Hilt-injectable class that emits to `SharedFlow` properties and wraps every operation in error handling.
 
     Replace `scanner/ScannerProcessor.kt` entirely:

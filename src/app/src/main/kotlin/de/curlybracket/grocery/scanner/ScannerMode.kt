@@ -1,6 +1,7 @@
 package de.curlybracket.grocery.scanner
 
 sealed class ScannerMode {
-    data class Inventory(val householdId: String) : ScannerMode()
-    data class Shopping(val householdId: String) : ScannerMode()
+    abstract val householdId: String
+    data class Inventory(override val householdId: String) : ScannerMode()
+    data class Shopping(override val householdId: String) : ScannerMode()
 }

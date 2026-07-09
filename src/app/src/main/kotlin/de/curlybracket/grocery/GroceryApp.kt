@@ -23,6 +23,7 @@ import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.domain.model.HouseholdState
+import de.curlybracket.grocery.scanner.ScannerProcessor
 import de.curlybracket.grocery.ui.navigation.AppViewModel
 import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
@@ -98,6 +99,7 @@ fun GroceryApp() {
                     onNavigateToDetail = { productId ->
                         navController.navigate(Route.Detail(productId).path)
                     },
+                    scannerProcessor = appViewModel.scannerProcessor,
                 )
             }
             composable(Route.Shopping.path) {
@@ -105,6 +107,7 @@ fun GroceryApp() {
                     onNavigateToDetail = { productId ->
                         navController.navigate(Route.Detail(productId).path)
                     },
+                    scannerProcessor = appViewModel.scannerProcessor,
                 )
             }
             composable(Route.Unloading.path) {

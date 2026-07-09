@@ -1,134 +1,150 @@
 package de.curlybracket.grocery.scanner
 
 import android.content.Context
-import android.util.Log
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.audio.AudioFeedback
+import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import de.curlybracket.grocery.network.OFResult
 import de.curlybracket.grocery.network.OpenFoodFactsClient
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 
-private const val TAG = "ScannerProcessor"
+data class OpenFoodFactsLookupResult(
+    val barcode: String,
+    val prefillName: String,
+)
 
-class ScannerProcessor(
+@Singleton
+class ScannerProcessor @Inject constructor(
     private val repository: GroceryRepository,
     private val audioFeedback: AudioFeedback,
     private val openFoodFactsClient: OpenFoodFactsClient,
 ) {
 
-    suspend fun process(
-        barcode: String,
-        mode: ScannerMode,
-        onStateChange: (ScannerState) -> Unit,
-        onResult: (ScanResult) -> Unit,
-    ) {
-        val householdId = when (mode) {
-            is ScannerMode.Inventory -> mode.householdId
-            is ScannerMode.Shopping -> mode.householdId
-        }
+    private val _scanResultFlow = MutableSharedFlow<ScanResult>(extraBufferCapacity = 1)
+    val scanResultFlow = _scanResultFlow.asSharedFlow()
+
+    private val _openFoodFactsResultFlow =
+        MutableSharedFlow<OpenFoodFactsLookupResult>(extraBufferCapacity = 1)
+    val openFoodFactsResultFlow = _openFoodFactsResultFlow.asSharedFlow()
+
+    suspend fun processScan(barcode: String, mode: ScannerMode) {
+        val householdId = mode.householdId
 
         val product = try {
             repository.findByBarcode(barcode, householdId)
         } catch (e: Exception) {
-            Log.e(TAG, "findByBarcode failed", e)
+            Logger.e("findByBarcode failed", e)
             null
         }
 
         when {
             product != null && product.deletedAt != null -> {
-                // Soft-delete resurrection
                 try {
                     repository.restoreProductKind(product.id)
+                    repository.recalculateQuantityToBuy(product.id)
                     audioFeedback.playSuccess()
-                    onResult(ScanResult.Restored(product))
+                    _scanResultFlow.emit(
+                        ScanResult.Restored(product.copy(deletedAt = null))
+                    )
                 } catch (e: Exception) {
-                    Log.e(TAG, "restoreProductKind failed", e)
+                    Logger.e("restoreProductKind failed", e)
                     audioFeedback.playFailure()
                 }
             }
 
             product != null -> {
-                // Hit — apply mode-specific mutation
                 try {
                     when (mode) {
-                        is ScannerMode.Inventory -> repository.decrementStock(product.id)
-                        is ScannerMode.Shopping -> repository.incrementPendingStock(product.id)
+                        is ScannerMode.Inventory ->
+                            repository.decrementStock(product.id)
+                        is ScannerMode.Shopping ->
+                            repository.incrementPendingStock(product.id)
                     }
                     audioFeedback.playSuccess()
-                    onResult(ScanResult.Hit(product))
+                    _scanResultFlow.emit(ScanResult.Hit(product))
                 } catch (e: Exception) {
-                    Log.e(TAG, "mutation failed", e)
+                    Logger.e("mode-specific mutation failed", e)
                     audioFeedback.playFailure()
                 }
             }
 
             else -> {
-                // Miss — look up Open Food Facts
                 audioFeedback.playFailure()
-                val ofResult = openFoodFactsClient.lookupBarcode(barcode)
-                val prefillName = when (ofResult) {
-                    is OFResult.Hit -> ofResult.productName
-                    else -> "Unknown Item"
+                val prefillName = try {
+                    when (val result = openFoodFactsClient.lookupBarcode(barcode)) {
+                        is OFResult.Hit -> result.productName
+                        else -> "Unknown Item"
+                    }
+                } catch (e: Exception) {
+                    Logger.e("Open Food Facts lookup failed", e)
+                    "Unknown Item"
                 }
-                onStateChange(ScannerState.CaptureRequired(barcode, prefillName, null))
-                onResult(ScanResult.Miss(barcode))
+                _openFoodFactsResultFlow.emit(
+                    OpenFoodFactsLookupResult(barcode, prefillName)
+                )
+                _scanResultFlow.emit(ScanResult.Miss(barcode))
             }
         }
     }
 
-    suspend fun commitNewProduct(
+    suspend fun createNewProduct(
         context: Context,
-        state: ScannerState.CaptureRequired,
-        mode: ScannerMode,
-        onResult: (ScanResult) -> Unit,
-    ) {
-        val householdId = when (mode) {
-            is ScannerMode.Inventory -> mode.householdId
-            is ScannerMode.Shopping -> mode.householdId
-        }
+        barcode: String,
+        productName: String,
+        householdId: String,
+        photoPath: String?,
+    ): ProductKind? {
+        return try {
+            val groupId = repository.ensureUnsortedGroup(householdId)
 
-        val groupId = repository.ensureUnsortedGroup(householdId)
+            repository.createProductKind(
+                householdId = householdId,
+                name = productName,
+                groupId = groupId,
+                minimumStock = 1,
+                barcodeNumber = barcode,
+            )
 
-        val permanentPath: String? = state.photoPath?.let { cachePath ->
-            try {
-                val cacheFile = File(cachePath)
-                val destDir = context.filesDir.resolve("product_images").also { it.mkdirs() }
-                val destFile = File(destDir, cacheFile.name)
-                cacheFile.copyTo(destFile, overwrite = true)
-                destFile.absolutePath
-            } catch (e: Exception) {
-                Log.e(TAG, "photo move failed", e)
-                null
+            val permanentPath: String? = photoPath?.let { cachePath ->
+                try {
+                    val cacheFile = File(cachePath)
+                    val destDir = context.filesDir
+                        .resolve("product_images").also { it.mkdirs() }
+                    val destFile = File(destDir, cacheFile.name)
+                    cacheFile.copyTo(destFile, overwrite = true)
+                    destFile.absolutePath
+                } catch (e: Exception) {
+                    Logger.e("Photo move failed", e)
+                    null
+                }
             }
-        }
 
-        val productId = repository.createProductKind(
-            householdId = householdId,
-            name = state.prefillName,
-            groupId = groupId,
-            minimumStock = 1,
-            barcodeNumber = state.barcode,
-        )
+            val newProduct = repository.findByBarcode(barcode, householdId)
 
-        if (permanentPath != null) {
-            try {
-                repository.updateProductKind(
-                    productId = productId,
-                    name = state.prefillName,
-                    groupId = groupId,
-                    minimumStock = 1,
-                    currentStock = 0,
-                    imagePath = permanentPath,
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "updateProductKind (imagePath) failed", e)
+            if (permanentPath != null && newProduct != null) {
+                try {
+                    repository.updateProductKind(
+                        productId = newProduct.id,
+                        name = productName,
+                        groupId = groupId,
+                        minimumStock = 1,
+                        currentStock = 0,
+                        imagePath = permanentPath,
+                    )
+                } catch (e: Exception) {
+                    Logger.e("updateProductKind (imagePath) failed", e)
+                }
             }
-        }
 
-        val newProduct = repository.findByBarcode(state.barcode, householdId)
-        if (newProduct != null) {
-            audioFeedback.playSuccess()
-            onResult(ScanResult.Hit(newProduct))
+            newProduct
+        } catch (e: Exception) {
+            Logger.e("createNewProduct failed", e)
+            null
         }
     }
 }
