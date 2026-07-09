@@ -79,7 +79,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
     }
     ```
 
-    **InventoryScreen.kt**: Change signature from `fun InventoryScreen(navController: NavController)` to `fun InventoryScreen(onNavigateToDetail: (String) -> Unit)`. Remove `import androidx.navigation.NavController` and `import de.curlybracket.grocery.ui.navigation.Route`. Replace all `navController.navigate(Route.Detail(...).path)` calls with `onNavigateToDetail(productId)`.
+    **InventoryScreen.kt**: Change signature from `fun InventoryScreen(navController: NavController)` to `fun InventoryScreen(onNavigateToDetail: (String) -> Unit)`. Remove `import androidx.navigation.NavController` and `import de.curlybracket.grocery.ui.navigation.Route`. Note: navigation is driven by `viewModel.navigationEvent` collected in a `LaunchedEffect` (not direct click handlers). Replace the `navController.navigate(Route.Detail(...).path)` call inside the `LaunchedEffect` collector with `onNavigateToDetail(productId)`.
 
     **ShoppingScreen.kt**: Same pattern. Signature becomes `fun ShoppingScreen(onNavigateToDetail: (String) -> Unit)`.
 
@@ -284,8 +284,8 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 5: Restore `Logger` in all silent catch blocks**
-  - **Description:** The Rebuild has 14 `catch (e: Exception)` blocks that swallow exceptions without logging. Only `ScannerProcessor`, `SyncService`, and `AuthViewModel` log properly. Every silent catch must add a `Logger.e()` or `Logger.w()` call.
+- [ ] **Task 5: Restore `Logger` in all catch blocks lacking developer logging**
+  - **Description:** The Rebuild's ViewModel and Screen catch blocks emit user-facing messages (snackbar/errorMessage) but lack `Logger` calls for developer observability. Only `ScannerProcessor`, `SyncService`, and `AuthViewModel` log properly. `OpenFoodFactsClient.kt` is the only truly silent catch (returns `OFResult.Miss` with no logging). Every catch block must add a `Logger.e()` or `Logger.w()` call before any user-facing action.
 
     Files and locations to fix (all in the Rebuild):
 
@@ -529,12 +529,12 @@ Apply all findings from the comparative code review between `feature/initial-imp
 - [ ] **Task 9: Write unit tests for critical business logic**
   - **Description:** Both codebases have 0% test coverage. Establish the testing foundation with unit tests for the highest-risk code paths.
 
-    Add test dependencies to `app/build.gradle.kts` if missing:
-    - `testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")`
-    - `testImplementation("app.cash.turbine:turbine:1.2.0")` (for Flow testing)
-    - `testImplementation("io.mockk:mockk:1.13.16")` (for mocking)
+    Add test dependencies to `libs.versions.toml` (under `[versions]` and `[libraries]`) and reference them via `libs.*` in `app/build.gradle.kts`:
+    - `kotlinx-coroutines-test` (1.11.0)
+    - `turbine` (1.2.0) — for Flow testing
+    - `mockk` (1.13.16) — for mocking
 
-    Create the following test files in `src/test/java/de/curlybracket/grocery/`:
+    Create the following test files in `src/app/src/test/java/de/curlybracket/grocery/`:
 
     **a) `scanner/ScannerProcessorTest.kt`** — Highest priority. Test:
     - `processScan()` with known barcode emits `ScanResult.Hit` and calls mode-specific mutation
@@ -585,7 +585,20 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ## Review Log (Plan Review)
 
-- **Round 1:** [Pending]
+- **Round 1:** Approved with notes (2026-07-09)
+
+  **Status: Approved**
+
+  The plan is structurally sound, technically feasible, and all referenced files, types, methods, and fields exist in the codebase. All nine tasks are well-scoped with clear review criteria. No blockers found. The following notes are for the Builder's awareness:
+
+  1. **Task 5 — "14 silent catches" is inaccurate.** The table lists 17 catch blocks (3+5+2+4+1+1+1). None of the ViewModel or Screen catches are truly "silent" — they all emit user-facing error messages via `_snackbarMessage.emit()` or set `errorMessage`. They lack `Logger` calls for developer observability. Only `OpenFoodFactsClient.kt:27` is genuinely silent (returns `OFResult.Miss` with no logging or user feedback). The intent to add `Logger` to all is correct; the Builder should not be confused by the "silent" label.
+
+  2. **Task 9 — Test file path is wrong.** The plan says `src/test/java/de/curlybracket/grocery/`. The actual test root is `src/app/src/test/java/de/curlybracket/grocery/` (where `ExampleUnitTest.kt` already lives). The Builder must use the correct path.
+
+  3. **Task 9 — Test dependencies should use version catalog.** The project manages all dependencies via `src/gradle/libs.versions.toml`. The plan specifies raw coordinates (`"app.cash.turbine:turbine:1.2.0"` etc.). The Builder should add `turbine`, `mockk`, and `coroutines-test` entries to `libs.versions.toml` first, then reference via `libs.*` in `build.gradle.kts` for consistency.
+
+  4. **Task 2 — InventoryScreen navigation goes through a ViewModel event flow.** Navigation in `InventoryScreen` is driven by `viewModel.navigationEvent` collected in a `LaunchedEffect` (line 67), not by direct composable calls. The "Replace all `navController.navigate(...)` calls" instruction covers this, but the Builder should be aware the replacement site is inside the `LaunchedEffect` collector, not inline composable click handlers.
+
 - **Round 2:** [N/A]
 - **Round 3:** [N/A]
 
