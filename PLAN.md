@@ -258,7 +258,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [/] **Task 4: Delete `ScannerViewModel` — inject `ScannerProcessor` directly**
+- [x] **Task 4: Delete `ScannerViewModel` — inject `ScannerProcessor` directly**
   - **Description:** The `ScannerViewModel` (15 lines) exists solely because the Rebuild moved to passing raw dependencies. With `ScannerProcessor` restored as a Hilt-injectable class, the ViewModel is redundant.
 
     Delete `scanner/ScannerViewModel.kt`.
@@ -607,3 +607,4 @@ Apply all findings from the comparative code review between `feature/initial-imp
 - **Round 1:** Task 1 approved (2026-07-09). Domain model restored, all four ViewModels emit typed `SnackbarMessage`, all screen composables consume `.text` and `.actionLabel`, no raw `String` snackbar flows remain. `actionLabel = "Details"` confirmed on `InventoryViewModel.decrementStock()`.
 - **Round 2:** Task 2 approved (2026-07-09). All screens use callback lambdas; zero `NavController`/`Route` imports in screen files; argument extraction uses safe `?: error()` pattern.
 - **Round 3:** Task 3 approved (2026-07-09). `ScannerProcessor` is `@Singleton @Inject`-constructed with Flow-based API (`scanResultFlow`, `openFoodFactsResultFlow`). All 7 catch blocks log via `co.touchlab.kermit.Logger`. Zero callback lambdas on `processScan()`. Photo handling preserved (`createNewProduct` with graceful photo-move failure). `BarcodeScannerBottomSheet` collects flows via `LaunchedEffect`, receives `ScannerProcessor` as parameter (no direct repository/audio/OFF imports). `ScannerViewModel.kt` untouched (Task 4 scope). Screens receive `ScannerProcessor` from `AppViewModel` via `GroceryApp.kt`.
+- **Round 4:** Task 4 approved (2026-07-09). `ScannerViewModel.kt` deleted (glob confirms no file). Zero imports of `ScannerViewModel` in codebase (grep confirms). `ScannerProcessor` annotated `@Singleton` with `@Inject` constructor. `AppViewModel` exposes `val scannerProcessor: ScannerProcessor`. `GroceryApp.kt` passes `appViewModel.scannerProcessor` to both `InventoryScreen` and `ShoppingScreen`.
