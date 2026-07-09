@@ -41,20 +41,18 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
 import de.curlybracket.grocery.scanner.ScanResult
 import de.curlybracket.grocery.scanner.ScannerMode
 import de.curlybracket.grocery.scanner.ScannerViewModel
-import de.curlybracket.grocery.ui.navigation.Route
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun InventoryScreen(navController: NavController) {
+internal fun InventoryScreen(onNavigateToDetail: (String) -> Unit) {
     val viewModel: InventoryViewModel = hiltViewModel()
     val scannerViewModel: ScannerViewModel = hiltViewModel()
     val groupsWithProducts by viewModel.groupsWithProducts.collectAsStateWithLifecycle()
@@ -65,7 +63,7 @@ internal fun InventoryScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { productId ->
-            navController.navigate(Route.Detail(productId).path)
+            onNavigateToDetail(productId)
         }
     }
 
@@ -77,7 +75,7 @@ internal fun InventoryScreen(navController: NavController) {
                 duration = SnackbarDuration.Short,
             )
             if (result == SnackbarResult.ActionPerformed) {
-                navController.navigate(Route.Detail(msg.productId).path)
+                onNavigateToDetail(msg.productId)
             }
         }
     }

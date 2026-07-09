@@ -41,18 +41,16 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
 import de.curlybracket.grocery.scanner.ScanResult
 import de.curlybracket.grocery.scanner.ScannerMode
 import de.curlybracket.grocery.scanner.ScannerViewModel
-import de.curlybracket.grocery.ui.navigation.Route
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ShoppingScreen(navController: NavController) {
+internal fun ShoppingScreen(onNavigateToDetail: (String) -> Unit) {
     val viewModel: ShoppingViewModel = hiltViewModel()
     val scannerViewModel: ScannerViewModel = hiltViewModel()
 
@@ -127,7 +125,7 @@ internal fun ShoppingScreen(navController: NavController) {
                             onForceAdd = { viewModel.forceAddToCart(product) },
                             onDetails = {
                                 searchExpanded = false
-                                navController.navigate(Route.Detail(product.id).path)
+                                onNavigateToDetail(product.id)
                             },
                         )
                     }

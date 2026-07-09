@@ -47,7 +47,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 2: Revert navigation to callback pattern**
+- [x] **Task 2: Revert navigation to callback pattern**
   - **Description:** Remove `NavController` from all screen function signatures. Replace with callback lambdas. Screens must not know about the navigation graph.
 
     **GroceryApp.kt** (lines 96-108): Change screen invocations from `InventoryScreen(navController = navController)` to callback-based:
@@ -605,5 +605,5 @@ Apply all findings from the comparative code review between `feature/initial-imp
 ## Final Status (Code Review)
 
 - **Round 1:** Task 1 approved (2026-07-09). Domain model restored, all four ViewModels emit typed `SnackbarMessage`, all screen composables consume `.text` and `.actionLabel`, no raw `String` snackbar flows remain. `actionLabel = "Details"` confirmed on `InventoryViewModel.decrementStock()`.
-- **Round 2:** [N/A]
+- **Round 2:** Task 2 approved (2026-07-09). All screens use callback lambdas; zero `NavController`/`Route` imports in screen files; argument extraction uses safe `?: error()` pattern.
 - **Round 3:** [N/A]

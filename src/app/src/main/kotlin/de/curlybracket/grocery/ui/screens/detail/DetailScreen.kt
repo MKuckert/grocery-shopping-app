@@ -58,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import de.curlybracket.grocery.BuildConfig
 import de.curlybracket.grocery.domain.model.Barcode
@@ -67,7 +66,7 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun DetailScreen(productId: String, navController: NavController) {
+internal fun DetailScreen(productId: String, onBack: () -> Unit) {
     val viewModel: DetailViewModel = hiltViewModel()
     val product by viewModel.product.collectAsStateWithLifecycle()
     val groups by viewModel.groups.collectAsStateWithLifecycle()
@@ -93,7 +92,7 @@ internal fun DetailScreen(productId: String, navController: NavController) {
                 title = { Text("Product Detail") },
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { onBack() },
                         modifier = Modifier.semantics { contentDescription = "Navigate back" },
                     ) {
                         Icon(

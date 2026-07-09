@@ -94,17 +94,29 @@ fun GroceryApp() {
                 SignUpScreen(authViewModel = authViewModel)
             }
             composable(Route.Inventory.path) {
-                InventoryScreen(navController = navController)
+                InventoryScreen(
+                    onNavigateToDetail = { productId ->
+                        navController.navigate(Route.Detail(productId).path)
+                    },
+                )
             }
             composable(Route.Shopping.path) {
-                ShoppingScreen(navController = navController)
+                ShoppingScreen(
+                    onNavigateToDetail = { productId ->
+                        navController.navigate(Route.Detail(productId).path)
+                    },
+                )
             }
             composable(Route.Unloading.path) {
-                UnloadingScreen(navController = navController)
+                UnloadingScreen()
             }
             composable(Route.Detail.TEMPLATE) { backStack ->
-                val productId = backStack.arguments!!.getString("productId")!!
-                DetailScreen(productId = productId, navController = navController)
+                val productId = backStack.arguments?.getString("productId")
+                    ?: error("productId argument required")
+                DetailScreen(
+                    productId = productId,
+                    onBack = { navController.popBackStack() },
+                )
             }
         }
         } // end Scaffold
