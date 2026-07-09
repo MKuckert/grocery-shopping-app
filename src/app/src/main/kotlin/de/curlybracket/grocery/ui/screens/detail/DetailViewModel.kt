@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.ProductGroup
 import de.curlybracket.grocery.domain.model.ProductKind
+import de.curlybracket.grocery.domain.model.SnackbarMessage
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,8 +41,8 @@ class DetailViewModel @Inject constructor(
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving
 
-    private val _snackbarMessage = MutableSharedFlow<String>()
-    val snackbarMessage: SharedFlow<String> = _snackbarMessage
+    private val _snackbarMessage = MutableSharedFlow<SnackbarMessage>()
+    val snackbarMessage: SharedFlow<SnackbarMessage> = _snackbarMessage
 
     // Local edit state — kept in sync with product stream until user edits
     private val _name = MutableStateFlow("")
@@ -97,7 +98,7 @@ class DetailViewModel @Inject constructor(
             try {
                 repository.addBarcode(productId, barcodeNumber, hid)
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error adding barcode: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to add barcode", productId = productId))
             }
         }
     }
@@ -107,7 +108,7 @@ class DetailViewModel @Inject constructor(
             try {
                 repository.deleteBarcode(barcode.id)
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error deleting barcode: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to delete barcode", productId = productId))
             }
         }
     }
@@ -125,9 +126,9 @@ class DetailViewModel @Inject constructor(
                     imagePath = product.value?.imagePath,
                 )
                 _userEditing.value = false
-                _snackbarMessage.emit("Saved")
+                _snackbarMessage.emit(SnackbarMessage(text = "Saved", productId = productId))
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error saving: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to save changes", productId = productId))
             } finally {
                 _isSaving.value = false
             }

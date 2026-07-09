@@ -83,7 +83,7 @@ internal fun DetailScreen(productId: String, navController: NavController) {
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { msg ->
-            snackbarHostState.showSnackbar(msg)
+            snackbarHostState.showSnackbar(msg.text)
         }
     }
 

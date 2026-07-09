@@ -47,7 +47,7 @@ internal fun UnloadingScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { msg ->
-            snackbarHostState.showSnackbar(msg)
+            snackbarHostState.showSnackbar(msg.text)
         }
     }
 

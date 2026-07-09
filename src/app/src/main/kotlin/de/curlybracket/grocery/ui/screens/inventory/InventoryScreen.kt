@@ -71,17 +71,13 @@ internal fun InventoryScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { msg ->
-            if (msg.productId.isEmpty()) {
-                snackbarHostState.showSnackbar(msg.productName)
-            } else {
-                val result = snackbarHostState.showSnackbar(
-                    message = "${msg.productName}: ${msg.newStock} remaining",
-                    actionLabel = "Details",
-                    duration = SnackbarDuration.Short,
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    navController.navigate(Route.Detail(msg.productId).path)
-                }
+            val result = snackbarHostState.showSnackbar(
+                message = msg.text,
+                actionLabel = msg.actionLabel,
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                navController.navigate(Route.Detail(msg.productId).path)
             }
         }
     }

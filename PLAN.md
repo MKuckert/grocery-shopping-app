@@ -23,7 +23,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 1: Restore `SnackbarMessage` domain model**
+- [x] **Task 1: Restore `SnackbarMessage` domain model**
   - **Description:** Recreate `src/app/src/main/kotlin/de/curlybracket/grocery/domain/model/SnackbarMessage.kt`. The Original's version at `~/private/dev/grocery-shopping-app/feature/initial-impl/src/app/src/main/kotlin/de/curlybracket/grocery/domain/model/SnackbarMessage.kt` is the reference:
     ```kotlin
     package de.curlybracket.grocery.domain.model
@@ -604,6 +604,6 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ## Final Status (Code Review)
 
-- **Round 1:** [Pending]
+- **Round 1:** Task 1 approved (2026-07-09). Domain model restored, all four ViewModels emit typed `SnackbarMessage`, all screen composables consume `.text` and `.actionLabel`, no raw `String` snackbar flows remain. `actionLabel = "Details"` confirmed on `InventoryViewModel.decrementStock()`.
 - **Round 2:** [N/A]
 - **Round 3:** [N/A]

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.curlybracket.grocery.domain.model.ProductKind
+import de.curlybracket.grocery.domain.model.SnackbarMessage
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,8 +50,8 @@ internal class UnloadingViewModel @Inject constructor(
     private val _showWarningDialog = MutableStateFlow(false)
     val showWarningDialog: StateFlow<Boolean> = _showWarningDialog
 
-    private val _snackbarMessage = MutableSharedFlow<String>()
-    val snackbarMessage: SharedFlow<String> = _snackbarMessage
+    private val _snackbarMessage = MutableSharedFlow<SnackbarMessage>()
+    val snackbarMessage: SharedFlow<SnackbarMessage> = _snackbarMessage
 
     fun toggleUnloadOpen(product: ProductKind, checked: Boolean) {
         // Checkbox checked = locked (unload_open = false), unchecked = open (unload_open = true)
@@ -59,7 +60,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.setUnloadOpen(product.id, open)
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to toggle unload state", productId = product.id))
             }
         }
     }
@@ -80,7 +81,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.submitUnloading(hid)
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to submit unloading", productId = ""))
             }
         }
     }
@@ -94,7 +95,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.incrementPendingStock(product.id)
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to increment pending", productId = product.id))
             }
         }
     }
@@ -104,7 +105,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.decrementPendingStock(product.id)
             } catch (e: Exception) {
-                _snackbarMessage.emit("Error: ${e.message}")
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to decrement pending", productId = product.id))
             }
         }
     }

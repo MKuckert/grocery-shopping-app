@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.domain.model.ProductKind
+import de.curlybracket.grocery.domain.model.SnackbarMessage
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,8 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
-
-data class SnackbarMessage(val productId: String, val productName: String, val newStock: Int)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -78,7 +77,7 @@ class InventoryViewModel @Inject constructor(
                 repository.setHouseholdState(HouseholdState.SHOPPING)
             } catch (e: Exception) {
                 _snackbarMessage.emit(
-                    SnackbarMessage(productId = "", productName = "Error: ${e.message}", newStock = -1),
+                    SnackbarMessage(text = "Failed to start shopping", productId = ""),
                 )
             }
         }
@@ -91,14 +90,14 @@ class InventoryViewModel @Inject constructor(
                 val newStock = (product.currentStock - 1).coerceAtLeast(0)
                 _snackbarMessage.emit(
                     SnackbarMessage(
+                        text = "${product.name}: $newStock remaining",
                         productId = product.id,
-                        productName = product.name,
-                        newStock = newStock,
+                        actionLabel = "Details",
                     ),
                 )
             } catch (e: Exception) {
                 _snackbarMessage.emit(
-                    SnackbarMessage(productId = "", productName = "Error: ${e.message}", newStock = -1),
+                    SnackbarMessage(text = "Failed to decrement stock", productId = product.id),
                 )
             }
         }
