@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Description: Calls Gradle with a given command. Pass command to execute as an object with a string attribute `command`, e.g. `gradlew({command: "build"}`
+# Param: command string required "gradlew command to call, e.g. `help`, `:app:assembleDebug`"
 
 if [[ $# -lt 2 ]]; then
     echo 'Call with command to execute as a single string parameter `command`: gradlew({command: "build"}' >&2
@@ -25,7 +26,6 @@ fi
 
 if [ -f .env ]; then
     source .env
-    echo "Loading environment variables from .env file"
 fi
 
 ./gradlew $COMMAND

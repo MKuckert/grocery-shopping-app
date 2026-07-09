@@ -3,7 +3,7 @@
   "extends": "opencode",
   "meta": {
     "author": "Martin Kuckert",
-    "name": "opencode-grocery-shopping-app-opus-rebuild"
+    "name": "opencode-grocery-shopping-app"
   },
   "groups": {
     "include": []
@@ -33,12 +33,13 @@
       "~/.config",
       "~/.config/nono",
       "~/private",
-      "~/private/dev"
+      "~/private/dev",
+      "~/private/dev/grocery-shopping-app/feature/initial-impl",
+      "~/private/dev/grocery-shopping-app/feature/opus-rebuild"
     ],
     "allow": [
       "~/.npm/_cacache/tmp",
-      "~/private/dev/grocery-shopping-app",
-      "~/private/dev/grocery-shopping-app-opus-rebuild"
+      "~/private/dev/grocery-shopping-app/feature/impl-merge"
     ],
     "deny": ["~/.gitconfig"]
   },
@@ -61,10 +62,10 @@
   },
   "session_hooks": {
     "before": {
-      "script": "/Users/mkuckert/private/dev/grocery-shopping-app-opus-rebuild/.nono/hooks/before.sh"
+      "script": "/Users/mkuckert/private/dev/grocery-shopping-app/feature/impl-merge/.nono/hooks/before.sh"
     },
     "after": {
-      "script": "/Users/mkuckert/private/dev/grocery-shopping-app-opus-rebuild/.nono/hooks/after.sh"
+      "script": "/Users/mkuckert/private/dev/grocery-shopping-app/feature/impl-merge/.nono/hooks/after.sh"
     }
   }
 }

@@ -1,112 +1,596 @@
-# Plan: Grocery Shopping App — Shared Reference
+  # Plan: Post-Review Consolidation of Opus Rebuild
 
 ## Objective
 
-Transform the current skeleton PowerSync/Supabase Android app (a todo-list demo) into a full-featured household grocery management app. The finished app must implement the three-state machine (IDLE / SHOPPING / UNLOADING), four screens (InventoryScreen, ShoppingScreen, UnloadingScreen, DetailScreen), barcode scanning with Open Food Facts fallback, animated reactive lists, and full offline-first sync — exactly as specified in `docs/UI.md` and `docs/DATABASE.md`.
+Apply all findings from the comparative code review between `feature/initial-impl` (Original) and `feature/opus-rebuild` (Rebuild). `feature/impl-merge` is the new base, branched of `feature/opus-rebuild`. Six architectural reversions, two restorations, and one new extraction must be performed to combine the best of both codebases. Testing infrastructure must be established.
 
----
+- initial implementation is at `feature/initial-impl`
+- rebuild implementation is at `feature/opus-rebuild`
+- merge branch is at `feature/impl-merge`. This is the new working base
 
 ## Requirements & Decisions
 
-- **Frameworks:** Jetpack Compose (Material 3), Hilt DI, PowerSync 1.13.0 + Supabase 3.6.0, CameraX + ML Kit Barcode Scanning, `navigation-compose`. All already present in `libs.versions.toml`.
-- **Chosen Libraries:**
-  - `androidx.navigation:navigation-compose` — already declared; use for typed-route NavHost replacing the manual `NavController` / `Screen` sealed class.
-  - `powersync-compose` — already declared; use `db.watch(sql)` for reactive streams.
-  - Retrofit + OkHttp **not** needed — use `io.ktor:ktor-client-android` (already transitive via Supabase-kt) for the Open Food Facts HTTP call.
-  - **`androidx.camera:camera-camera2`** — must be added. The existing camerax bundle (`camera-core`, `camera-lifecycle`, `camera-view`) lacks the Camera2 implementation module; `ProcessCameraProvider.getInstance()` will fail at runtime without it. Add to `libs.versions.toml`:
-    ```toml
-    androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraX" }
-    ```
-    Add to the `camerax` bundle in `libs.versions.toml` and to `build.gradle.kts`.
-  - No other new dependencies required beyond those already declared or listed here.
-- **Supabase package:** `io.github.jan.supabase` (NOT `io.github.jan_tennert.supabase`).
-
----
-
-## Error Handling Strategy
-
-- **DB writes** fail loudly: surface error via `Snackbar`; never silently swallow.
-- **PowerSync sync errors** are surfaced via the existing `SyncStatusData` banner (already in `SyncService`).
-- **Open Food Facts API timeout / offline:** fall back to title = `"Unknown Item"` and block completion until photo captured (per spec §4).
-- **Open Food Facts 503 rate limit:** single exponential-backoff retry (2 s), then treat as offline miss.
-- **Barcode not found locally:** play failure boop, switch scanner viewport to `CaptureRequired` state; app remains live (no crash).
-- **Stock decrement below 0:** guarded at the call site (`WHERE current_stock > 0`); DB constraint is a safety net, not the primary check.
-- **Unload submit with open rows:** `AlertDialog` warning; user must explicitly confirm.
-- **Soft-deleted item scanned:** nullify `deleted_at`, resurface with Snackbar "Restored …".
-
----
+- **Frameworks:** Jetpack Compose, Hilt, PowerSync + Supabase, CameraX + ML Kit, Ktor (all already present)
+- **Chosen Libraries:** No new libraries required. All changes use existing dependencies. `co.touchlab:kermit` (already in deps) must be restored where `android.util.Log` or silent catches exist.
+- **Error Handling Strategy:**
+  - Every `catch (e: Exception)` block must log via `co.touchlab.kermit.Logger` before any user-facing action.
+  - User-facing error messages use the typed `SnackbarMessage` domain model (restored from Original).
+  - Scanner pipeline: try-catch on every repository/network call (keep Rebuild's coverage), but emit results via `SharedFlow` (revert to Original's communication pattern).
 
 ## Implementation Steps
 
 > Status Markers: [ ] Open, [/] In Progress, [x] Completed
 
-| Status | File                                 | Task                                            |
-| ------ | ------------------------------------ | ----------------------------------------------- |
-| [x]    | `tasks/TASK_00_bootstrap.md`         | Application Bootstrap & DI Initialization Order |
-| [x]    | `tasks/TASK_01_delete_demo.md`       | Delete Demo Code & Establish Package Skeleton   |
-| [x]    | `tasks/TASK_02_schema.md`            | Update PowerSync Schema                         |
-| [x]    | `tasks/TASK_03_domain_models.md`     | Domain Models                                   |
-| [x]    | `tasks/TASK_04_repository.md`        | Repository Layer                                |
-| [x]    | `tasks/TASK_05_hilt_di.md`           | Hilt DI Wiring                                  |
-| [x]    | `tasks/TASK_06_navigation.md`        | Root Navigation (NavHost)                       |
-| [x]    | `tasks/TASK_07_inventory_screen.md`  | InventoryScreen                                 |
-| [x]    | `tasks/TASK_08_shopping_screen.md`   | ShoppingScreen                                  |
-| [x]    | `tasks/TASK_09_unloading_screen.md`  | UnloadingScreen                                 |
-| [x]    | `tasks/TASK_10_detail_screen.md`     | DetailScreen                                    |
-| [x]    | `tasks/TASK_11_openfoodfacts.md`     | Open Food Facts Integration                     |
-| [x]    | `tasks/TASK_12_audio.md`             | Audio Feedback                                  |
-| [x]    | `tasks/TASK_13_scanner.md`           | Barcode Scanner Infrastructure                  |
-| [x]    | `tasks/TASK_14_convergence.md`       | Automated Convergence Engine                    |
-| [x]    | `tasks/TASK_15_camera_permission.md` | Camera Permission Handling                      |
-| [x]    | `tasks/TASK_16_auth_screens.md`      | Auth Screens (Minimal Updates)                  |
-| [ ]    | `tasks/TASK_17_qa.md`                | End-to-End Integration & Manual QA              |
+---
+
+- [ ] **Task 1: Restore `SnackbarMessage` domain model**
+  - **Description:** Recreate `src/app/src/main/kotlin/de/curlybracket/grocery/domain/model/SnackbarMessage.kt`. The Original's version at `~/private/dev/grocery-shopping-app/feature/initial-impl/src/app/src/main/kotlin/de/curlybracket/grocery/domain/model/SnackbarMessage.kt` is the reference:
+    ```kotlin
+    package de.curlybracket.grocery.domain.model
+
+    import androidx.compose.runtime.Immutable
+
+    @Immutable
+    data class SnackbarMessage(
+      val text: String,
+      val productId: String,
+      val actionLabel: String? = null
+    )
+    ```
+    Then update every ViewModel that currently uses raw `String` or local data classes for snackbar messages:
+    - `InventoryViewModel.kt` (lines 26, 70, 87-105) — Remove local `data class SnackbarMessage(productId, productName, newStock)`. Replace `MutableSharedFlow<SnackbarMessage>` (local) with `MutableSharedFlow<de.curlybracket.grocery.domain.model.SnackbarMessage>`. Update `decrementStock()` to emit `SnackbarMessage(text = "${product.name}: $newStock remaining", productId = product.id, actionLabel = "Details")`. Error case: `SnackbarMessage(text = "Failed to decrement stock", productId = product.id)`.
+    - `ShoppingViewModel.kt` (lines 74-75) — Change `MutableSharedFlow<String>` to `MutableSharedFlow<SnackbarMessage>`. Update `finishShopping()` (line 82), `fulfillFull()`, `incrementPending()`, `decrementPending()`, `forceAddToCart()` to emit typed messages.
+    - `UnloadingViewModel.kt` (lines 52-53) — Change `MutableSharedFlow<String>` to `MutableSharedFlow<SnackbarMessage>`. Update `toggleUnloadOpen()` (line 61), `confirmSubmit()` (line 83), `incrementPending()` (line 96), `decrementPending()` (line 106).
+    - `DetailViewModel.kt` (lines 72-73) — Change `MutableSharedFlow<String>` to `MutableSharedFlow<SnackbarMessage>`. Update `saveChanges()` (line 99), `addBarcode()` (line 109), `deleteBarcode()` (line 129).
+    - Update corresponding Screen composables to consume `SnackbarMessage.text` and use `SnackbarMessage.actionLabel` where present.
+  - **Review Criteria:** No raw `String` snackbar flows remain in any ViewModel. All snackbar emissions use the domain model. `actionLabel = "Details"` is present on stock-change messages. Compiles without error.
+
+---
+
+- [ ] **Task 2: Revert navigation to callback pattern**
+  - **Description:** Remove `NavController` from all screen function signatures. Replace with callback lambdas. Screens must not know about the navigation graph.
+
+    **GroceryApp.kt** (lines 96-108): Change screen invocations from `InventoryScreen(navController = navController)` to callback-based:
+    ```kotlin
+    composable(Route.Inventory.path) {
+        InventoryScreen(
+            onNavigateToDetail = { productId ->
+                navController.navigate(Route.Detail(productId).path)
+            }
+        )
+    }
+    composable(Route.Shopping.path) {
+        ShoppingScreen(
+            onNavigateToDetail = { productId ->
+                navController.navigate(Route.Detail(productId).path)
+            }
+        )
+    }
+    composable(Route.Unloading.path) {
+        UnloadingScreen()
+    }
+    composable(Route.Detail.TEMPLATE) { backStack ->
+        val productId = backStack.arguments?.getString("productId")
+            ?: error("productId argument required")
+        DetailScreen(
+            productId = productId,
+            onBack = { navController.popBackStack() }
+        )
+    }
+    ```
+
+    **InventoryScreen.kt**: Change signature from `fun InventoryScreen(navController: NavController)` to `fun InventoryScreen(onNavigateToDetail: (String) -> Unit)`. Remove `import androidx.navigation.NavController` and `import de.curlybracket.grocery.ui.navigation.Route`. Replace all `navController.navigate(Route.Detail(...).path)` calls with `onNavigateToDetail(productId)`.
+
+    **ShoppingScreen.kt**: Same pattern. Signature becomes `fun ShoppingScreen(onNavigateToDetail: (String) -> Unit)`.
+
+    **UnloadingScreen.kt**: Change from `fun UnloadingScreen(navController: NavController)` to `fun UnloadingScreen()`. This screen has no detail navigation. Remove NavController import.
+
+    **DetailScreen.kt**: Change from `fun DetailScreen(productId: String, navController: NavController)` to `fun DetailScreen(productId: String, onBack: () -> Unit)`. Replace `navController.popBackStack()` with `onBack()`. Remove NavController import.
+
+    **Also fix the unsafe `!!` in GroceryApp.kt line 106:** `backStack.arguments!!.getString("productId")!!` must become `backStack.arguments?.getString("productId") ?: error("productId argument required")` to produce a readable crash instead of a bare NPE.
+
+  - **Review Criteria:** Zero files import `NavController` except `GroceryApp.kt`. Every screen is a pure composable that receives only data and callbacks. No `Route` imports in screen files. Compiles without error.
+
+---
+
+- [ ] **Task 3: Revert ScannerProcessor to Flow-based API with error handling**
+  - **Description:** Merge the Original's Flow-based communication with the Rebuild's try-catch coverage. The result is a Hilt-injectable class that emits to `SharedFlow` properties and wraps every operation in error handling.
+
+    Replace `scanner/ScannerProcessor.kt` entirely:
+    ```kotlin
+    package de.curlybracket.grocery.scanner
+
+    import android.content.Context
+    import co.touchlab.kermit.Logger
+    import de.curlybracket.grocery.audio.AudioFeedback
+    import de.curlybracket.grocery.domain.model.ProductKind
+    import de.curlybracket.grocery.domain.repository.GroceryRepository
+    import de.curlybracket.grocery.network.OFResult
+    import de.curlybracket.grocery.network.OpenFoodFactsClient
+    import kotlinx.coroutines.flow.MutableSharedFlow
+    import kotlinx.coroutines.flow.asSharedFlow
+    import java.io.File
+    import javax.inject.Inject
+
+    data class OpenFoodFactsLookupResult(
+        val barcode: String,
+        val prefillName: String,
+    )
+
+    class ScannerProcessor @Inject constructor(
+        private val repository: GroceryRepository,
+        private val audioFeedback: AudioFeedback,
+        private val openFoodFactsClient: OpenFoodFactsClient,
+    ) {
+
+        private val _scanResultFlow = MutableSharedFlow<ScanResult>(extraBufferCapacity = 1)
+        val scanResultFlow = _scanResultFlow.asSharedFlow()
+
+        private val _openFoodFactsResultFlow =
+            MutableSharedFlow<OpenFoodFactsLookupResult>(extraBufferCapacity = 1)
+        val openFoodFactsResultFlow = _openFoodFactsResultFlow.asSharedFlow()
+
+        suspend fun processScan(barcode: String, mode: ScannerMode) {
+            val householdId = when (mode) {
+                is ScannerMode.Inventory -> mode.householdId
+                is ScannerMode.Shopping -> mode.householdId
+            }
+
+            val product = try {
+                repository.findByBarcode(barcode, householdId)
+            } catch (e: Exception) {
+                Logger.e("findByBarcode failed", e)
+                null
+            }
+
+            when {
+                product != null && product.deletedAt != null -> {
+                    try {
+                        repository.restoreProductKind(product.id)
+                        repository.recalculateQuantityToBuy(product.id)
+                        audioFeedback.playSuccess()
+                        _scanResultFlow.emit(
+                            ScanResult.Restored(product.copy(deletedAt = null))
+                        )
+                    } catch (e: Exception) {
+                        Logger.e("restoreProductKind failed", e)
+                        audioFeedback.playFailure()
+                    }
+                }
+
+                product != null -> {
+                    try {
+                        when (mode) {
+                            is ScannerMode.Inventory ->
+                                repository.decrementStock(product.id)
+                            is ScannerMode.Shopping ->
+                                repository.incrementPendingStock(product.id)
+                        }
+                        audioFeedback.playSuccess()
+                        _scanResultFlow.emit(ScanResult.Hit(product))
+                    } catch (e: Exception) {
+                        Logger.e("mode-specific mutation failed", e)
+                        audioFeedback.playFailure()
+                    }
+                }
+
+                else -> {
+                    audioFeedback.playFailure()
+                    val prefillName = try {
+                        when (val result =
+                            openFoodFactsClient.lookupBarcode(barcode)) {
+                            is OFResult.Hit -> result.productName
+                            else -> "Unknown Item"
+                        }
+                    } catch (e: Exception) {
+                        Logger.e("Open Food Facts lookup failed", e)
+                        "Unknown Item"
+                    }
+                    _openFoodFactsResultFlow.emit(
+                        OpenFoodFactsLookupResult(barcode, prefillName)
+                    )
+                    _scanResultFlow.emit(ScanResult.Miss(barcode))
+                }
+            }
+        }
+
+        suspend fun createNewProduct(
+            context: Context,
+            barcode: String,
+            productName: String,
+            householdId: String,
+            photoPath: String?,
+        ): ProductKind? {
+            return try {
+                val groupId = repository.ensureUnsortedGroup(householdId)
+
+                repository.createProductKind(
+                    householdId = householdId,
+                    name = productName,
+                    groupId = groupId,
+                    minimumStock = 1,
+                    barcodeNumber = barcode,
+                )
+
+                val permanentPath: String? = photoPath?.let { cachePath ->
+                    try {
+                        val cacheFile = File(cachePath)
+                        val destDir = context.filesDir
+                            .resolve("product_images").also { it.mkdirs() }
+                        val destFile = File(destDir, cacheFile.name)
+                        cacheFile.copyTo(destFile, overwrite = true)
+                        destFile.absolutePath
+                    } catch (e: Exception) {
+                        Logger.e("Photo move failed", e)
+                        null
+                    }
+                }
+
+                val newProduct = repository.findByBarcode(barcode, householdId)
+
+                if (permanentPath != null && newProduct != null) {
+                    try {
+                        repository.updateProductKind(
+                            productId = newProduct.id,
+                            name = productName,
+                            groupId = groupId,
+                            minimumStock = 1,
+                            currentStock = 0,
+                            imagePath = permanentPath,
+                        )
+                    } catch (e: Exception) {
+                        Logger.e("updateProductKind (imagePath) failed", e)
+                    }
+                }
+
+                newProduct
+            } catch (e: Exception) {
+                Logger.e("createNewProduct failed", e)
+                null
+            }
+        }
+    }
+    ```
+
+    **BarcodeScannerBottomSheet.kt** must be updated to consume `processor.scanResultFlow` and `processor.openFoodFactsResultFlow` via `LaunchedEffect` collectors (matching Original's pattern) instead of callback lambdas. The processor must be injected (not created via `remember {}`).
+
+  - **Review Criteria:** `ScannerProcessor` is `@Inject`-constructed and Hilt-managed. Communication is via `scanResultFlow` and `openFoodFactsResultFlow` SharedFlows. Every repository/network call is wrapped in try-catch with `Logger`. No callback lambdas on `processScan()`. Photo handling from Rebuild is preserved. Compiles without error.
+
+---
+
+- [ ] **Task 4: Delete `ScannerViewModel` — inject `ScannerProcessor` directly**
+  - **Description:** The `ScannerViewModel` (15 lines) exists solely because the Rebuild moved to passing raw dependencies. With `ScannerProcessor` restored as a Hilt-injectable class, the ViewModel is redundant.
+
+    Delete `scanner/ScannerViewModel.kt`.
+
+    Update all files that reference `ScannerViewModel`:
+    - `InventoryScreen.kt`: Replace `val scannerViewModel: ScannerViewModel = hiltViewModel()` with `ScannerProcessor` received as a parameter.
+    - `ShoppingScreen.kt`: Same change.
+    - Remove `scannerViewModel.repository`, `scannerViewModel.audioFeedback`, `scannerViewModel.openFoodFactsClient` references — the `ScannerProcessor` encapsulates all three.
+
+    The cleanest approach: `ScannerProcessor` is `@Singleton` scoped (it holds no mutable state, just references to other singletons). Screens receive it as a parameter from `GroceryApp.kt`, or it is provided via the `AppViewModel` (matching the Original's pattern where `AppViewModel` held the `ScannerProcessor`).
+
+    If the `AppViewModel` approach is used, add to `AppViewModel`:
+    ```kotlin
+    @HiltViewModel
+    class AppViewModel @Inject constructor(
+        repository: GroceryRepository,
+        val scannerProcessor: ScannerProcessor,
+    ) : ViewModel() { ... }
+    ```
+    Then screens access it via `appViewModel.scannerProcessor`.
+
+  - **Review Criteria:** `ScannerViewModel.kt` is deleted. No file imports it. `ScannerProcessor` is obtained via Hilt DI (not constructed locally). Compiles without error.
+
+---
+
+- [ ] **Task 5: Restore `Logger` in all silent catch blocks**
+  - **Description:** The Rebuild has 14 `catch (e: Exception)` blocks that swallow exceptions without logging. Only `ScannerProcessor`, `SyncService`, and `AuthViewModel` log properly. Every silent catch must add a `Logger.e()` or `Logger.w()` call.
+
+    Files and locations to fix (all in the Rebuild):
+
+    | File | Catch locations (approx. lines) | Required log |
+    |---|---|---|
+    | `DetailViewModel.kt` | 99, 109, 129 | `Logger.e("Failed to save changes", e)`, `Logger.e("Failed to add barcode", e)`, `Logger.e("Failed to delete barcode", e)` |
+    | `ShoppingViewModel.kt` | 81, 91, 101, 111, 127 | `Logger.e("Failed to finish shopping", e)`, `Logger.e("Failed to fulfill item", e)`, `Logger.e("Failed to increment pending", e)`, `Logger.e("Failed to decrement pending", e)`, `Logger.e("Failed to force-add item", e)` |
+    | `InventoryViewModel.kt` | 79, 99 | `Logger.e("Failed to start shopping", e)`, `Logger.e("Failed to decrement stock", e)` |
+    | `UnloadingViewModel.kt` | 61, 82, 96, 106 | `Logger.e("Failed to toggle unload state", e)`, `Logger.e("Failed to submit unloading", e)`, `Logger.e("Failed to increment pending", e)`, `Logger.e("Failed to decrement pending", e)` |
+    | `OpenFoodFactsClient.kt` | 27 | `Logger.w("Open Food Facts lookup failed", e)` |
+    | `SignInScreen.kt` | 89 (generic catch) | `Logger.e("Sign-in failed", e)` |
+    | `SignUpScreen.kt` | 88 (generic catch) | `Logger.e("Sign-up failed", e)` |
+
+    Add `import co.touchlab.kermit.Logger` to each file that lacks it.
+
+    Also in `ScannerProcessor.kt` (from Task 3): replace any remaining `android.util.Log` calls with `Logger` for consistency. The entire codebase must use Kermit, not `android.util.Log`.
+
+  - **Review Criteria:** `grep -rn "catch (e:" src/app/src/main/kotlin/` returns zero blocks without a `Logger.e()` or `Logger.w()` call immediately inside. No file imports `android.util.Log`. Compiles without error.
+
+---
+
+- [ ] **Task 6: Extract `householdIdFlow` to a shared utility**
+  - **Description:** The household ID extraction from `SupabaseConnector.sessionStatus` is duplicated in 4 locations:
+    - `AuthViewModel.kt` (line 36)
+    - `InventoryViewModel.kt` (line 35)
+    - `ShoppingViewModel.kt` (line 33)
+    - `UnloadingViewModel.kt` (line 32)
+
+    Each repeats:
+    ```kotlin
+    connector.sessionStatus
+        .map { status ->
+            when (status) {
+                is SessionStatus.Authenticated ->
+                    status.session.user?.appMetadata?.get("household_id")
+                        ?.jsonPrimitive?.contentOrNull
+                else -> null
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    ```
+
+    Create a Kotlin extension function in a new file `auth/HouseholdIdExt.kt`:
+    ```kotlin
+    package de.curlybracket.grocery.auth
+
+    import com.powersync.connector.supabase.SupabaseConnector
+    import io.github.jan.supabase.auth.status.SessionStatus
+    import kotlinx.coroutines.CoroutineScope
+    import kotlinx.coroutines.flow.SharingStarted
+    import kotlinx.coroutines.flow.StateFlow
+    import kotlinx.coroutines.flow.map
+    import kotlinx.coroutines.flow.stateIn
+    import kotlinx.serialization.json.contentOrNull
+    import kotlinx.serialization.json.jsonPrimitive
+
+    fun SupabaseConnector.householdIdFlow(
+        scope: CoroutineScope,
+    ): StateFlow<String?> =
+        sessionStatus
+            .map { status ->
+                when (status) {
+                    is SessionStatus.Authenticated ->
+                        status.session.user?.appMetadata
+                            ?.get("household_id")
+                            ?.jsonPrimitive?.contentOrNull
+                    else -> null
+                }
+            }
+            .stateIn(scope, SharingStarted.Eagerly, null)
+    ```
+
+    Then replace all 4 usages:
+    ```kotlin
+    // Before (in each ViewModel):
+    val householdIdFlow: StateFlow<String?> = connector.sessionStatus
+        .map { ... }.stateIn(...)
+
+    // After:
+    val householdIdFlow: StateFlow<String?> =
+        connector.householdIdFlow(viewModelScope)
+    ```
+
+    In `AuthViewModel.kt`, rename from `householdId` to `householdIdFlow` for consistency with the other ViewModels.
+
+  - **Review Criteria:** The extraction logic appears exactly once in `auth/HouseholdIdExt.kt`. All four ViewModels call `connector.householdIdFlow(viewModelScope)`. No ViewModel imports `jsonPrimitive`, `contentOrNull`, or `SessionStatus` for this purpose. Compiles without error.
+
+---
+
+- [ ] **Task 7: Fix `BarcodeScannerBottomSheet` to consume Flow-based ScannerProcessor**
+  - **Description:** This is the UI counterpart to Task 3. The `BarcodeScannerBottomSheet.kt` currently creates a local `ScannerProcessor` via `remember {}` and uses callback lambdas. It must be refactored to:
+    1. Accept `ScannerProcessor` as a parameter (Hilt-injected, not locally created).
+    2. Subscribe to `processor.scanResultFlow` and `processor.openFoodFactsResultFlow` via `LaunchedEffect` collectors.
+    3. Keep the Rebuild's `isProcessing` boolean for UI spinner feedback.
+    4. Keep the Rebuild's photo capture logic and `CaptureRequired` state handling.
+
+    New function signature:
+    ```kotlin
+    @Composable
+    fun BarcodeScannerBottomSheet(
+        mode: ScannerMode,
+        isOpen: Boolean,
+        onDismiss: () -> Unit,
+        onResult: (ScanResult) -> Unit,
+        processor: ScannerProcessor,
+    )
+    ```
+
+    State observation pattern:
+    ```kotlin
+    LaunchedEffect(Unit) {
+        processor.scanResultFlow.collect { result ->
+            isProcessing = false
+            onResult(result)
+            when (result) {
+                is ScanResult.Hit, is ScanResult.Restored -> {
+                    scannerState = ScannerState.Scanning
+                }
+                is ScanResult.Miss -> {
+                    // State transition handled by openFoodFactsResultFlow
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        processor.openFoodFactsResultFlow.collect { lookupResult ->
+            scannerState = ScannerState.CaptureRequired(
+                barcode = lookupResult.barcode,
+                prefillName = lookupResult.prefillName,
+                photoPath = null,
+            )
+        }
+    }
+    ```
+
+    On barcode detected:
+    ```kotlin
+    onBarcodeDetected = { barcode ->
+        if (!isProcessing) {
+            isProcessing = true
+            scope.launch { processor.processScan(barcode, mode) }
+        }
+    }
+    ```
+
+    On manual product creation (CaptureRequired save):
+    ```kotlin
+    scope.launch {
+        isProcessing = true
+        val newProduct = processor.createNewProduct(
+            context = context,
+            barcode = state.barcode,
+            productName = state.prefillName,
+            householdId = mode.householdId,
+            photoPath = state.photoPath,
+        )
+        isProcessing = false
+        if (newProduct != null) {
+            onResult(ScanResult.Hit(newProduct))
+        }
+        scannerState = ScannerState.Scanning
+    }
+    ```
+
+    Add a `householdId` property accessor to `ScannerMode` (or extract via `when` as in current code) so `createNewProduct` can access it.
+
+  - **Review Criteria:** `BarcodeScannerBottomSheet` does not import or reference `GroceryRepository`, `AudioFeedback`, or `OpenFoodFactsClient` directly. It receives a `ScannerProcessor` parameter. Flow subscriptions use `LaunchedEffect`. `isProcessing` spinner is preserved. Photo capture and file handling are preserved. Compiles without error.
+
+---
+
+- [ ] **Task 8: Update screen composables for BarcodeScannerBottomSheet signature change**
+  - **Description:** After Tasks 2, 3, 4, and 7, the `BarcodeScannerBottomSheet` call sites in `InventoryScreen.kt` and `ShoppingScreen.kt` must be updated.
+
+    Both screens currently pass raw dependencies:
+    ```kotlin
+    // Current (Rebuild):
+    BarcodeScannerBottomSheet(
+        mode = ScannerMode.Inventory(hid),
+        repository = scannerViewModel.repository,
+        audioFeedback = scannerViewModel.audioFeedback,
+        openFoodFactsClient = scannerViewModel.openFoodFactsClient,
+        onResult = { ... },
+        onDismiss = { ... },
+    )
+    ```
+
+    Must become:
+    ```kotlin
+    // Target:
+    BarcodeScannerBottomSheet(
+        mode = ScannerMode.Inventory(hid),
+        isOpen = showScanner,
+        onDismiss = { showScanner = false },
+        onResult = { result ->
+            when (result) {
+                is ScanResult.Hit -> { /* snackbar */ }
+                is ScanResult.Restored -> { /* snackbar */ }
+                is ScanResult.Miss -> { /* handled by sheet internally */ }
+            }
+        },
+        processor = appViewModel.scannerProcessor,
+    )
+    ```
+
+    Both screens need to receive `ScannerProcessor` as a parameter from `GroceryApp.kt`.
+
+    The `InventoryScreen` signature becomes:
+    ```kotlin
+    fun InventoryScreen(
+        onNavigateToDetail: (String) -> Unit,
+        scannerProcessor: ScannerProcessor,
+    )
+    ```
+
+    The `ShoppingScreen` signature becomes:
+    ```kotlin
+    fun ShoppingScreen(
+        onNavigateToDetail: (String) -> Unit,
+        scannerProcessor: ScannerProcessor,
+    )
+    ```
+
+    And `GroceryApp.kt` passes both from `AppViewModel`:
+    ```kotlin
+    composable(Route.Inventory.path) {
+        val appViewModel: AppViewModel = hiltViewModel()
+        InventoryScreen(
+            onNavigateToDetail = { productId ->
+                navController.navigate(Route.Detail(productId).path)
+            },
+            scannerProcessor = appViewModel.scannerProcessor,
+        )
+    }
+    ```
+
+  - **Review Criteria:** `InventoryScreen` and `ShoppingScreen` do not import `ScannerViewModel`, `GroceryRepository`, `AudioFeedback`, or `OpenFoodFactsClient`. They receive `ScannerProcessor` as a parameter. `BarcodeScannerBottomSheet` is called with the new signature including `isOpen` and `processor`. Compiles without error.
+
+---
+
+- [ ] **Task 9: Write unit tests for critical business logic**
+  - **Description:** Both codebases have 0% test coverage. Establish the testing foundation with unit tests for the highest-risk code paths.
+
+    Add test dependencies to `app/build.gradle.kts` if missing:
+    - `testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")`
+    - `testImplementation("app.cash.turbine:turbine:1.2.0")` (for Flow testing)
+    - `testImplementation("io.mockk:mockk:1.13.16")` (for mocking)
+
+    Create the following test files in `src/test/java/de/curlybracket/grocery/`:
+
+    **a) `scanner/ScannerProcessorTest.kt`** — Highest priority. Test:
+    - `processScan()` with known barcode emits `ScanResult.Hit` and calls mode-specific mutation
+    - `processScan()` with unknown barcode emits `ScanResult.Miss` and triggers OFF lookup
+    - `processScan()` with soft-deleted barcode emits `ScanResult.Restored` and calls `restoreProductKind`
+    - `processScan()` when `findByBarcode` throws returns gracefully (no crash)
+    - `createNewProduct()` creates product and returns it
+    - `createNewProduct()` handles photo move failure gracefully
+    - Audio feedback: `playSuccess()` on Hit/Restored, `playFailure()` on Miss
+
+    **b) `scanner/BarcodeAnalyzerThrottleTest.kt`** — Test the throttle state machine:
+    - Same barcode within 3000ms cooldown is suppressed
+    - Same barcode after 3000ms fires again
+    - No barcode for 400ms clears cooldown map
+    - Different barcodes have independent cooldowns
+
+    **c) `auth/HouseholdIdExtTest.kt`** — Test the extracted extension:
+    - Authenticated session with valid `household_id` metadata returns the ID
+    - Authenticated session without `household_id` returns null
+    - `NotAuthenticated` session returns null
+    - Non-string `household_id` value returns null
+
+    **d) `data/repository/GroceryRepositoryImplTest.kt`** — Test mutation logic:
+    - `decrementStock` does not go below 0
+    - `submitUnloading` atomically applies pending stock and resets state
+    - `recalculateQuantityToBuy` computes `max(0, minimumStock - currentStock)`
+    - `createProductKind` in transaction creates both product and barcode
+
+    Delete the placeholder `ExampleUnitTest.kt`.
+
+  - **Review Criteria:** All test files compile. `./gradlew test` passes. Each test file has at least 4 test methods. Mock setup is clean (no redundant mocking). Flow tests use Turbine's `test {}` block or `first()`. Coroutine tests use `runTest {}`.
 
 ---
 
 ## Edge Case & Safety Checklist
 
-- **Empty product group:** The `watchProductsWithGroups` JOIN query starts from `product_kinds`, so groups with zero active products produce zero rows and no map key — they do **not** appear as headers in the InventoryScreen. This is the accepted v1 behavior: empty groups are invisible in the inventory list. They remain selectable in the Detail Screen group picker via `watchProductGroups()`. Documenting as known v1 limitation; no "phantom header" rendering is required.
-- **Stock at zero on swipe/scan:** `WHERE current_stock > 0` guard prevents negative stock; DB constraint is a safety net.
-- **`pending_stock` at zero on `[-]` stepper in Shopping/Unloading:** guarded at call site; `MAX(0, pending_stock - 1)`.
-- **`submitUnloading` with all items checked:** no dialog shown; proceeds immediately.
-- **`submitUnloading` with zero pending items:** no-op (transaction UPDATE affects 0 rows); household state set to `IDLE`.
-- **Open Food Facts call during airplane mode:** 10 s timeout; caught; falls through to `OFResult.Miss`; user sees `CaptureRequired` overlay.
-- **Open Food Facts 503 retry loop:** single retry; not a recursive retry that could loop.
-- **Barcode scan of a product with `deleted_at != null`:** resurrection path — `deleted_at = NULL`, `minimum_stock` restored to 1, `recalculateQuantityToBuy` called.
-- **Simultaneous scan of same barcode on two devices:** last-write-wins via PowerSync; stock decrement is idempotent directionally (can decrement below user's intent if both fire simultaneously) — acceptable per spec (no custom conflict logic required).
-- **`ensureUnsortedGroup` race condition (two devices creating Unsorted at same time):** Supabase will accept both INSERTs with different UUIDs. Workaround: use `SELECT` first (if synced, no INSERT needed); if both insert, two "Unsorted" groups appear. Not critical for v1; document as known limitation.
-- **Product with no group assigned (`group_id = NULL`):** Inventory screen must have a catch-all section (e.g., "Unsorted") for products where `group_id IS NULL` or references a deleted group.
-- **Camera permission denied:** show a `RationaleDialog` on first denial; on permanent denial, redirect to app settings.
-- **`household_id` missing from JWT:** `AuthViewModel.householdId` emits `null`; InventoryViewModel/ShoppingViewModel receive `null` and emit empty lists; UI shows empty state with a Snackbar warning. Does not crash (lazy evaluation per Task 0 design).
-- **Background sync:** The existing `SyncService` is a foreground service and runs while the app is in the foreground/background until explicitly stopped. PowerSync SDK does not auto-restart sync after the service is killed; WorkManager integration for deep-background sync is out of scope for v1 (document as known limitation). For household use, foreground sync is sufficient.
-- **Navigation route format:** Uses string-based sealed class `Route` (Task 6). The `@Serializable` type-safe nav API requires Compose Navigation 2.8+; verify the version in `libs.versions.toml` before using type-safe routes. If `navigation-compose` is below 2.8, use string routes as specified.
-- **DetailScreen opened during `UNLOADING`:** fully editable (per spec §3.4 Absolute Mutability Policy).
-- **`AuthViewModel` re-routes after detail navigation:** `LaunchedEffect` for `householdState` uses `popUpTo(0)` to clear back stack — ensures DetailScreen is dismissed when state changes.
-- **Coil image loading for `image_path`:** local `file://` URIs require `FileProvider`-based URI — use `FileProvider.getUriForFile` before passing to `AsyncImage`; grant read permission.
-
----
+- [ ] `householdIdFlow` returns `null` before authentication completes — all `flatMapLatest` chains must emit `emptyList()` for null household
+- [ ] `findByBarcode` can throw on database timeout — catch block must prevent scan loop crash
+- [ ] `backStack.arguments?.getString("productId")` can be null if deep link is malformed — use `?: error()` not `!!`
+- [ ] `SnackbarMessage.actionLabel` being null must not cause crash in screen collectors — use `?.let` for action handling
+- [ ] Scanner `isProcessing` flag must be reset on both success AND failure paths to prevent UI deadlock
+- [ ] Photo cache files in `cacheDir/scanner_photos/` must be cleaned up on sheet dismiss regardless of save outcome
+- [ ] `ScannerProcessor.createNewProduct` photo move failure must not prevent product creation (photo is optional)
+- [ ] `DetailViewModel._userEditing` flag must be reset after successful save to allow stream sync to resume
+- [ ] `Logger` import must be `co.touchlab.kermit.Logger`, never `android.util.Log` — enforce consistency
+- [ ] Thread safety: `BarcodeAnalyzer.state` uses `AtomicReference.getAndUpdate` — do not introduce mutable vars alongside it
+- [ ] `BarcodeScannerBottomSheet` must guard against double-processing (check `isProcessing` before launching coroutine)
 
 ## Review Log (Plan Review)
 
-- **Round 1:** REJECTED — 6 critical blockers + 4 high-priority issues identified by PlanReviewer. Key gaps: missing Task 0 (bootstrap order), incomplete Ktor HttpClient setup (Task 12), missing Coil version + FileProvider URI (Task 10), incomplete SQL (Task 4), missing camera permission task, missing SoundPool load guard (Task 13). High-priority: vague photo capture flow (Task 11), missing households trigger documentation (Task 15/16), vague index API (Task 2), background sync undocumented.
-- **Round 2:** All 6 critical blockers addressed. Round 2 PlanReviewer flagged: (1) PowerSync API `watchFlow` vs `watch` — resolved: all reactive queries now use `db.watch(sql, params) { cursor -> ... }`; (2) SQLite `MAX(0, expr)` validity — confirmed valid in SQLite (multi-arg `max()` is a documented scalar function, not aggregate); clarifying note added to plan; (3) `watchGroupsWithProducts` in-memory merge violates pure stream requirement — resolved: replaced with single denormalized `LEFT JOIN` query (`watchProductsWithGroups`) + pure `Flow.map` transformation in ViewModel. Also: Ktor version pinned to 3.1.3 (Supabase-kt 3.x transitive); `filepaths.xml` verification and `<cache-path>` entry specification added to Task 11.
-- **Round 3:** REJECTED (10 issues: 4 critical, 4 high, 2 low). All resolved: (1) `GroceryApp` now uses `AppViewModel` (`@HiltViewModel`) instead of bare `repository` — compiles correctly; (2) `CameraPermissionHandler` fixed with `rationaleShown` state variable — `launchPermissionRequest` now fires on first use; (3) `camera-camera2` added as explicit dependency; (4) `filepaths.xml` spec updated to preserve existing `<external-files-path>` and add both `<files-path>` and `<cache-path>`; (5) `findByBarcode` corrected to `db.get()`; (6) obsolete N+1 `watchGroupsWithProducts` description struck-through with explicit "do not implement" note; (7) `AuthViewModel` refactor to `@HiltViewModel` now explicitly specified in Task 5; (8) `setHouseholdState` SQL updated to stamp `shopping_started_at`; (9) `onTerminate()` removed from Task 0 review criteria; (10) 5-second null-household Snackbar given explicit `LaunchedEffect` + `delay` implementation.
-- **Round 4:** REJECTED (9 issues: 2 critical, 4 high, 3 low). All resolved: (1) `hilt-navigation-compose` added as explicit required dependency — `hiltViewModel()` now resolvable; (2) sign-out routing added to `GroceryApp` via `LaunchedEffect(authState)` → `navigate(Route.SignIn.path) { popUpTo(0) }`; (3) `lifecycle-runtime-compose` added as explicit required dependency — `collectAsStateWithLifecycle()` now resolvable; (4) screen ViewModel `householdId` DI pattern corrected — `SupabaseConnector` injected directly, no cross-`@HiltViewModel` injection; (5) Task 5 `AuthViewModel` snippet corrected to `connector.sessionStatus.map { ... }`; (6) empty-group edge case requirement removed and replaced with explicit v1 known-limitation note consistent with the LEFT JOIN SQL; (7) `provideOpenFoodFactsHttpClient` typo fixed; (8) stale `db.watchFlow` section header in Task 4 corrected to `db.watch()`; (9) `fromCursor(Map<String,Any?>)` in Task 3 replaced with index-based `SqlCursor` API reference.
+- **Round 1:** [Pending]
+- **Round 2:** [N/A]
+- **Round 3:** [N/A]
 
 ## Final Status (Code Review)
 
-- **Round 1 (Task 0):** Approved — existing codebase satisfies all four criteria without code changes. `database.connect()` exclusively in `SyncService`; `householdId` is a lazy `StateFlow` (no Hilt binding); `AudioFeedback` deferred to Task 13; DI initialization order is safe.
-- **Round 2 (Task 1):** Approved — all 13 demo files reduced to package-only stubs; `GroceryApp.kt` rewritten as minimal auth-state switch; `AuthViewModel`/`SignInScreen` cleaned of NavController/Screen deps; `AppSchema` free of `listsTable`/`todosTable`; grep confirms zero `ListItem`/`TodoItem`/`LISTS_TABLE`/`TODOS_TABLE` references in source; all 13 skeleton directories present.
-- **Round 3 (Task 2):** Approved — `AppSchema.kt` declares all four tables (`households`, `product_groups`, `product_kinds`, `barcodes`) with correct column types matching spec; three indexes (`idx_barcodes_lookup`, `idx_product_kinds_active_group`, `idx_product_kinds_shopping_state`) present with correct columns and table placement; zero `listsTable`/`todosTable` references confirmed via grep; build passes.
-- **Round 4 (Task 3):** Approved — all 7 domain model classes created across 5 files; `@Immutable` annotation on every data class; `unloadOpen` is `Boolean` mapped via `getBoolean()`; `fromCursor` factories use name-based `SqlCursor` extensions (`getString`, `getStringOptional`, `getLong`, `getBoolean`); nullable TEXT columns correctly use `getStringOptional` returning `null`; all fields match `AppSchema.kt` columns including implicit `id` PK; `GroupWithProducts` has no `fromCursor` (aggregate); `ProductWithGroup.fromCursor` delegates to `ProductKind.fromCursor` and reads JOIN alias `group_name`; build passes.
-- **Round 5 (Task 4):** Approved — interface has all 26 methods matching spec signatures exactly; all 10 `watchXxx` backed by `db.watch`; all mutations use `db.execute` or `db.writeTransaction`; no Supabase client used for reads; `recalculateQuantityToBuy` invoked in all 5 code paths that change `current_stock`/`minimum_stock` (`decrementStock`, `submitUnloading`, `updateProductKind`, `restoreProductKind`, `createProductKind` via initial value); `submitUnloading` is a single atomic `writeTransaction` with all 3 spec steps; `ensureUnsortedGroup` is idempotent (SELECT-first via `db.getOptional`, INSERT only if null); `findByBarcode` uses `db.getOptional` (single-shot, not `db.watch`); all 18 SQL fragments match spec; `@ActivityRetainedScoped` correct for `@HiltViewModel` consumers; `createProductKind` sets `quantity_to_buy = minimumStock` (correct: `MAX(0, min - 0) = min`); build passes. Non-blocking note: `productKindFromCursor` duplicates `ProductKind.fromCursor` companion — future DRY opportunity.
-- **Round 6 (Task 5):** Approved — `RepositoryModule` uses `@Binds @ActivityRetainedScoped` for `GroceryRepository`→`GroceryRepositoryImpl` (idiomatic, correct scope); `AuthViewModel` is `@HiltViewModel @Inject constructor(connector)` with zero `navController` references anywhere in codebase; `householdId` is a lazy `StateFlow` derived from `connector.sessionStatus.map { ... }` — never a Hilt singleton binding; `hilt-navigation-compose` (v1.2.0), `lifecycle-runtime-compose` (v2.9.1), and `camera-camera2` (v1.6.1) all added to version catalog and `build.gradle.kts`; `camera-camera2` included in `camerax` bundle; `GroceryApp` uses `hiltViewModel()`; `MainActivity` removed `database` param; no circular dependencies in DI graph; `AppModule` correctly deferred to Tasks 12/13; build passes.
-- **Round 7 (Task 6):** Approved — `Routes.kt` defines sealed class `Route` with 6 routes; `Detail` has `TEMPLATE = "detail/{productId}"` for NavHost registration and data class constructor for navigation-time path interpolation; `AppViewModel` is `@HiltViewModel` with `watchHousehold().stateIn()` — correct; `GroceryApp()` takes zero params, uses `hiltViewModel()` for both `AppViewModel` and `AuthViewModel`; `LaunchedEffect(householdState?.currentState)` is the sole root screen-switch trigger; `LaunchedEffect(authState)` handles sign-out routing (added per Plan Round 4 review); auth screens (`SignInScreen`, `SignUpScreen`) perform zero navigation — routing to main screens depends entirely on `householdState` stream emission; `DetailScreen` receives `productId` as route argument via `backStack.arguments`; grep confirms zero references to old `Screen` sealed class; `MainActivity` calls `GroceryApp()` with zero args; stub screens (`Inventory`, `Shopping`, `Unloading`, `Detail`) correctly accept `NavController`/`productId` params matching `NavHost` call sites.
-- **Round 8 (Task 7):** Approved — `InventoryViewModel` is `@HiltViewModel @Inject constructor(repository, connector)` with `householdId` derived from `SupabaseConnector.sessionStatus.map { ... }` (Plan Round 4 DI pattern); `groupsWithProducts` is a pure `StateFlow` pipeline (`flatMapLatest` → `groupBy` → `stateIn`) with zero mutable caches; `collectAsStateWithLifecycle` in screen; DB write errors (`startShopping`, `decrementStock`) surface via `SnackbarMessage` emission — never swallowed; swipe uses `detectHorizontalDragGestures` (not deprecated `swipeable`) coexisting with inner `Surface(onClick)` for tap; `animateItem()` applied inside `items {}` lambda keyed by `it.id`; FAB toggles `showScanner` state → `ModalBottomSheet` (no navigation); Snackbar action `"Details"` → `navController.navigate(Route.Detail(productId).path)` correct; `GroceryApp.kt` wires `Route.Inventory.path` to `InventoryScreen(navController)` with import — no TODO remnant; empty-group behavior consistent with Plan v1 edge case spec (invisible headers); scanner stub deferred to Task 11.
-- **Round 9 (Task 8):** Approved — `ShoppingViewModel` is `@HiltViewModel @Inject constructor(repository, connector)` with `householdIdFlow` derived from `connector.sessionStatus.map { ... }`; three independent DB queries (`watchActiveShopping`, `watchStruckThrough`, `watchImpulseBuys`) each via separate `flatMapLatest` — not a single filtered list; `searchResults` nests `flatMapLatest` over `householdIdFlow` then `_searchQuery` → `repository.watchSearch`; all 6 functions present (`finishShopping` → `setHouseholdState(UNLOADING)`, `fulfillFull`, `incrementPending`, `decrementPending`, `updateSearchQuery`, `forceAddToCart` guards `pendingStock == 0`); all DB writes catch exceptions → `_snackbarMessage.emit` (never swallowed); `ShoppingScreen` uses Material 3 `SearchBar` with `SearchBarDefaults.InputField`; expanded state overlays list with `SearchResultCard` (name + "Force Add" + "Details"); collapsed state shows 3 `LazyColumn` sections with `stickyHeader` ("▼ Active Shopping List", "▼ Struck-Through Cart Items", "▼ Impulse Buys"); `ShoppingRow` uses `Surface(onClick)` for row tap + `IconButton(onClick)` for steppers — no tap interference; checkbox checked state + `TextDecoration.LineThrough` correct for struck-through/impulse sections; fraction shows `pending/qty` or just `pending`; `ShoppingScannerBottomSheet` structurally identical to `InventoryScannerBottomSheet` (consistent placeholder pattern); `GroceryApp.kt` wires `Route.Shopping.path` → `ShoppingScreen(navController)`; all 9 repository method signatures verified; build passes.
-- **Round 10 (Task 9):** Approved — `UnloadingViewModel` is `@HiltViewModel @Inject constructor(repository, connector)` with `householdIdFlow` from `connector.sessionStatus.map { ... }` (Plan DI pattern); `items` is `flatMapLatest` → `repository.watchUnloadingItems(hid)` (`WHERE pending_stock > 0 AND deleted_at IS NULL`); `showWarningDialog` is `MutableStateFlow<Boolean>` exposed as `StateFlow`; `toggleUnloadOpen` correctly inverts `!checked` → `repository.setUnloadOpen(id, open)` — checkbox state purely DB-derived, zero local boolean; `requestSubmit` checks `items.value.any { it.unloadOpen }` — shows dialog only if open items exist, else direct `confirmSubmit()` (matches edge case "all checked → no dialog"); `confirmSubmit` dismisses dialog then calls `repository.submitUnloading(hid)` (atomic `writeTransaction`: stock merge + qty recalc + state → IDLE); all 5 DB write call sites wrapped in try/catch → `_snackbarMessage.emit` (fail-loud); `UnloadingScreen` uses `Scaffold` + `TopAppBar` with "Submit Unloading" `TextButton` in `actions`; `LazyColumn` keyed by `it.id` with `animateItem()`; `UnloadingRow`: `Checkbox(checked = !product.unloadOpen)`, both `IconButton` steppers `enabled = product.unloadOpen`, grey via `CompositionLocalProvider(LocalContentColor.copy(alpha = 0.38f))` when locked; stock text exact format `"${current} + ${pending} = ${current + pending}"`; `AlertDialog` shows open count, "Go Back" → `dismissDialog()`, "Submit Anyway" → `confirmSubmit()` (two-tap bypass); `GroceryApp.kt` wires `Route.Unloading.path` → `UnloadingScreen(navController)` with import; `UNLOADING` state auto-routes via existing `LaunchedEffect`; all 5 repository method signatures verified against interface and impl.
-- **Round 11 (Task 10):** Approved — `DetailViewModel` is `@HiltViewModel @Inject constructor(repository, savedStateHandle)` with `productId` extracted from `SavedStateHandle["productId"]!!`; `product` is `repository.watchProductKind(productId).stateIn()` — live stream; `groups` backed by `repository.watchProductGroups().stateIn()`; `barcodes` backed by `repository.watchBarcodes(productId).stateIn()`; `saveChanges()` calls `repository.updateProductKind` which internally recalculates `quantity_to_buy` in a single `writeTransaction` — no `recalculateQuantityToBuy` call in ViewModel; `_userEditing` flag prevents DB stream from overwriting in-flight edits, reset on save; all 3 DB-write paths (`addBarcode`, `deleteBarcode`, `saveChanges`) wrapped in try/catch → `_snackbarMessage.emit` (fail-loud); `DetailScreen` uses `hiltViewModel()` + `collectAsStateWithLifecycle`; back arrow calls `navController.popBackStack()`; `ImagePreview` uses `FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.fileprovider", File(path))` wrapped in `runCatching` → `AsyncImage`; `GroupDropdown` uses `ExposedDropdownMenuBox` with `menuAnchor(PrimaryNotEditable)` and "None" null option; both `StepperField` instances supply `contentDescriptionDecrement/Increment/Field` applied via `.semantics { contentDescription }`; `BarcodesSection` has chips with delete + dialog for add; Coil 3.2.0 declared in `libs.versions.toml` (L21, L89) and `build.gradle.kts` (L105); `filepaths.xml` has `<files-path>` and `<cache-path>` with `path="."`; `GroceryApp.kt` registers `Route.Detail.TEMPLATE` (L65-68) with `productId` argument; navigable from InventoryScreen (L61, L76) and ShoppingScreen (L124); FAB shows `CircularProgressIndicator` during save; build infrastructure consistent.
-- **Round 12 (Task 12):** Approved — `AudioFeedback.kt` is character-for-character match to spec: `@Singleton class AudioFeedback @Inject constructor(@ApplicationContext context: Context)`; `SoundPool.Builder` with `maxStreams(3)`, `USAGE_ASSISTANCE_SONIFICATION`, `CONTENT_TYPE_SONIFICATION`; `OnLoadCompleteListener` set before `load()` calls; `successLoaded`/`failureLoaded` boolean guards in `playSuccess()`/`playFailure()`; `release()` delegates to `soundPool.release()`; `GroceryApp.kt` uses `@EntryPoint @InstallIn(SingletonComponent)` interface with `EntryPointAccessors.fromApplication()` to resolve `@Singleton` from `@Composable` — correct pattern (no `Application.onTerminate()`); `DisposableEffect(Unit) { onDispose { audioFeedback.release() } }` at L48-50 — exact spec placement; `res/raw/beep_success.mp3` and `res/raw/beep_failure.mp3` present; build passes.
-- **Round 13 (Task 13):** Approved — All 12 review criteria pass. `BarcodeAnalyzer` dual-gate throttle: `COOLDOWN_MS = 3_000`, `CLEAR_FRAME_MS = 400`, `AtomicReference<ThrottleState>` with `HashMap<String,Long>` cooldowns + `lastDetectionMs` timestamp, both gates correctly in `getAndUpdate`. `ScannerProcessor.process()` handles all three branches: soft-delete resurrection (`deletedAt != null` → `restoreProductKind` + success beep + `Restored`), hit (`product != null` → mode-specific `decrementStock`/`incrementPendingStock` + `Hit`), miss (`else` → failure beep + OFF lookup → `CaptureRequired` + `Miss`); all wrapped in try/catch. `CameraPreviewComposable`: `remember { ProcessCameraProvider.getInstance(context) }` prevents recreation; `DisposableEffect(lifecycleOwner)` binds/unbinds exactly per spec. `filepaths.xml` has all three entries (`<external-files-path>`, `<files-path name="product_images">`, `<cache-path name="scanner_photos">`). Photo capture uses `FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.fileprovider", photoFile)`; `cleanupScannerPhotos` calls `deleteRecursively()` on both dismiss paths. State machine: Scanning→CaptureRequired on miss; CaptureRequired→Scanning on Save/Cancel; stays Scanning on Hit/Restored. `ScannerMode` sealed: `Inventory(householdId)`, `Shopping(householdId)`. `ScanResult` sealed: `Hit(ProductKind)`, `Miss(String)`, `Restored(ProductKind)`. `ScannerViewModel` is `@HiltViewModel` injecting `GroceryRepository` (`@ActivityRetainedScoped`), `AudioFeedback` (`@Singleton`), `OpenFoodFactsClient` (constructor-injected) — no circular DI. `commitNewProduct`: `ensureUnsortedGroup` → move photo from cache to `filesDir/product_images` → `createProductKind` → `findByBarcode` → emit `Hit`. `InventoryScreen` and `ShoppingScreen` both wire `BarcodeScannerBottomSheet` with correct `ScannerMode` and `onResult` handling; zero stale stub references. Build confirmed passing.
-- **Round 14 (Task 15):** Approved — All 4 review criteria pass. `CameraPermissionHandler` wraps all camera content inside `BarcodeScannerBottomSheet`'s `ModalBottomSheet` via `onGranted` lambda — camera only opens when `isGranted` is true. `shouldShowRationale` branch sets `rationaleShown = true` and shows `AlertDialog` with "Grant" button calling `launchPermissionRequest()`. `rationaleShown` branch (permanent denial) shows settings redirect via `ACTION_APPLICATION_DETAILS_SETTINGS` intent. `else` branch fires `LaunchedEffect(Unit) { permissionState.launchPermissionRequest() }` — safe on cold start. Accompanist-permissions `0.36.0` declared in `libs.versions.toml` (L23, L99) and `build.gradle.kts` (L108). `@OptIn(ExperimentalPermissionsApi::class)` present. Build passes.
-- **Round 15 (Task 16):** Approved — All 3 review criteria pass. `SignInScreen.kt` and `SignUpScreen.kt` contain zero references to `NavController`, `Screen` sealed class, or `.navigate()` — grep confirmed. Both screens accept only `AuthViewModel` parameter and delegate sign-in/sign-up to `authViewModel.signIn/signUp` with no post-success navigation. `GroceryApp.kt`: `snackbarHostState = remember { SnackbarHostState() }` at L59; passed to `Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) })` at L87; `LaunchedEffect(authState, householdState)` at L76-83 is a character-for-character match to the task spec snippet (`delay(5_000)` + `showSnackbar("Setup incomplete: contact support")`). Routing remains solely driven by `LaunchedEffect(householdState?.currentState)` at L67-74. Build passes.
+- **Round 1:** [Pending]
+- **Round 2:** [N/A]
+- **Round 3:** [N/A]
