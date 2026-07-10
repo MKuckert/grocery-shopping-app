@@ -13,13 +13,13 @@ import de.curlybracket.grocery.domain.model.ProductGroup
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.ProductWithGroup
 import de.curlybracket.grocery.domain.repository.GroceryRepository
-import dagger.hilt.android.scopes.ActivityRetainedScoped
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 
-@ActivityRetainedScoped
+@Singleton
 internal class GroceryRepositoryImpl @Inject constructor(
     private val db: PowerSyncDatabase,
     private val connector: SupabaseConnector,

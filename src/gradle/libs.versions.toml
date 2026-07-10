@@ -15,6 +15,8 @@ ksp = "2.0.20-1.0.24"
 splashscreen = "1.0.1"
 kermit = "2.0.5"
 uuid = "0.8.4"
+turbine = "1.2.0"
+mockk = "1.13.16"
 
 lifecycleService = "2.9.1"
 lifecycleRuntimeCompose = "2.9.1"
@@ -105,6 +107,9 @@ uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [bundles]
 compose = [

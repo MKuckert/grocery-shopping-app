@@ -526,7 +526,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 9: Write unit tests for critical business logic**
+- [/] **Task 9: Write unit tests for critical business logic**
   - **Description:** Both codebases have 0% test coverage. Establish the testing foundation with unit tests for the highest-risk code paths.
 
     Add test dependencies to `libs.versions.toml` (under `[versions]` and `[libraries]`) and reference them via `libs.*` in `app/build.gradle.kts`:
