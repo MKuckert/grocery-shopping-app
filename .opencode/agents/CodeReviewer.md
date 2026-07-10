@@ -1,7 +1,7 @@
 ---
 description: "Reviews the work of Builder"
 mode: subagent
-model: manifest/medium
+model: manifest/ultra
 permission:
   read: allow
   edit:
@@ -11,18 +11,19 @@ permission:
   glob: allow
   list: allow
   bash: deny
+  android_*: deny
   question: deny
   task:
     "*": deny
     "Explorer": allow
     "Librarian": allow
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
-  skill: allow
+  web_*: deny
+  skill:
+    "*": allow
+    supabase-postgres-best-practices: deny
   todowrite: deny
   doom_loop: allow
-steps: 50
+steps: 500
 ---
 
 <role>

@@ -1,0 +1,135 @@
+[versions]
+agp = "9.2.1"
+kotlin = "2.0.20"
+composeBom = "2026.06.00"
+hilt = "2.59.2"
+powersync = "1.13.0"
+supabase = "3.6.0"
+ktor = "3.1.3"
+cameraX = "1.6.1"
+mlkitBarcode = "17.3.0"
+navigationCompose = "2.9.8"
+coroutines = "1.11.0"
+serialization = "1.11.0"
+ksp = "2.0.20-1.0.24"
+splashscreen = "1.0.1"
+kermit = "2.0.5"
+uuid = "0.8.4"
+turbine = "1.2.0"
+mockk = "1.13.16"
+
+lifecycleService = "2.9.1"
+lifecycleRuntimeCompose = "2.9.1"
+hiltNavigationCompose = "1.2.0"
+coil = "3.2.0"
+accompanist = "0.36.0"
+
+# Testing & Android Framework
+coreKtx = "1.19.0"
+junit = "4.13.2"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+appcompat = "1.7.1"
+material = "1.14.0"
+activityCompose = "1.13.0"
+
+[libraries]
+# Compose BOM
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+
+# Compose UI & Material3
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+
+# CameraX
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraX" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraX" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraX" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraX" }
+
+# Navigation
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+# Hilt
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+
+# PowerSync
+powersync-core = { module = "com.powersync:core", version.ref = "powersync" }
+powersync-connector-supabase = { module = "com.powersync:connector-supabase", version.ref = "powersync" }
+powersync-compose = { module = "com.powersync:compose", version.ref = "powersync" }
+
+# Supabase
+supabase-kt = { module = "io.github.jan-tennert.supabase:supabase-kt", version.ref = "supabase" }
+supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
+supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
+
+# ML Kit
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcode" }
+
+# Coroutines & Kotlin
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+
+# Ktor (for Open Food Facts HTTP client)
+ktor-client-android              = { module = "io.ktor:ktor-client-android",              version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-json          = { module = "io.ktor:ktor-serialization-kotlinx-json",  version.ref = "ktor" }
+
+# AndroidX Core
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycleService" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+
+# Kermit logging
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+
+# Coil
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+
+# Accompanist
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
+
+# UUID (Kotlin multiplatform)
+uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+[bundles]
+compose = [
+    "androidx-compose-ui",
+    "androidx-compose-material3",
+    "androidx-compose-ui-tooling-preview",
+    "androidx-activity-compose"
+]
+camerax = [
+    "androidx-camera-core",
+    "androidx-camera-lifecycle",
+    "androidx-camera-view",
+    "androidx-camera-camera2"
+]
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+

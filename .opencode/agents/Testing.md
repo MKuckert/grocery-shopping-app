@@ -2,7 +2,7 @@
 description: "You are an agent used to test the agent harness"
 mode: primary
 disable: true
-model: manifest/medium
+model: manifest/ultra
 permission:
   "*": allow
 color: "#DD8800"

@@ -1,7 +1,7 @@
 ---
 description: "Commits changes to git"
 mode: subagent
-model: manifest/small
+model: manifest/medium
 permission:
   read: allow
   edit: deny
@@ -10,18 +10,23 @@ permission:
   list: allow
   bash:
     "*": deny
+    "nono why *": allow
     "git status": allow
     "git add *": allow
+    "git rm *": allow
     "git commit *": allow
+    "git diff *": allow
+    "git log *": allow
+  android_*: deny
   question: deny
   task: deny
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
-  skill: allow
+  web_*: deny
+  skill:
+    "*": allow
+    supabase-postgres-best-practices: deny
   todowrite: deny
   doom_loop: allow
-steps: 20
+steps: 100
 ---
 
 <role>

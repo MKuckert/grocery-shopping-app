@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "manifest/small",
-  "small_model": "manifest/mini",
+  "model": "manifest/medium",
+  "small_model": "manifest/small",
   "plugin": ["spotme"],
   "agent": {
     "build": {
@@ -34,15 +34,36 @@
     "summary": {
       "mode": "primary",
       "hidden": true,
-      "model": "manifest/mini",
+      "model": "manifest/small",
     },
   },
   "mcp": {
-    "context7": {
+    "android": {
       "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
       "enabled": true,
+      "url": "http://localhost:12001/sse",
     },
+    "web": {
+      "type": "remote",
+      "enabled": true,
+      "url": "http://localhost:12002/mcp",
+    },
+    "supabase": {
+      "type": "remote",
+      "enabled": true,
+      "url": "https://mcp.supabase.com/mcp?project_ref=sajpprxmybjoozlgqdme&features=docs%2Cdatabase%2Cdebugging%2Cdevelopment%2Cstorage",
+    },
+    "powersync": {
+      "type": "remote",
+      "enabled": true,
+      "url": "https://docs.powersync.com/mcp",
+    },
+  },
+  "permission": {
+    "webfetch": "deny",
+    "websearch": "deny",
+    "supabase_*": "deny",
+    "powersync_*": "deny",
   },
   "disabled_providers": [
     "opencode",
@@ -60,26 +81,33 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Manifest",
       "options": {
-        "baseURL": "http://192.168.178.55:11438/v1",
-        "apiKey": "mnfst_fg2oPyRbADke61Mj406BoEuKcavenT1bsbnLwLVuUFQ",
+        "baseURL": "http://localhost:11438/v1",
+        "apiKey": "mnfst_LWrVcNQ-QbyLAlKphpqlR9u6D-DvCrjSAMAry02TGO8",
       },
       "models": {
         "mini": {
-          "name": "Mini (apple on device",
+          "name": "Mini (apple-on-device)",
           "headers": {
             "X-Manifest-Tier": "mini",
           },
+          "limit": { "context": 2048, "input": 1024, "output": 1024 },
         },
         "small": {
-          "name": "Small (local Gemma 4, GPT-5-mini)",
+          "name": "Small (omlx, GPT-5-mini)",
           "headers": {
             "X-Manifest-Tier": "small",
           },
         },
         "medium": {
-          "name": "Medium (local Gemma 4, Haiku, GPT-5.4-mini)",
+          "name": "Medium (Haiku, GPT-5.4-mini)",
           "headers": {
             "X-Manifest-Tier": "medium",
+          },
+        },
+        "medium-alt": {
+          "name": "Medium Alt (GPT-5.4-mini, Haiku)",
+          "headers": {
+            "X-Manifest-Tier": "medium-alt",
           },
         },
         "complex": {
@@ -97,6 +125,7 @@
       },
     },
   },
+  "formatter": true,
   "compaction": {
     "auto": true,
     "prune": true,
@@ -107,5 +136,8 @@
     "quotaToast": {
       "enableToast": false,
     },
+    "batch_tool": true,
+    "disable_paste_summary": true,
+    "mcp_timeout": 600000,
   },
 }

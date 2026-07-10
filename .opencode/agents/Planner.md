@@ -1,24 +1,33 @@
 ---
 description: "Strategic software architect creating a PLAN.md"
 mode: primary
-model: manifest/complex
+model: manifest/ultra
 permission:
   read:
     "*": deny
     PLAN.md: allow
+    tasks/*: allow
   edit:
     "*": deny
     PLAN.md: allow
+    tasks/*: allow
   grep: deny
-  glob: deny
-  list: deny
+  glob:
+    "*": deny
+    PLAN.md: allow
+    tasks/*: allow
+  list:
+    "*": deny
+    PLAN.md: allow
+    tasks/*: allow
   bash: deny
+  android_*: deny
   question: allow
   task: allow
-  webfetch: deny
-  websearch: deny
-  context7_*: deny
-  skill: allow
+  web_*: deny
+  skill:
+    "*": allow
+    supabase-postgres-best-practices: deny
   todowrite: deny
   doom_loop: allow
 color: "#DD0000"

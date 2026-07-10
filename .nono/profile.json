@@ -1,0 +1,69 @@
+{
+  "$schema": "/Users/mkuckert/.config/nono/nono-profile.schema.json",
+  "extends": "opencode",
+  "meta": {
+    "author": "Martin Kuckert",
+    "name": "opencode-grocery-shopping-app"
+  },
+  "groups": {
+    "include": []
+  },
+  "workdir": {
+    "access": "readwrite"
+  },
+  "filesystem": {
+    "read_file": [
+      "~/.CFUserTextEncoding",
+      "~/.aliases",
+      "~/.bash_profile",
+      "~/.bash_prompt",
+      "~/.editorconfig",
+      "~/.extra",
+      "~/.exports",
+      "~/.gitconfig-agents",
+      "~/.gitconfig-private",
+      "~/.gitconfig-work",
+      "~/.gitignore",
+      "~/.path",
+      "~/.tigrc",
+      "~/.vimrc"
+    ],
+    "read": [
+      "~/.cache",
+      "~/.config",
+      "~/.config/nono",
+      "~/private/dev/grocery-shopping-app/main",
+      "~/private/dev/grocery-shopping-app/feature/initial-impl",
+      "~/private/dev/grocery-shopping-app/feature/opus-rebuild"
+    ],
+    "allow": [
+      "~/.npm/_cacache/tmp",
+      "~/private/dev/grocery-shopping-app/main/.git",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge"
+    ],
+    "deny": ["~/.gitconfig",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/gradlew",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/gradlew.bat",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/.env",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/src/local.properties",
+      "~/private/dev/grocery-shopping-app/feature/impl-merge/tools"
+    ]
+  },
+  "network": {
+    "allow_domain": [
+      "localhost",
+      "models.dev",
+      "mcp.supabase.com",
+      "api.supabase.com",
+      "docs.powersync.com"
+    ],
+    "allow_port": [11438, 12001, 12002]
+  },
+  "open_urls": { "allow_origins": ["https://api.supabase.com"] },
+  "environment": {
+    "allow_vars": ["HOME", "OPENCODE_SERVER_PASSWORD"],
+    "set_vars": {
+      "GIT_CONFIG_GLOBAL": "~/.gitconfig-agents"
+    }
+  }
+}
