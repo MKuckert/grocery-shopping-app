@@ -307,7 +307,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 6: Extract `householdIdFlow` to a shared utility**
+- [/] **Task 6: Extract `householdIdFlow` to a shared utility**
   - **Description:** The household ID extraction from `SupabaseConnector.sessionStatus` is duplicated in 4 locations:
     - `AuthViewModel.kt` (line 36)
     - `InventoryViewModel.kt` (line 35)

@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
 import co.touchlab.kermit.Logger
+import de.curlybracket.grocery.auth.householdIdFlow
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.SnackbarMessage
 import de.curlybracket.grocery.domain.repository.GroceryRepository
-import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -21,8 +21,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -32,16 +30,7 @@ class InventoryViewModel @Inject constructor(
     private val connector: SupabaseConnector,
 ) : ViewModel() {
 
-    val householdIdFlow: StateFlow<String?> = connector.sessionStatus
-        .map { status ->
-            when (status) {
-                is SessionStatus.Authenticated ->
-                    status.session.user?.appMetadata?.get("household_id")
-                        ?.jsonPrimitive?.contentOrNull
-                else -> null
-            }
-        }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    val householdIdFlow: StateFlow<String?> = connector.householdIdFlow(viewModelScope)
 
     val groupsWithProducts: StateFlow<List<GroupWithProducts>> =
         householdIdFlow
