@@ -307,7 +307,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [/] **Task 6: Extract `householdIdFlow` to a shared utility**
+- [x] **Task 6: Extract `householdIdFlow` to a shared utility**
   - **Description:** The household ID extraction from `SupabaseConnector.sessionStatus` is duplicated in 4 locations:
     - `AuthViewModel.kt` (line 36)
     - `InventoryViewModel.kt` (line 35)
@@ -609,3 +609,4 @@ Apply all findings from the comparative code review between `feature/initial-imp
 - **Round 3:** Task 3 approved (2026-07-09). `ScannerProcessor` is `@Singleton @Inject`-constructed with Flow-based API (`scanResultFlow`, `openFoodFactsResultFlow`). All 7 catch blocks log via `co.touchlab.kermit.Logger`. Zero callback lambdas on `processScan()`. Photo handling preserved (`createNewProduct` with graceful photo-move failure). `BarcodeScannerBottomSheet` collects flows via `LaunchedEffect`, receives `ScannerProcessor` as parameter (no direct repository/audio/OFF imports). `ScannerViewModel.kt` untouched (Task 4 scope). Screens receive `ScannerProcessor` from `AppViewModel` via `GroceryApp.kt`.
 - **Round 4:** Task 4 approved (2026-07-09). `ScannerViewModel.kt` deleted (glob confirms no file). Zero imports of `ScannerViewModel` in codebase (grep confirms). `ScannerProcessor` annotated `@Singleton` with `@Inject` constructor. `AppViewModel` exposes `val scannerProcessor: ScannerProcessor`. `GroceryApp.kt` passes `appViewModel.scannerProcessor` to both `InventoryScreen` and `ShoppingScreen`.
 - **Round 5:** Task 5 approved (2026-07-10). All 26 catch blocks across `src/app/src/main/kotlin/` verified — every one has a `Logger.e()`, `Logger.w()`, or `Logger.d()` call as the first statement before any user-facing action. All 7 target files import `co.touchlab.kermit.Logger`. Zero `android.util.Log` imports in the codebase. Log messages match the plan's specification table exactly.
+- **Round 6:** Task 6 approved (2026-07-10). `HouseholdIdExt.kt` contains the sole extraction logic (26 lines, exact match to plan spec). All four ViewModels (`AuthViewModel`, `InventoryViewModel`, `ShoppingViewModel`, `UnloadingViewModel`) call `connector.householdIdFlow(viewModelScope)`. Zero `jsonPrimitive`/`contentOrNull` imports in any ViewModel. `AuthViewModel.SessionStatus` import retained legitimately for auth state machine (not household ID). `householdId` renamed to `householdIdFlow` in `AuthViewModel`. No residual inline extraction pattern found.
