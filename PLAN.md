@@ -284,7 +284,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [/] **Task 5: Restore `Logger` in all catch blocks lacking developer logging**
+- [x] **Task 5: Restore `Logger` in all catch blocks lacking developer logging**
   - **Description:** The Rebuild's ViewModel and Screen catch blocks emit user-facing messages (snackbar/errorMessage) but lack `Logger` calls for developer observability. Only `ScannerProcessor`, `SyncService`, and `AuthViewModel` log properly. `OpenFoodFactsClient.kt` is the only truly silent catch (returns `OFResult.Miss` with no logging). Every catch block must add a `Logger.e()` or `Logger.w()` call before any user-facing action.
 
     Files and locations to fix (all in the Rebuild):
@@ -608,3 +608,4 @@ Apply all findings from the comparative code review between `feature/initial-imp
 - **Round 2:** Task 2 approved (2026-07-09). All screens use callback lambdas; zero `NavController`/`Route` imports in screen files; argument extraction uses safe `?: error()` pattern.
 - **Round 3:** Task 3 approved (2026-07-09). `ScannerProcessor` is `@Singleton @Inject`-constructed with Flow-based API (`scanResultFlow`, `openFoodFactsResultFlow`). All 7 catch blocks log via `co.touchlab.kermit.Logger`. Zero callback lambdas on `processScan()`. Photo handling preserved (`createNewProduct` with graceful photo-move failure). `BarcodeScannerBottomSheet` collects flows via `LaunchedEffect`, receives `ScannerProcessor` as parameter (no direct repository/audio/OFF imports). `ScannerViewModel.kt` untouched (Task 4 scope). Screens receive `ScannerProcessor` from `AppViewModel` via `GroceryApp.kt`.
 - **Round 4:** Task 4 approved (2026-07-09). `ScannerViewModel.kt` deleted (glob confirms no file). Zero imports of `ScannerViewModel` in codebase (grep confirms). `ScannerProcessor` annotated `@Singleton` with `@Inject` constructor. `AppViewModel` exposes `val scannerProcessor: ScannerProcessor`. `GroceryApp.kt` passes `appViewModel.scannerProcessor` to both `InventoryScreen` and `ShoppingScreen`.
+- **Round 5:** Task 5 approved (2026-07-10). All 26 catch blocks across `src/app/src/main/kotlin/` verified — every one has a `Logger.e()`, `Logger.w()`, or `Logger.d()` call as the first statement before any user-facing action. All 7 target files import `co.touchlab.kermit.Logger`. Zero `android.util.Log` imports in the codebase. Log messages match the plan's specification table exactly.
