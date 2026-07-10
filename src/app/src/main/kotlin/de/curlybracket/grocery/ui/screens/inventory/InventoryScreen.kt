@@ -130,7 +130,7 @@ internal fun InventoryScreen(
     val hid = householdId
     if (showScanner && hid != null) {
         BarcodeScannerBottomSheet(
-            mode = ScannerMode.Inventory(hid),
+            mode = ScannerMode.DecrementStock(hid),
             isOpen = showScanner,
             onDismiss = { showScanner = false },
             onResult = { result ->

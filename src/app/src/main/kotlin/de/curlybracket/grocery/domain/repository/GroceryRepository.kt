@@ -69,7 +69,7 @@ interface GroceryRepository {
 
     suspend fun deleteBarcode(barcodeId: String)
 
-    suspend fun createProductKind(
+    suspend fun createProductKindWithBarcode(
         householdId: String,
         name: String,
         groupId: String,

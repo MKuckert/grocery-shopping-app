@@ -24,7 +24,7 @@ class ScannerProcessorTest {
 
     private val householdId = "hh-1"
     private val barcode = "1234567890"
-    private val mode = ScannerMode.Inventory(householdId)
+    private val mode = ScannerMode.DecrementStock(householdId)
 
     private fun makeProduct(
         id: String = "p-1",
@@ -70,7 +70,7 @@ class ScannerProcessorTest {
     @Test
     fun `processScan Shopping mode calls incrementPendingStock`() = runTest {
         val product = makeProduct()
-        val shoppingMode = ScannerMode.Shopping(householdId)
+        val shoppingMode = ScannerMode.IncrementPendingStock(householdId)
         coEvery { repository.findByBarcode(barcode, householdId) } returns product
 
         processor.scanResultFlow.test {
@@ -170,7 +170,7 @@ class ScannerProcessorTest {
     fun `createNewProduct creates product and returns it`() = runTest {
         val product = makeProduct()
         coEvery { repository.ensureUnsortedGroup(householdId) } returns "g-1"
-        coEvery { repository.createProductKind(any(), any(), any(), any(), any()) } returns product.id
+        coEvery { repository.createProductKindWithBarcode(any(), any(), any(), any(), any()) } returns product.id
         coEvery { repository.findByBarcode(barcode, householdId) } returns product
 
         val result = processor.createNewProduct(
@@ -182,14 +182,14 @@ class ScannerProcessorTest {
         )
 
         assertEquals(product, result)
-        coVerify(exactly = 1) { repository.createProductKind(householdId, "Milk", "g-1", 1, barcode) }
+        coVerify(exactly = 1) { repository.createProductKindWithBarcode(householdId, "Milk", "g-1", 1, barcode) }
     }
 
     @Test
     fun `createNewProduct handles photo move failure gracefully and still returns product`() = runTest {
         val product = makeProduct()
         coEvery { repository.ensureUnsortedGroup(householdId) } returns "g-1"
-        coEvery { repository.createProductKind(any(), any(), any(), any(), any()) } returns product.id
+        coEvery { repository.createProductKindWithBarcode(any(), any(), any(), any(), any()) } returns product.id
         coEvery { repository.findByBarcode(barcode, householdId) } returns product
 
         // Provide a non-existent photo path — the file copy will fail

@@ -200,7 +200,7 @@ internal fun ShoppingScreen(
     val hid = householdId
     if (showScanner && hid != null) {
         BarcodeScannerBottomSheet(
-            mode = ScannerMode.Shopping(hid),
+            mode = ScannerMode.IncrementPendingStock(hid),
             isOpen = showScanner,
             onDismiss = { showScanner = false },
             onResult = { result ->

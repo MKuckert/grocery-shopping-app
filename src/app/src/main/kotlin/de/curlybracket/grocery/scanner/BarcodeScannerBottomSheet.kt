@@ -190,7 +190,7 @@ private fun ScanningContent(
                 imageCapture = imageCapture,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(),
+                    .height(200.dp)
             )
             if (isProcessing) {
                 CircularProgressIndicator()

@@ -6,21 +6,25 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class OpenFoodFactsClient @Inject constructor(
-    @Named("offs") private val httpClient: HttpClient,
+  @param:Named("offs") private val httpClient: HttpClient,
 ) {
     private val baseUrl = "https://world.openfoodfacts.org/api/v3.6/product"
     private val userAgent = "GroceryShoppingApp/0.1.0 (grocery@curlybracket.de)"
+  private fun rateLimitDelay(): Duration = 2_000.milliseconds
 
     suspend fun lookupBarcode(barcode: String): OFResult {
         return try {
             val result = attemptLookup(barcode)
             if (result is OFResult.RateLimit) {
-                delay(2_000)
+                delay(rateLimitDelay())
                 attemptLookup(barcode).let {
                     if (it is OFResult.RateLimit) OFResult.Miss else it
                 }
@@ -31,12 +35,12 @@ class OpenFoodFactsClient @Inject constructor(
         }
     }
 
-    private suspend fun attemptLookup(barcode: String): OFResult {
+  private suspend fun attemptLookup(barcode: String): OFResult {
         val response = httpClient.get("$baseUrl/$barcode.json") {
             header(HttpHeaders.UserAgent, userAgent)
         }
-        return when (response.status.value) {
-            200 -> {
+        return when (response.status) {
+            HttpStatusCode.OK -> {
                 val body = response.body<OFResponse>()
                 if (body.status == "ok") {
                     val name = body.product?.productName?.takeIf { it.isNotBlank() }
@@ -45,7 +49,7 @@ class OpenFoodFactsClient @Inject constructor(
                     OFResult.Hit(name)
                 } else OFResult.Miss
             }
-            503 -> OFResult.RateLimit
+            HttpStatusCode.ServiceUnavailable -> OFResult.RateLimit
             else -> OFResult.Miss
         }
     }

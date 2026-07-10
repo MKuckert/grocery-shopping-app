@@ -23,7 +23,7 @@ class GroceryRepositoryImplTest {
     fun setUp() {
         db = mockk(relaxed = true)
         connector = mockk(relaxed = true)
-        repository = GroceryRepositoryImpl(db, connector)
+        repository = GroceryRepositoryImpl(db)
     }
 
     /**
@@ -134,7 +134,7 @@ class GroceryRepositoryImplTest {
         every { tx.execute(capture(executedSqls), any()) } returns 1L
         captureAndRunTransaction(tx)
 
-        repository.createProductKind(
+        repository.createProductKindWithBarcode(
             householdId = "hh-1",
             name = "Milk",
             groupId = "g-1",
@@ -151,7 +151,7 @@ class GroceryRepositoryImplTest {
     fun `createProductKind returns a non-null non-blank product ID`() = runTest {
         captureAndRunTransaction()
 
-        val productId = repository.createProductKind(
+        val productId = repository.createProductKindWithBarcode(
             householdId = "hh-1",
             name = "Bread",
             groupId = "g-1",
@@ -170,7 +170,7 @@ class GroceryRepositoryImplTest {
         every { tx.execute(any(), capture(capturedParams)) } returns 1L
         captureAndRunTransaction(tx)
 
-        repository.createProductKind(
+        repository.createProductKindWithBarcode(
             householdId = "hh-42",
             name = "Yogurt",
             groupId = "g-7",

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.event.AuthEvent
 import io.github.jan.supabase.auth.status.RefreshFailureCause
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,22 +36,27 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             connector.sessionStatus.collect {
                 when (it) {
-                    is SessionStatus.Authenticated -> {
-                        _authState.value = AuthState.SignedIn
-                        _userId.value = it.session.user?.id
+                  is SessionStatus.Authenticated -> {
+                    _authState.value = AuthState.SignedIn
+                    _userId.value = it.session.user?.id
+                  }
+
+                  is SessionStatus.Initializing -> Logger.e("Loading from storage")
+                  is SessionStatus.RefreshFailure -> {
+                    // SessionStatus.RefreshFailure.cause is deprecated but connector.supabaseClient.auth.events is still experimental
+                    // Caught between a rock and a hard place ¯\_(ツ)_/¯
+                    when (it.cause) {
+                      is RefreshFailureCause.NetworkError ->
+                        Logger.e("Network error occurred")
+
+                      is RefreshFailureCause.InternalServerError ->
+                        Logger.e("Internal server error occurred")
                     }
-                    is SessionStatus.Initializing -> Logger.e("Loading from storage")
-                    is SessionStatus.RefreshFailure -> {
-                        when (it.cause) {
-                            is RefreshFailureCause.NetworkError ->
-                                Logger.e("Network error occurred")
-                            is RefreshFailureCause.InternalServerError ->
-                                Logger.e("Internal server error occurred")
-                        }
-                    }
-                    is SessionStatus.NotAuthenticated -> {
-                        _authState.value = AuthState.SignedOut
-                    }
+                  }
+
+                  is SessionStatus.NotAuthenticated -> {
+                    _authState.value = AuthState.SignedOut
+                  }
                 }
             }
         }

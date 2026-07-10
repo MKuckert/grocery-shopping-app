@@ -10,13 +10,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class AppViewModel @Inject constructor(
-    private val repository: GroceryRepository,
+    repository: GroceryRepository,
     val scannerProcessor: ScannerProcessor,
 ) : ViewModel() {
     val householdState: StateFlow<Household?> =
         repository.watchHousehold()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5.seconds.inWholeMilliseconds), null)
 }

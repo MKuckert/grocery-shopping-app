@@ -60,9 +60,9 @@ class ScannerProcessor @Inject constructor(
             product != null -> {
                 try {
                     when (mode) {
-                        is ScannerMode.Inventory ->
+                        is ScannerMode.DecrementStock ->
                             repository.decrementStock(product.id)
-                        is ScannerMode.Shopping ->
+                        is ScannerMode.IncrementPendingStock ->
                             repository.incrementPendingStock(product.id)
                     }
                     audioFeedback.playSuccess()
@@ -102,7 +102,7 @@ class ScannerProcessor @Inject constructor(
         return try {
             val groupId = repository.ensureUnsortedGroup(householdId)
 
-            repository.createProductKind(
+            repository.createProductKindWithBarcode(
                 householdId = householdId,
                 name = productName,
                 groupId = groupId,

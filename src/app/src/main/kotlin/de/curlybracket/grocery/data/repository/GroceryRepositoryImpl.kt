@@ -1,7 +1,6 @@
 package de.curlybracket.grocery.data.repository
 
 import com.powersync.PowerSyncDatabase
-import com.powersync.connector.supabase.SupabaseConnector
 import com.powersync.db.SqlCursor
 import com.powersync.db.getLong
 import com.powersync.db.getString
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @Singleton
 internal class GroceryRepositoryImpl @Inject constructor(
     private val db: PowerSyncDatabase,
-    private val connector: SupabaseConnector,
 ) : GroceryRepository {
 
     // --- Reactive Flows ---
@@ -32,8 +30,8 @@ internal class GroceryRepositoryImpl @Inject constructor(
             sql = "SELECT id, current_state, shopping_started_at FROM households LIMIT 1",
         ) { cursor: SqlCursor ->
             Household(
-                id = cursor.getString("id")!!,
-                currentState = HouseholdState.valueOf(cursor.getString("current_state")!!),
+                id = cursor.getString("id"),
+                currentState = HouseholdState.valueOf(cursor.getString("current_state")),
                 shoppingStartedAt = cursor.getStringOptional("shopping_started_at"),
             )
         }.map { it.firstOrNull() }
@@ -48,9 +46,9 @@ internal class GroceryRepositoryImpl @Inject constructor(
             """.trimIndent(),
         ) { cursor: SqlCursor ->
             ProductGroup(
-                id = cursor.getString("id")!!,
-                householdId = cursor.getString("household_id")!!,
-                name = cursor.getString("name")!!,
+                id = cursor.getString("id"),
+                householdId = cursor.getString("household_id"),
+                name = cursor.getString("name"),
                 deletedAt = cursor.getStringOptional("deleted_at"),
             )
         }
@@ -150,10 +148,10 @@ internal class GroceryRepositoryImpl @Inject constructor(
             parameters = listOf(productKindId),
         ) { cursor: SqlCursor ->
             Barcode(
-                id = cursor.getString("id")!!,
-                householdId = cursor.getString("household_id")!!,
-                productKindId = cursor.getString("product_kind_id")!!,
-                barcodeNumber = cursor.getString("barcode_number")!!,
+                id = cursor.getString("id"),
+                householdId = cursor.getString("household_id"),
+                productKindId = cursor.getString("product_kind_id"),
+                barcodeNumber = cursor.getString("barcode_number"),
             )
         }
 
@@ -316,7 +314,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun createProductKind(
+    override suspend fun createProductKindWithBarcode(
         householdId: String,
         name: String,
         groupId: String,
@@ -364,7 +362,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 LIMIT 1
             """.trimIndent(),
             parameters = listOf(householdId),
-        ) { cursor: SqlCursor -> cursor.getString("id")!! }
+        ) { cursor: SqlCursor -> cursor.getString("id") }
 
         if (existing != null) return existing
 
@@ -379,16 +377,16 @@ internal class GroceryRepositoryImpl @Inject constructor(
     // --- Private helpers ---
 
     private fun productKindFromCursor(cursor: SqlCursor): ProductKind = ProductKind(
-        id = cursor.getString("id")!!,
-        householdId = cursor.getString("household_id")!!,
+        id = cursor.getString("id"),
+        householdId = cursor.getString("household_id"),
         groupId = cursor.getStringOptional("group_id"),
-        name = cursor.getString("name")!!,
-        currentStock = cursor.getLong("current_stock")!!.toInt(),
-        minimumStock = cursor.getLong("minimum_stock")!!.toInt(),
-        quantityToBuy = cursor.getLong("quantity_to_buy")!!.toInt(),
-        pendingStock = cursor.getLong("pending_stock")!!.toInt(),
+        name = cursor.getString("name"),
+        currentStock = cursor.getLong("current_stock").toInt(),
+        minimumStock = cursor.getLong("minimum_stock").toInt(),
+        quantityToBuy = cursor.getLong("quantity_to_buy").toInt(),
+        pendingStock = cursor.getLong("pending_stock").toInt(),
         imagePath = cursor.getStringOptional("image_path"),
-        unloadOpen = (cursor.getLong("unload_open") ?: 0L) != 0L,
+        unloadOpen = cursor.getLong("unload_open") != 0L,
         deletedAt = cursor.getStringOptional("deleted_at"),
     )
 }

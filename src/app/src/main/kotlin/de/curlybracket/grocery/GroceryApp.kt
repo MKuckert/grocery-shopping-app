@@ -23,7 +23,6 @@ import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.auth.AuthState
 import de.curlybracket.grocery.auth.AuthViewModel
 import de.curlybracket.grocery.domain.model.HouseholdState
-import de.curlybracket.grocery.scanner.ScannerProcessor
 import de.curlybracket.grocery.ui.navigation.AppViewModel
 import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
@@ -33,6 +32,7 @@ import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
@@ -76,7 +76,7 @@ fun GroceryApp() {
 
     LaunchedEffect(authState, householdState) {
         if (authState == AuthState.SignedIn && householdState == null) {
-            delay(5_000)
+            delay(5_000.milliseconds)
             if (householdState == null) {
                 snackbarHostState.showSnackbar("Setup incomplete: contact support")
             }
@@ -113,11 +113,8 @@ fun GroceryApp() {
             composable(Route.Unloading.path) {
                 UnloadingScreen()
             }
-            composable(Route.Detail.TEMPLATE) { backStack ->
-                val productId = backStack.arguments?.getString("productId")
-                    ?: error("productId argument required")
+            composable(Route.Detail.TEMPLATE) { _ ->
                 DetailScreen(
-                    productId = productId,
                     onBack = { navController.popBackStack() },
                 )
             }
