@@ -375,7 +375,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 7: Fix `BarcodeScannerBottomSheet` to consume Flow-based ScannerProcessor**
+- [/] **Task 7: Fix `BarcodeScannerBottomSheet` to consume Flow-based ScannerProcessor**
   - **Description:** This is the UI counterpart to Task 3. The `BarcodeScannerBottomSheet.kt` currently creates a local `ScannerProcessor` via `remember {}` and uses callback lambdas. It must be refactored to:
     1. Accept `ScannerProcessor` as a parameter (Hilt-injected, not locally created).
     2. Subscribe to `processor.scanResultFlow` and `processor.openFoodFactsResultFlow` via `LaunchedEffect` collectors.
