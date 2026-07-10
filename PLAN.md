@@ -457,7 +457,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 8: Update screen composables for BarcodeScannerBottomSheet signature change**
+- [/] **Task 8: Update screen composables for BarcodeScannerBottomSheet signature change**
   - **Description:** After Tasks 2, 3, 4, and 7, the `BarcodeScannerBottomSheet` call sites in `InventoryScreen.kt` and `ShoppingScreen.kt` must be updated.
 
     Both screens currently pass raw dependencies:
