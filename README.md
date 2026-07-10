@@ -94,7 +94,32 @@ Obviously.
 
 ## Implementation
 
-The app is implemented by heavily relying on AI. Google Gemini and I wrote docs/UI.md and docs/DATABASE.md, Claude Sonnet drafted the plan and broke it into tasks. Claude Sonnet did the majority of the coding, while I (the human) provided the initial project structure, guidance, and oversight. Claude Opus did code reviews. The AI was responsible for generating the majority of the codebase, including database schemas, UI components, and synchronization logic. Claude Haiku supported as Explorer, Librarian and Committer.
+The app is implemented by heavily relying on AI.
+
+- Google Gemini and I wrote the initial [docs/UI.md](docs/UI.md) and [docs/DATABASE.md](docs/DATABASE.md).
+- Claude Sonnet drafted the initial plan and broke it into tasks.
+- Two initial implementations were done, once by Claude Haiku and once by Claude Sonnet, with the later being the one that was chosen for further development.
+  - Claude Opus made a comparing review of both implementations and suggested the plan to merge the best parts of both implementations. You can find the review at [docs/REVIEW_INITIAL_IMPL.md](docs/REVIEW_INITIAL_IMPL.md).
+- I (the human) provided the initial project structure, guidance, and oversight. The AI was responsible for generating the majority of the codebase, including database schemas, UI components, and synchronization logic.
+
+### First Haiku implementation
+
+Claude Haiku did the majority of the coding. A local model (first Gemma 4 26B, than Qwen3.6 27B) supported as Explorer, Librarian and Committer.
+
+Rough breakdown:
+
+| model                     | tokens   |
+| ------------------------- | -------- |
+| claude-haiku-4.5          | ~60M     |
+| claude-sonnet-4.6         | ~19M     |
+| qwen3.6-27B               | ~5M      |
+| gemma-4-26B-A4B           | ~4M      |
+| other models sporadically | ~5M      |
+| **total**                 | **~91M** |
+
+### First Sonnet implementation
+
+Claude Sonnet did the majority of the coding. Claude Haiku supported as Explorer, Librarian and Committer.
 
 Rough breakdown:
 
