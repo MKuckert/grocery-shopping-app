@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.domain.model.ProductKind
@@ -76,6 +77,7 @@ class InventoryViewModel @Inject constructor(
             try {
                 repository.setHouseholdState(HouseholdState.SHOPPING)
             } catch (e: Exception) {
+                Logger.e("Failed to start shopping", e)
                 _snackbarMessage.emit(
                     SnackbarMessage(text = "Failed to start shopping", productId = ""),
                 )
@@ -96,6 +98,7 @@ class InventoryViewModel @Inject constructor(
                     ),
                 )
             } catch (e: Exception) {
+                Logger.e("Failed to decrement stock", e)
                 _snackbarMessage.emit(
                     SnackbarMessage(text = "Failed to decrement stock", productId = product.id),
                 )

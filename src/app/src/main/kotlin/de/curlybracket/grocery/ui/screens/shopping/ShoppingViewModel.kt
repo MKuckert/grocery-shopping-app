@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.SnackbarMessage
@@ -80,6 +81,7 @@ class ShoppingViewModel @Inject constructor(
             try {
                 repository.setHouseholdState(HouseholdState.UNLOADING)
             } catch (e: Exception) {
+                Logger.e("Failed to finish shopping", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to finish shopping", productId = ""))
             }
         }
@@ -90,6 +92,7 @@ class ShoppingViewModel @Inject constructor(
             try {
                 repository.fulfillFull(product.id)
             } catch (e: Exception) {
+                Logger.e("Failed to fulfill item", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to fulfill item", productId = product.id))
             }
         }
@@ -100,6 +103,7 @@ class ShoppingViewModel @Inject constructor(
             try {
                 repository.incrementPendingStock(product.id)
             } catch (e: Exception) {
+                Logger.e("Failed to increment pending", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to increment pending", productId = product.id))
             }
         }
@@ -110,6 +114,7 @@ class ShoppingViewModel @Inject constructor(
             try {
                 repository.decrementPendingStock(product.id)
             } catch (e: Exception) {
+                Logger.e("Failed to decrement pending", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to decrement pending", productId = product.id))
             }
         }
@@ -126,6 +131,7 @@ class ShoppingViewModel @Inject constructor(
                     repository.setPendingStock(product.id, 1)
                 }
             } catch (e: Exception) {
+                Logger.e("Failed to force-add item", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to force-add item", productId = product.id))
             }
         }

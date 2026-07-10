@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.auth.AuthViewModel
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import kotlinx.coroutines.launch
@@ -86,6 +87,7 @@ internal fun SignUpScreen(
                     try {
                         authViewModel.signUp(email, password)
                     } catch (e: Exception) {
+                        Logger.e("Sign-up failed", e)
                         errorMessage = if (e is BadRequestRestException) {
                             "Sign-up failed: check your email and password"
                         } else {

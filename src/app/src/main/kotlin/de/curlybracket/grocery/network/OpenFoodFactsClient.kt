@@ -1,5 +1,6 @@
 package de.curlybracket.grocery.network
 
+import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -25,6 +26,7 @@ class OpenFoodFactsClient @Inject constructor(
                 }
             } else result
         } catch (e: Exception) {
+            Logger.w("Open Food Facts lookup failed", e)
             OFResult.Miss
         }
     }

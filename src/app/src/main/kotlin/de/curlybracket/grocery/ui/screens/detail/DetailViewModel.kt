@@ -8,6 +8,7 @@ import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.ProductGroup
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.SnackbarMessage
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -98,6 +99,7 @@ class DetailViewModel @Inject constructor(
             try {
                 repository.addBarcode(productId, barcodeNumber, hid)
             } catch (e: Exception) {
+                Logger.e("Failed to add barcode", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to add barcode", productId = productId))
             }
         }
@@ -108,6 +110,7 @@ class DetailViewModel @Inject constructor(
             try {
                 repository.deleteBarcode(barcode.id)
             } catch (e: Exception) {
+                Logger.e("Failed to delete barcode", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to delete barcode", productId = productId))
             }
         }
@@ -128,6 +131,7 @@ class DetailViewModel @Inject constructor(
                 _userEditing.value = false
                 _snackbarMessage.emit(SnackbarMessage(text = "Saved", productId = productId))
             } catch (e: Exception) {
+                Logger.e("Failed to save changes", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to save changes", productId = productId))
             } finally {
                 _isSaving.value = false

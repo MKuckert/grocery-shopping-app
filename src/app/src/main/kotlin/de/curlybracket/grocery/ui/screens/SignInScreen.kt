@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.auth.AuthViewModel
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import kotlinx.coroutines.launch
@@ -87,6 +88,7 @@ internal fun SignInScreen(
                     try {
                         authViewModel.signIn(email, password)
                     } catch (e: Exception) {
+                        Logger.e("Sign-in failed", e)
                         errorMessage = if (e is BadRequestRestException) {
                             "Invalid email or password"
                         } else {

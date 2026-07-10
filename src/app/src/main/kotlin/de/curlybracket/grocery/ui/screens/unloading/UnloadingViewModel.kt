@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.SnackbarMessage
 import de.curlybracket.grocery.domain.repository.GroceryRepository
@@ -60,6 +61,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.setUnloadOpen(product.id, open)
             } catch (e: Exception) {
+                Logger.e("Failed to toggle unload state", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to toggle unload state", productId = product.id))
             }
         }
@@ -81,6 +83,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.submitUnloading(hid)
             } catch (e: Exception) {
+                Logger.e("Failed to submit unloading", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to submit unloading", productId = ""))
             }
         }
@@ -95,6 +98,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.incrementPendingStock(product.id)
             } catch (e: Exception) {
+                Logger.e("Failed to increment pending", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to increment pending", productId = product.id))
             }
         }
@@ -105,6 +109,7 @@ internal class UnloadingViewModel @Inject constructor(
             try {
                 repository.decrementPendingStock(product.id)
             } catch (e: Exception) {
+                Logger.e("Failed to decrement pending", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to decrement pending", productId = product.id))
             }
         }

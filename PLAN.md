@@ -284,7 +284,7 @@ Apply all findings from the comparative code review between `feature/initial-imp
 
 ---
 
-- [ ] **Task 5: Restore `Logger` in all catch blocks lacking developer logging**
+- [/] **Task 5: Restore `Logger` in all catch blocks lacking developer logging**
   - **Description:** The Rebuild's ViewModel and Screen catch blocks emit user-facing messages (snackbar/errorMessage) but lack `Logger` calls for developer observability. Only `ScannerProcessor`, `SyncService`, and `AuthViewModel` log properly. `OpenFoodFactsClient.kt` is the only truly silent catch (returns `OFResult.Miss` with no logging). Every catch block must add a `Logger.e()` or `Logger.w()` call before any user-facing action.
 
     Files and locations to fix (all in the Rebuild):
