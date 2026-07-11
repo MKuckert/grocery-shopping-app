@@ -48,7 +48,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Total occurrences of the SQL string reduced from 5 to 1
     - Existing behavior unchanged (verify via existing tests)
 
-- [ ] **Task 3: Add `created_at` and `updated_at` to PowerSync schema (client-side)**
+- [/] **Task 3: Add `created_at` and `updated_at` to PowerSync schema (client-side)**
   - **Description:** Add `Column.text("created_at")` and `Column.text("updated_at")` to all 4 tables in `AppSchema.kt`. Update ALL INSERT statements in `GroceryRepositoryImpl` to include `datetime('now')` for both columns. Update ALL UPDATE statements to set `updated_at = datetime('now')`. Domain models (`ProductKind`, `ProductGroup`, `Household`, `Barcode`) do NOT need these fields exposed yet — they are for sync/audit only.
   - **Files:** `data/db/AppSchema.kt`, `data/repository/GroceryRepositoryImpl.kt`
   - **Review Criteria:**

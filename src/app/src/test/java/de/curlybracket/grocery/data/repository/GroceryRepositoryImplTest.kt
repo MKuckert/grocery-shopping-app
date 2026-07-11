@@ -56,7 +56,7 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1) WHERE id = ?",
+                "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1), updated_at = datetime('now') WHERE id = ?",
                 listOf("p-1"),
             )
         }
@@ -71,7 +71,7 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
+                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock), updated_at = datetime('now') WHERE id = ?",
                 listOf("p-1"),
             )
         }
@@ -105,7 +105,7 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE households SET current_state = 'IDLE' WHERE id = (SELECT id FROM households LIMIT 1)",
+                "UPDATE households SET current_state = 'IDLE', updated_at = datetime('now') WHERE id = (SELECT id FROM households LIMIT 1)",
             )
         }
     }
@@ -123,7 +123,7 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
+                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock), updated_at = datetime('now') WHERE id = ?",
                 listOf("p-42"),
             )
         }
