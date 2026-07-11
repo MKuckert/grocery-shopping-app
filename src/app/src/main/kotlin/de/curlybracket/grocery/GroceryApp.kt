@@ -26,7 +26,6 @@ import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.ui.navigation.AppViewModel
 import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
-import de.curlybracket.grocery.ui.screens.SignUpScreen
 import de.curlybracket.grocery.ui.screens.detail.DetailScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
@@ -90,9 +89,6 @@ fun GroceryApp() {
         NavHost(navController = navController, startDestination = Route.SignIn.path) {
             composable(Route.SignIn.path) {
                 SignInScreen(authViewModel = authViewModel)
-            }
-            composable(Route.SignUp.path) {
-                SignUpScreen(authViewModel = authViewModel)
             }
             composable(Route.Inventory.path) {
                 InventoryScreen(

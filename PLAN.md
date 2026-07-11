@@ -67,7 +67,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `moddatetime` trigger is created for each table
     - Migration is idempotent (uses `IF NOT EXISTS` or similar guards)
 
-- [ ] **Task 5: Remove signup screen and Route.SignUp**
+- [/] **Task 5: Remove signup screen and Route.SignUp**
   - **Description:** Create a bash command to delete `SignUpScreen.kt`, remove `Route.SignUp` from `Routes.kt`, remove the `composable(Route.SignUp.path)` entry from the NavHost in `GroceryApp.kt`. Note: `SignInScreen.kt` does NOT contain a link to signup — no changes needed there. A human will perform the deletion as you have no permissions to do so.
   - **Files:** `ui/screens/SignUpScreen.kt` (delete), `ui/navigation/Routes.kt`, `GroceryApp.kt`
   - **Review Criteria:**
