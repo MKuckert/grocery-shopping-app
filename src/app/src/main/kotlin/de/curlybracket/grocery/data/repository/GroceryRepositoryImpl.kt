@@ -374,6 +374,15 @@ internal class GroceryRepositoryImpl @Inject constructor(
         return newId
     }
 
+    override suspend fun createProductGroup(householdId: String, name: String): String {
+        val newId = UUID.randomUUID().toString()
+        db.execute(
+            sql = "INSERT INTO product_groups (id, household_id, name, deleted_at, created_at, updated_at) VALUES (?, ?, ?, NULL, datetime('now'), datetime('now'))",
+            parameters = listOf(newId, householdId, name),
+        )
+        return newId
+    }
+
     // --- Private helpers ---
 
     private fun recalculateQuantityToBuyTx(tx: PowerSyncTransaction, productId: String) {

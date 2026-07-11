@@ -82,4 +82,6 @@ interface GroceryRepository {
     suspend fun restoreProductKind(productId: String)
 
     suspend fun ensureUnsortedGroup(householdId: String): String
+
+    suspend fun createProductGroup(householdId: String, name: String): String
 }

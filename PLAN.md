@@ -162,7 +162,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `onCleared()` triggers immediate save of pending changes
     - Unit test: verify debounce triggers save, verify `onCleared()` triggers save
 
-- [ ] **Task 12: Add product group creation in detail screen**
+- [/] **Task 12: Add product group creation in detail screen**
   - **Depends on:** Task 3 (new INSERT must include `created_at`/`updated_at`)
   - **Description:** Add ability to create new product groups from the detail screen's group dropdown:
     1. Add "Create new group..." option at the bottom of the `GroupDropdown` menu

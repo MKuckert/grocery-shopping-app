@@ -196,6 +196,7 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     groups = groups,
                     selectedGroupId = groupId,
                     onGroupSelected = { viewModel.updateGroup(it) },
+                    onCreateGroup = { viewModel.createGroup(it) },
                 )
 
                 StepperField(
@@ -276,8 +277,10 @@ private fun GroupDropdown(
     groups: List<ProductGroup>,
     selectedGroupId: String?,
     onGroupSelected: (String?) -> Unit,
+    onCreateGroup: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showCreateDialog by remember { mutableStateOf(false) }
     val selectedGroup = groups.find { it.id == selectedGroupId }
 
     ExposedDropdownMenuBox(
@@ -315,8 +318,84 @@ private fun GroupDropdown(
                     },
                 )
             }
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        "Create new group...",
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                },
+                onClick = {
+                    expanded = false
+                    showCreateDialog = true
+                },
+            )
         }
     }
+
+    if (showCreateDialog) {
+        CreateGroupDialog(
+            existingGroups = groups,
+            onConfirm = { name ->
+                onCreateGroup(name)
+                showCreateDialog = false
+            },
+            onDismiss = { showCreateDialog = false },
+        )
+    }
+}
+
+@Composable
+private fun CreateGroupDialog(
+    existingGroups: List<ProductGroup>,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var input by remember { mutableStateOf("") }
+    val trimmed = input.trim()
+    val isDuplicate = remember(trimmed, existingGroups) {
+        trimmed.isNotBlank() && existingGroups.any { it.name.equals(trimmed, ignoreCase = true) }
+    }
+    val isConfirmEnabled = trimmed.isNotBlank() && !isDuplicate
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Create group") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = { input = it },
+                    label = { Text("Group name") },
+                    singleLine = true,
+                    isError = isDuplicate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = "New group name input" },
+                )
+                if (isDuplicate) {
+                    Text(
+                        text = "A group with this name already exists",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { if (isConfirmEnabled) onConfirm(trimmed) },
+                enabled = isConfirmEnabled,
+            ) {
+                Text("Create")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+    )
 }
 
 @Composable

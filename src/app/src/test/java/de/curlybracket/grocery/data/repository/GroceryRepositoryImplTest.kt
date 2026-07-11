@@ -248,6 +248,37 @@ class GroceryRepositoryImplTest {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // createProductGroup — verifies INSERT with timestamps and returns non-blank ID
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `createProductGroup inserts into product_groups with name and timestamps`() = runTest {
+        val capturedSqls = mutableListOf<String>()
+        val capturedParams = mutableListOf<List<Any?>>()
+        coEvery { db.execute(capture(capturedSqls), capture(capturedParams)) } returns 1L
+
+        repository.createProductGroup(householdId = "hh-1", name = "Dairy")
+
+        assertEquals(1, capturedSqls.size)
+        val sql = capturedSqls[0]
+        assert(sql.contains("INSERT INTO product_groups")) { "SQL must insert into product_groups" }
+        assert(sql.contains("datetime('now')")) { "SQL must include timestamps" }
+        val params = capturedParams[0]
+        assertEquals("hh-1", params[1])
+        assertEquals("Dairy", params[2])
+    }
+
+    @Test
+    fun `createProductGroup returns a non-null non-blank group ID`() = runTest {
+        coEvery { db.execute(any<String>(), any<List<Any?>>()) } returns 1L
+
+        val groupId = repository.createProductGroup(householdId = "hh-1", name = "Bakery")
+
+        assertNotNull(groupId)
+        assert(groupId.isNotBlank()) { "Group ID must be non-blank" }
+    }
+
     @Test
     fun `createProductKind sets quantity_to_buy equal to minimumStock on creation`() = runTest {
         val capturedParams = mutableListOf<List<Any?>>()

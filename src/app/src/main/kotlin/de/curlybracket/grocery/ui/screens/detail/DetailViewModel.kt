@@ -143,6 +143,21 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    fun createGroup(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) return
+        val hid = product.value?.householdId ?: return
+        viewModelScope.launch {
+            try {
+                val newGroupId = repository.createProductGroup(hid, trimmed)
+                updateGroup(newGroupId)
+            } catch (e: Exception) {
+                Logger.e("Failed to create product group", e)
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to create group", productId = productId))
+            }
+        }
+    }
+
     fun deleteProduct() {
         viewModelScope.launch {
             try {
