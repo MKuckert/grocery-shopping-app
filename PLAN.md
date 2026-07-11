@@ -102,7 +102,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - No visual overflow on either `ScanningContent` or `CaptureRequiredContent` states
     - Bottom sheet buttons/fields are not obscured by camera preview
 
-- [ ] **Task 9: Fix sign-in autofill for password managers**
+- [/] **Task 9: Fix sign-in autofill for password managers**
   - **Description:** Update `SignInScreen.kt` to enable proper password manager integration. The correct Compose API (1.6+, SDK 35+) is `Modifier.semantics { contentType = ContentType.xxx }` — there is no `Modifier.autofill()` or `AutofillHint` in Compose.
     1. Email field: Add `keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)`, add `keyboardActions = KeyboardActions(onNext = { /* focus password field */ })`, add autofill hint via `Modifier.semantics { contentType = ContentType.EmailAddress + ContentType.Username }`
     2. Password field: Add `imeAction = ImeAction.Done` to existing `keyboardOptions`, add `keyboardActions = KeyboardActions(onDone = { /* trigger sign-in */ })`, add autofill hint via `Modifier.semantics { contentType = ContentType.Password }`. Consider using `SecureTextField` (Material 3) instead of `TextField` with `PasswordVisualTransformation` for better platform integration.
