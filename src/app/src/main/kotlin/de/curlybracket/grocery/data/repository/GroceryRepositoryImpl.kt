@@ -5,6 +5,7 @@ import com.powersync.db.SqlCursor
 import com.powersync.db.getLong
 import com.powersync.db.getString
 import com.powersync.db.getStringOptional
+import com.powersync.db.internal.PowerSyncTransaction
 import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.Household
 import de.curlybracket.grocery.domain.model.HouseholdState
@@ -203,10 +204,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 sql = "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1) WHERE id = ?",
                 parameters = listOf(productId),
             )
-            tx.execute(
-                sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-                parameters = listOf(productId),
-            )
+            recalculateQuantityToBuyTx(tx, productId)
         }
     }
 
@@ -239,10 +237,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun recalculateQuantityToBuy(productId: String) {
-        db.execute(
-            sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-            parameters = listOf(productId),
-        )
+        db.writeTransaction { tx -> recalculateQuantityToBuyTx(tx, productId) }
     }
 
     override suspend fun setUnloadOpen(productId: String, open: Boolean) {
@@ -293,10 +288,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 """.trimIndent(),
                 parameters = listOf(name, groupId, minimumStock, currentStock, imagePath, productId),
             )
-            tx.execute(
-                sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-                parameters = listOf(productId),
-            )
+            recalculateQuantityToBuyTx(tx, productId)
         }
     }
 
@@ -347,10 +339,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 sql = "UPDATE product_kinds SET deleted_at = NULL WHERE id = ?",
                 parameters = listOf(productId),
             )
-            tx.execute(
-                sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-                parameters = listOf(productId),
-            )
+            recalculateQuantityToBuyTx(tx, productId)
         }
     }
 
@@ -375,6 +364,13 @@ internal class GroceryRepositoryImpl @Inject constructor(
     }
 
     // --- Private helpers ---
+
+    private fun recalculateQuantityToBuyTx(tx: PowerSyncTransaction, productId: String) {
+        tx.execute(
+            sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
+            parameters = listOf(productId),
+        )
+    }
 
     private fun productKindFromCursor(cursor: SqlCursor): ProductKind = ProductKind(
         id = cursor.getString("id"),

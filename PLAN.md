@@ -33,7 +33,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Unit tests verify that deleted products are NOT returned by either method
     - No regression in existing queries that already filter correctly
 
-- [ ] **Task 2: Deduplicate quantity_to_buy recalculation SQL**
+- [/] **Task 2: Deduplicate quantity_to_buy recalculation SQL**
   - **Description:** The query `UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?` appears 5 times in `GroceryRepositoryImpl`: once in the existing public `recalculateQuantityToBuy()` method (line ~241, uses `db.execute()`), and 4 more inline duplicates inside `writeTransaction` blocks in `decrementStock()` (line ~207), `submitUnloading()` (line ~268), `updateProductKind()` (line ~297), and `restoreProductKind()` (line ~351) — all using `tx.execute()`.
     Refactor:
     1. Create a `private fun recalculateQuantityToBuyTx(tx: Transaction, productId: String)` that uses `tx.execute()` for the SQL

@@ -111,15 +111,18 @@ class GroceryRepositoryImplTest {
     }
 
     // -------------------------------------------------------------------------
-    // recalculateQuantityToBuy — non-transactional, verifies MAX(0) formula
+    // recalculateQuantityToBuy — transactional, verifies MAX(0) formula via helper
     // -------------------------------------------------------------------------
 
     @Test
     fun `recalculateQuantityToBuy uses MAX(0, minimumStock - currentStock) formula`() = runTest {
+        val tx = mockk<PowerSyncTransaction>(relaxed = true)
+        captureAndRunTransaction(tx)
+
         repository.recalculateQuantityToBuy("p-42")
 
         coVerify {
-            db.execute(
+            tx.execute(
                 "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
                 listOf("p-42"),
             )
