@@ -9,6 +9,7 @@ import de.curlybracket.grocery.network.OFResult
 import de.curlybracket.grocery.network.OpenFoodFactsClient
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -89,6 +90,20 @@ class ScannerProcessor @Inject constructor(
                 )
                 _scanResultFlow.emit(ScanResult.Miss(barcode))
             }
+        }
+    }
+
+    suspend fun linkBarcodeToProduct(barcode: String, productId: String, householdId: String) {
+        try {
+            repository.addBarcode(productId, barcode, householdId)
+            val product = repository.watchProductKind(productId).first()
+                ?: error("Product $productId not found after barcode link")
+            audioFeedback.playSuccess()
+            _scanResultFlow.emit(ScanResult.Linked(product))
+        } catch (e: Exception) {
+            Logger.e("linkBarcodeToProduct failed", e)
+            audioFeedback.playFailure()
+            throw e
         }
     }
 

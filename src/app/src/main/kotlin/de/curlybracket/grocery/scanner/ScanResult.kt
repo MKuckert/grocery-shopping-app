@@ -6,4 +6,5 @@ sealed class ScanResult {
     data class Hit(val product: ProductKind) : ScanResult()
     data class Miss(val barcode: String) : ScanResult()
     data class Restored(val product: ProductKind) : ScanResult()
+    data class Linked(val product: ProductKind) : ScanResult()
 }

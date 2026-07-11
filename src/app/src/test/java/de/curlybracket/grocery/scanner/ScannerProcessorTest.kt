@@ -9,6 +9,7 @@ import de.curlybracket.grocery.network.OpenFoodFactsClient
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -164,6 +165,40 @@ class ScannerProcessorTest {
         }
 
         coVerify(exactly = 1) { audioFeedback.playFailure() }
+    }
+
+    @Test
+    fun `linkBarcodeToProduct happy path emits Linked and plays success audio`() = runTest {
+        val product = makeProduct()
+        coEvery { repository.addBarcode(product.id, barcode, householdId) } returns Unit
+        coEvery { repository.watchProductKind(product.id) } returns flowOf(product)
+
+        processor.scanResultFlow.test {
+            processor.linkBarcodeToProduct(barcode, product.id, householdId)
+            val result = awaitItem()
+            assertEquals(ScanResult.Linked(product), result)
+        }
+
+        coVerify(exactly = 1) { repository.addBarcode(product.id, barcode, householdId) }
+        coVerify(exactly = 1) { audioFeedback.playSuccess() }
+    }
+
+    @Test
+    fun `linkBarcodeToProduct on duplicate barcode plays failure audio and rethrows`() = runTest {
+        val product = makeProduct()
+        val duplicateException = RuntimeException("UNIQUE constraint failed: barcodes.barcode_number")
+        coEvery { repository.addBarcode(product.id, barcode, householdId) } throws duplicateException
+
+        var caughtException: Exception? = null
+        try {
+            processor.linkBarcodeToProduct(barcode, product.id, householdId)
+        } catch (e: Exception) {
+            caughtException = e
+        }
+
+        assertEquals(duplicateException, caughtException)
+        coVerify(exactly = 1) { audioFeedback.playFailure() }
+        coVerify(exactly = 0) { audioFeedback.playSuccess() }
     }
 
     @Test

@@ -8,4 +8,6 @@ sealed class ScannerState {
         val prefillName: String,
         val photoPath: String?,
     ) : ScannerState()
+
+    data class LinkToExisting(val barcode: String) : ScannerState()
 }

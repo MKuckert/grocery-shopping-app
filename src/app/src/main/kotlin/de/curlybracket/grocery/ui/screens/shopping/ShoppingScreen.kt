@@ -211,6 +211,9 @@ internal fun ShoppingScreen(
                     is ScanResult.Restored -> scope.launch {
                         snackbarHostState.showSnackbar("Restored: ${result.product.name}")
                     }
+                    is ScanResult.Linked -> scope.launch {
+                        snackbarHostState.showSnackbar("Barcode linked to ${result.product.name}")
+                    }
                     is ScanResult.Miss -> { /* CaptureRequired overlay handles this in-sheet */ }
                 }
             },

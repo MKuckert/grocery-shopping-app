@@ -181,7 +181,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - New group auto-selected after creation
     - Group list refreshes reactively (via existing `watchProductGroups()` flow)
 
-- [ ] **Task 13a: Inventory barcode linking — state & processor logic**
+- [/] **Task 13a: Inventory barcode linking — state & processor logic**
   - **Depends on:** Task 3 (new INSERT must include timestamps)
   - **Description:** Backend logic for linking an unknown barcode to an existing product:
     1. Add `ScannerState.LinkToExisting(val barcode: String)` to `ScannerState` sealed class

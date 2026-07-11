@@ -71,7 +71,7 @@ fun BarcodeScannerBottomSheet(
             isProcessing = false
             onResult(result)
             when (result) {
-                is ScanResult.Hit, is ScanResult.Restored -> {
+                is ScanResult.Hit, is ScanResult.Restored, is ScanResult.Linked -> {
                     scannerState = ScannerState.Scanning
                 }
                 is ScanResult.Miss -> {
@@ -147,6 +147,10 @@ fun BarcodeScannerBottomSheet(
                         onCancel = { scannerState = ScannerState.Scanning },
                         isProcessing = isProcessing,
                     )
+                }
+
+                is ScannerState.LinkToExisting -> {
+                    // UI implemented in Task 13b
                 }
             }
         }
