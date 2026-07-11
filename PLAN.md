@@ -58,7 +58,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - No INSERT/UPDATE statement is missed (grep for `.execute(` to verify)
     - Tests updated to expect new columns in SQL
 
-- [ ] **Task 4: Add `created_at` and `updated_at` to Supabase (server-side)**
+- [x] **Task 4: Add `created_at` and `updated_at` to Supabase (server-side)**
   - **Description:** **Has to be performed by different agent than Builder! Stop here and bail out if you are the Builder agent!** Write Supabase SQL migration to add `created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL` and `updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL` to all 4 tables (`households`, `product_groups`, `product_kinds`, `barcodes`). Backfill existing rows. Create a `moddatetime` trigger on each table to auto-update `updated_at` on server-side changes.
   - **Files:** New migration SQL file (document in plan, execute manually in Supabase dashboard)
   - **Review Criteria:**
