@@ -92,7 +92,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - XML section uses 4-space indent
     - Root directive is `root = true`
 
-- [/] **Task 8: Fix camera preview overlapping bottom sheet**
+- [x] **Task 8: Fix camera preview overlapping bottom sheet**
   - **Description:** In `CameraPreviewComposable.kt`, replace `ViewGroup.LayoutParams.MATCH_PARENT` for both width and height with `0` (or remove explicit layout params entirely and let Compose modifiers control sizing). The `AndroidView` modifier from callers already specifies dimensions. Additionally, add `Modifier.clipToBounds()` to the camera `Box` containers in `BarcodeScannerBottomSheet.kt` (`ScanningContent` at ~line 182 and `CaptureRequiredContent` at ~line 253) to prevent any overflow.
   - **Files:** `scanner/CameraPreviewComposable.kt`, `scanner/BarcodeScannerBottomSheet.kt`
   - **Review Criteria:**
@@ -329,3 +329,9 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - XML section `[*.xml]`: `indent_style = space`, `indent_size = 4`. Pass.
   - Global section `[*]`: `charset = utf-8`, `end_of_line = lf`, `insert_final_newline = true`, `trim_trailing_whitespace = true`. Pass.
   - JSON section `[*.json]`: `indent_size = 2` — appropriate convention. Pass.
+- **Round 7:** APPROVED — Task 8 (2026-07-11)
+  - `PreviewView` has no `MATCH_PARENT` layout params; sizing controlled entirely by Compose `modifier`. Pass.
+  - `clipToBounds()` applied on both camera Box containers: `ScanningContent` (L187) and `CaptureRequiredContent` (L259). Pass.
+  - Both camera Boxes constrained to `.height(200.dp)` — previous 300.dp deviation in `ScanningContent` corrected. Pass.
+  - `CameraPreview` uses `.fillMaxWidth().fillMaxHeight()` inside constrained containers — fills exactly the 200.dp box, no overflow. Pass.
+  - Bottom sheet buttons/fields below camera containers are not obscured: fixed height + clip prevents any bleed. Pass.
