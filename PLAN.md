@@ -83,7 +83,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `android:screenOrientation="portrait"` is present on `MainActivity`
     - App does not rotate to landscape
 
-- [ ] **Task 7: Add .editorconfig**
+- [/] **Task 7: Add .editorconfig**
   - **Description:** Create `.editorconfig` at project root with Kotlin/Android conventions: 4-space indent, UTF-8, LF line endings, max line length 120, trailing whitespace trimmed, final newline enforced. Include sections for `*.kt`, `*.kts`, `*.xml`, `*.json`.
   - **Files:** `.editorconfig` (new file at project root)
   - **Review Criteria:**
