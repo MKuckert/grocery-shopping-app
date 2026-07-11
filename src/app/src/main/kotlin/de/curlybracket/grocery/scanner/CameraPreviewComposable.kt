@@ -1,6 +1,5 @@
 package de.curlybracket.grocery.scanner
 
-import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
@@ -31,10 +30,6 @@ internal fun CameraPreview(
 
     val previewView = remember {
         PreviewView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-            )
             scaleType = PreviewView.ScaleType.FILL_CENTER
         }
     }

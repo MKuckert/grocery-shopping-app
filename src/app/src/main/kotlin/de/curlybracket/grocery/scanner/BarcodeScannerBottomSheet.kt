@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -182,7 +183,8 @@ private fun ScanningContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
+                .height(300.dp)
+                .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
             CameraPreview(
@@ -253,7 +255,8 @@ private fun CaptureRequiredContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(200.dp)
+                .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
             CameraPreview(
