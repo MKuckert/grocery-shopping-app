@@ -117,7 +117,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `LocalAutofillManager.current?.commit()` called on successful sign-in
     - Password managers can detect and fill both fields
 
-- [/] **Task 10: Add product deletion (soft-delete) to detail screen**
+- [x] **Task 10: Add product deletion (soft-delete) to detail screen**
   - **Depends on:** Task 3 (timestamps must be in place for new SQL)
   - **Description:** Add a delete action to `DetailScreen`. Implementation:
     1. Add `deleteProductKind(productId: String)` to `GroceryRepository` interface
@@ -342,3 +342,13 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - `LocalAutofillManager.current?.commit()` called at L62, only on successful sign-in (inside `try`, before `catch`). Pass.
   - API correctness: `SecureTextField` uses `TextFieldState` + `onKeyboardAction` (confirmed Material 3 API). All imports present (L28–35). Pass.
   - No regressions: single call site in `GroceryApp.kt`, signature unchanged. Pass.
+- **Round 9:** APPROVED — Task 10 (2026-07-11)
+  - `deleteProductKind()` in interface (L80) and implementation (L340–345). SQL: `UPDATE product_kinds SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`. Pass.
+  - Barcodes NOT deleted: no barcode mutation in `deleteProductKind()`. Test explicitly verifies no `DELETE...barcodes` call. Pass.
+  - Delete button in `TopAppBar.actions` (DetailScreen L133–143) with `Icons.Filled.Delete`. Confirmation `AlertDialog` (L95–116) with product name and "This can be undone." text. Pass.
+  - Navigation: `DetailViewModel._deleteEvent` emits productId → `DetailScreen.onBack(deletedId)` → `GroceryApp` sets `deletedProductIdFlow` and pops back stack. Uses `MutableStateFlow` instead of `savedStateHandle` — functionally equivalent, acceptable deviation. Pass.
+  - Undo Snackbar: `InventoryScreen` observes `deletedProductIdFlow` → `InventoryViewModel.showDeletedProductUndo()` emits `SnackbarMessage(actionLabel="Undo")` → on action performed, calls `restoreProduct()` → `repository.restoreProductKind()`. Pass.
+  - Deleted products filtered from inventory via `watchProductsWithGroups()` `WHERE pk.deleted_at IS NULL` (verified in Task 1). Pass.
+  - Error handling: `try/catch` with logging + snackbar in both `deleteProduct()` and `restoreProduct()`. Pass.
+  - Unit tests: `deleteProductKind sets deleted_at and updated_at via soft-delete SQL` and `deleteProductKind does not hard-delete barcodes`. Pass.
+  - Non-blocking note: Product name in undo snackbar may show fallback "Product" if reactive query filters the deleted product before name lookup. Cosmetic only — undo uses ID, not name.
