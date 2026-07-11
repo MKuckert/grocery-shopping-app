@@ -102,7 +102,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - No visual overflow on either `ScanningContent` or `CaptureRequiredContent` states
     - Bottom sheet buttons/fields are not obscured by camera preview
 
-- [/] **Task 9: Fix sign-in autofill for password managers**
+- [x] **Task 9: Fix sign-in autofill for password managers**
   - **Description:** Update `SignInScreen.kt` to enable proper password manager integration. The correct Compose API (1.6+, SDK 35+) is `Modifier.semantics { contentType = ContentType.xxx }` — there is no `Modifier.autofill()` or `AutofillHint` in Compose.
     1. Email field: Add `keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)`, add `keyboardActions = KeyboardActions(onNext = { /* focus password field */ })`, add autofill hint via `Modifier.semantics { contentType = ContentType.EmailAddress + ContentType.Username }`
     2. Password field: Add `imeAction = ImeAction.Done` to existing `keyboardOptions`, add `keyboardActions = KeyboardActions(onDone = { /* trigger sign-in */ })`, add autofill hint via `Modifier.semantics { contentType = ContentType.Password }`. Consider using `SecureTextField` (Material 3) instead of `TextField` with `PasswordVisualTransformation` for better platform integration.
@@ -335,3 +335,10 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - Both camera Boxes constrained to `.height(200.dp)` — previous 300.dp deviation in `ScanningContent` corrected. Pass.
   - `CameraPreview` uses `.fillMaxWidth().fillMaxHeight()` inside constrained containers — fills exactly the 200.dp box, no overflow. Pass.
   - Bottom sheet buttons/fields below camera containers are not obscured: fixed height + clip prevents any bleed. Pass.
+- **Round 8:** APPROVED — Task 9 (2026-07-11)
+  - Email field: `KeyboardType.Email` (L95), `ImeAction.Next` (L96), `ContentType.EmailAddress + ContentType.Username` semantics (L105). Pass.
+  - Password field: `SecureTextField` with `ImeAction.Done` (L113), `onKeyboardAction = { signIn() }` (L115), `ContentType.Password` semantics (L120). Pass.
+  - `FocusRequester`: `passwordFocusRequester` created (L54), attached to password field (L119), triggered by email `onNext` (L99). Chain: Email→Password→Submit. Pass.
+  - `LocalAutofillManager.current?.commit()` called at L62, only on successful sign-in (inside `try`, before `catch`). Pass.
+  - API correctness: `SecureTextField` uses `TextFieldState` + `onKeyboardAction` (confirmed Material 3 API). All imports present (L28–35). Pass.
+  - No regressions: single call site in `GroceryApp.kt`, signature unchanged. Pass.
