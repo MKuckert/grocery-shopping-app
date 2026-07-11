@@ -76,7 +76,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - No navigation references to signup remain
     - App compiles and sign-in still works
 
-- [/] **Task 6: Lock to portrait orientation**
+- [x] **Task 6: Lock to portrait orientation**
   - **Description:** Add `android:screenOrientation="portrait"` to `<activity>` in `AndroidManifest.xml`.
   - **Files:** `AndroidManifest.xml`
   - **Review Criteria:**
@@ -318,3 +318,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - Navigation references: grep for `SignUp` across all `.kt` files returns zero hits. No `composable(Route.SignUp.path)` in `GroceryApp.kt`. Pass.
   - Build: `./gradlew :app:assembleDebug` reported BUILD SUCCESSFUL. Pass.
   - Note (non-blocking): `AuthViewModel.signUp()` is now dead code (no callers). Recommend removing in a future cleanup task.
+- **Round 5:** APPROVED — Task 6 (2026-07-11)
+  - `android:screenOrientation="portrait"` confirmed on `<activity android:name=".MainActivity">` at AndroidManifest.xml line 34. Pass.
+  - No other elements modified. No unintended changes. Pass.
+  - Build: `./gradlew :app:assembleDebug` reported BUILD SUCCESSFUL. Pass.
