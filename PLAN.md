@@ -76,7 +76,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - No navigation references to signup remain
     - App compiles and sign-in still works
 
-- [ ] **Task 6: Lock to portrait orientation**
+- [/] **Task 6: Lock to portrait orientation**
   - **Description:** Add `android:screenOrientation="portrait"` to `<activity>` in `AndroidManifest.xml`.
   - **Files:** `AndroidManifest.xml`
   - **Review Criteria:**
