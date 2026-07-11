@@ -117,7 +117,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `LocalAutofillManager.current?.commit()` called on successful sign-in
     - Password managers can detect and fill both fields
 
-- [ ] **Task 10: Add product deletion (soft-delete) to detail screen**
+- [/] **Task 10: Add product deletion (soft-delete) to detail screen**
   - **Depends on:** Task 3 (timestamps must be in place for new SQL)
   - **Description:** Add a delete action to `DetailScreen`. Implementation:
     1. Add `deleteProductKind(productId: String)` to `GroceryRepository` interface

@@ -337,6 +337,13 @@ internal class GroceryRepositoryImpl @Inject constructor(
         return productId
     }
 
+    override suspend fun deleteProductKind(productId: String) {
+        db.execute(
+            sql = "UPDATE product_kinds SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+            parameters = listOf(productId),
+        )
+    }
+
     override suspend fun restoreProductKind(productId: String) {
         db.writeTransaction { tx ->
             tx.execute(

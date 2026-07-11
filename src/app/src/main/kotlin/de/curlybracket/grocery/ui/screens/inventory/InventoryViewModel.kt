@@ -100,4 +100,29 @@ class InventoryViewModel @Inject constructor(
             _navigationEvent.emit(product.id)
         }
     }
+
+    fun showDeletedProductUndo(deletedProductId: String, productName: String) {
+        viewModelScope.launch {
+            _snackbarMessage.emit(
+                SnackbarMessage(
+                    text = "$productName deleted",
+                    productId = deletedProductId,
+                    actionLabel = "Undo",
+                ),
+            )
+        }
+    }
+
+    fun restoreProduct(productId: String) {
+        viewModelScope.launch {
+            try {
+                repository.restoreProductKind(productId)
+            } catch (e: Exception) {
+                Logger.e("Failed to restore product", e)
+                _snackbarMessage.emit(
+                    SnackbarMessage(text = "Failed to restore product", productId = productId),
+                )
+            }
+        }
+    }
 }

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
@@ -64,7 +65,7 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun DetailScreen(onBack: () -> Unit) {
+internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
     val viewModel: DetailViewModel = hiltViewModel()
     val product by viewModel.product.collectAsStateWithLifecycle()
     val groups by viewModel.groups.collectAsStateWithLifecycle()
@@ -75,6 +76,7 @@ internal fun DetailScreen(onBack: () -> Unit) {
     val currentStock by viewModel.currentStock.collectAsStateWithLifecycle()
     val minimumStock by viewModel.minimumStock.collectAsStateWithLifecycle()
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
@@ -84,18 +86,58 @@ internal fun DetailScreen(onBack: () -> Unit) {
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.deleteEvent.collect { deletedId ->
+            onBack(deletedId)
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete ${product?.name ?: "product"}?") },
+            text = { Text("This can be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteProduct()
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Product Detail") },
                 navigationIcon = {
                     IconButton(
-                        onClick = { onBack() },
+                        onClick = { onBack(null) },
                         modifier = Modifier.semantics { contentDescription = "Navigate back" },
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.semantics { contentDescription = "Delete product" },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Delete product",
                         )
                     }
                 },

@@ -45,6 +45,9 @@ class DetailViewModel @Inject constructor(
     private val _snackbarMessage = MutableSharedFlow<SnackbarMessage>()
     val snackbarMessage: SharedFlow<SnackbarMessage> = _snackbarMessage
 
+    private val _deleteEvent = MutableSharedFlow<String>()
+    val deleteEvent: SharedFlow<String> = _deleteEvent
+
     // Local edit state — kept in sync with product stream until user edits
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
@@ -112,6 +115,18 @@ class DetailViewModel @Inject constructor(
             } catch (e: Exception) {
                 Logger.e("Failed to delete barcode", e)
                 _snackbarMessage.emit(SnackbarMessage(text = "Failed to delete barcode", productId = productId))
+            }
+        }
+    }
+
+    fun deleteProduct() {
+        viewModelScope.launch {
+            try {
+                repository.deleteProductKind(productId)
+                _deleteEvent.emit(productId)
+            } catch (e: Exception) {
+                Logger.e("Failed to delete product", e)
+                _snackbarMessage.emit(SnackbarMessage(text = "Failed to delete product", productId = productId))
             }
         }
     }

@@ -48,6 +48,7 @@ import de.curlybracket.grocery.scanner.ScanResult
 import de.curlybracket.grocery.scanner.ScannerMode
 import de.curlybracket.grocery.scanner.ScannerProcessor
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,10 +56,13 @@ import kotlinx.coroutines.launch
 internal fun InventoryScreen(
     onNavigateToDetail: (String) -> Unit,
     scannerProcessor: ScannerProcessor,
+    deletedProductIdFlow: StateFlow<String?>,
+    onDeletedProductConsumed: () -> Unit,
 ) {
     val viewModel: InventoryViewModel = hiltViewModel()
     val groupsWithProducts by viewModel.groupsWithProducts.collectAsStateWithLifecycle()
     val householdId by viewModel.householdIdFlow.collectAsStateWithLifecycle()
+    val deletedProductId by deletedProductIdFlow.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showScanner by remember { mutableStateOf(false) }
@@ -76,10 +80,20 @@ internal fun InventoryScreen(
                 actionLabel = msg.actionLabel,
                 duration = SnackbarDuration.Short,
             )
-            if (result == SnackbarResult.ActionPerformed) {
+            if (result == SnackbarResult.ActionPerformed && msg.actionLabel == "Undo") {
+                viewModel.restoreProduct(msg.productId)
+            } else if (result == SnackbarResult.ActionPerformed) {
                 onNavigateToDetail(msg.productId)
             }
         }
+    }
+
+    LaunchedEffect(deletedProductId) {
+        val pid = deletedProductId ?: return@LaunchedEffect
+        onDeletedProductConsumed()
+        val groupsSnapshot = viewModel.groupsWithProducts.value
+        val productName = groupsSnapshot.flatMap { it.products }.find { it.id == pid }?.name ?: "Product"
+        viewModel.showDeletedProductUndo(pid, productName)
     }
 
     Scaffold(

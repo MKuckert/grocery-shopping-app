@@ -223,6 +223,31 @@ class GroceryRepositoryImplTest {
         assert(productId.isNotBlank())
     }
 
+    // -------------------------------------------------------------------------
+    // deleteProductKind — soft-delete sets deleted_at and updated_at
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `deleteProductKind sets deleted_at and updated_at via soft-delete SQL`() = runTest {
+        repository.deleteProductKind("p-99")
+
+        coVerify {
+            db.execute(
+                "UPDATE product_kinds SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+                listOf("p-99"),
+            )
+        }
+    }
+
+    @Test
+    fun `deleteProductKind does not hard-delete barcodes`() = runTest {
+        repository.deleteProductKind("p-99")
+
+        coVerify(exactly = 0) {
+            db.execute(match { sql -> sql.contains("DELETE") && sql.contains("barcodes") }, any())
+        }
+    }
+
     @Test
     fun `createProductKind sets quantity_to_buy equal to minimumStock on creation`() = runTest {
         val capturedParams = mutableListOf<List<Any?>>()
