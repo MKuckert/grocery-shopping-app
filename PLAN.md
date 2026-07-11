@@ -141,7 +141,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Deleted product no longer appears in inventory list
     - Unit test covers the delete method
 
-- [/] **Task 11: Auto-save on product detail changes (remove FAB)**
+- [x] **Task 11: Auto-save on product detail changes (remove FAB)**
   - **Description:** Replace the explicit FAB save with debounced auto-save:
     1. In `DetailViewModel`, combine all editable state flows (`_name`, `_groupId`, `_currentStock`, `_minimumStock`) using `combine().drop(1).debounce(800)` and call `saveChanges()` on emission. Launch this in `init {}` inside `viewModelScope`.
     2. Remove the FAB from `DetailScreen.kt`
@@ -250,9 +250,9 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
 - [ ] `watchProductKind()` with a deleted product ID returns empty/null, not the deleted product
 - [ ] `findByBarcode()` with a barcode linked to a deleted product returns null
 - [ ] Scanner restoring a soft-deleted product correctly recalculates `quantity_to_buy`
-- [ ] Auto-save debounce: rapidly typing a name triggers only one DB write after 800ms idle
-- [ ] Auto-save: navigating away mid-debounce still saves (handle `onCleared()` in ViewModel)
-- [ ] Auto-save: initial load of product data does NOT trigger a save (use `drop(1)`)
+- [x] Auto-save debounce: rapidly typing a name triggers only one DB write after 800ms idle
+- [x] Auto-save: navigating away mid-debounce still saves (handle `onCleared()` in ViewModel)
+- [x] Auto-save: initial load of product data does NOT trigger a save (use `drop(1)`)
 - [ ] Product deletion while offline queues the soft-delete locally and syncs later
 - [ ] Undo-delete Snackbar timeout: if user doesn't tap undo, deletion stands
 - [ ] Linking barcode to product that already has that barcode shows error, not crash
