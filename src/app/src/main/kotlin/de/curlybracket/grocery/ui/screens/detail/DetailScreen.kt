@@ -1,6 +1,9 @@
 package de.curlybracket.grocery.ui.screens.detail
 
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +32,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,7 +72,7 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
     val product by viewModel.product.collectAsStateWithLifecycle()
     val groups by viewModel.groups.collectAsStateWithLifecycle()
     val barcodes by viewModel.barcodes.collectAsStateWithLifecycle()
-    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
+    val savedIndicator by viewModel.savedIndicator.collectAsStateWithLifecycle()
     val name by viewModel.name.collectAsStateWithLifecycle()
     val groupId by viewModel.groupId.collectAsStateWithLifecycle()
     val currentStock by viewModel.currentStock.collectAsStateWithLifecycle()
@@ -131,6 +133,18 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     }
                 },
                 actions = {
+                    AnimatedVisibility(
+                        visible = savedIndicator,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = "Saved",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                        )
+                    }
                     IconButton(
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier.semantics { contentDescription = "Delete product" },
@@ -142,21 +156,6 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     }
                 },
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.saveChanges() },
-                modifier = Modifier.semantics { contentDescription = "Save product" },
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Icon(imageVector = Icons.Filled.Check, contentDescription = "Save")
-                }
-            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->

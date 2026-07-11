@@ -141,7 +141,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Deleted product no longer appears in inventory list
     - Unit test covers the delete method
 
-- [ ] **Task 11: Auto-save on product detail changes (remove FAB)**
+- [/] **Task 11: Auto-save on product detail changes (remove FAB)**
   - **Description:** Replace the explicit FAB save with debounced auto-save:
     1. In `DetailViewModel`, combine all editable state flows (`_name`, `_groupId`, `_currentStock`, `_minimumStock`) using `combine().drop(1).debounce(800)` and call `saveChanges()` on emission. Launch this in `init {}` inside `viewModelScope`.
     2. Remove the FAB from `DetailScreen.kt`

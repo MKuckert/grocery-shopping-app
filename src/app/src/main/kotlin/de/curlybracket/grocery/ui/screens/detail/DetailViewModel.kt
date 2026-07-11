@@ -3,20 +3,26 @@ package de.curlybracket.grocery.ui.screens.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.ProductGroup
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.SnackbarMessage
-import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.domain.repository.GroceryRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,8 +45,8 @@ class DetailViewModel @Inject constructor(
         repository.watchBarcodes(productId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    private val _isSaving = MutableStateFlow(false)
-    val isSaving: StateFlow<Boolean> = _isSaving
+    private val _savedIndicator = MutableStateFlow(false)
+    val savedIndicator: StateFlow<Boolean> = _savedIndicator
 
     private val _snackbarMessage = MutableSharedFlow<SnackbarMessage>()
     val snackbarMessage: SharedFlow<SnackbarMessage> = _snackbarMessage
@@ -63,7 +69,10 @@ class DetailViewModel @Inject constructor(
 
     private val _userEditing = MutableStateFlow(false)
 
+    private var pendingSaveJob: Job? = null
+
     init {
+        // Sync product state into edit fields when product loads and user isn't editing
         viewModelScope.launch {
             product.collect { p ->
                 if (p != null && !_userEditing.value) {
@@ -73,6 +82,21 @@ class DetailViewModel @Inject constructor(
                     _minimumStock.value = p.minimumStock
                 }
             }
+        }
+
+        // Debounced auto-save: combine all 4 edit flows, drop(1) skips initial emission
+        pendingSaveJob = viewModelScope.launch {
+            @Suppress("OPT_IN_USAGE")
+            combine(_name, _groupId, _currentStock, _minimumStock) { name, groupId, currentStock, minimumStock ->
+                EditSnapshot(name, groupId, currentStock, minimumStock)
+            }
+                .drop(1)
+                .debounce(800)
+                .collect { snapshot ->
+                    if (_userEditing.value) {
+                        performSave(snapshot)
+                    }
+                }
         }
     }
 
@@ -131,26 +155,61 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    fun saveChanges() {
-        viewModelScope.launch {
-            _isSaving.value = true
-            try {
-                repository.updateProductKind(
-                    productId = productId,
-                    name = _name.value.trim(),
-                    groupId = _groupId.value,
-                    minimumStock = _minimumStock.value,
-                    currentStock = _currentStock.value,
-                    imagePath = product.value?.imagePath,
-                )
-                _userEditing.value = false
-                _snackbarMessage.emit(SnackbarMessage(text = "Saved", productId = productId))
-            } catch (e: Exception) {
-                Logger.e("Failed to save changes", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to save changes", productId = productId))
-            } finally {
-                _isSaving.value = false
+    public override fun onCleared() {
+        super.onCleared()
+        pendingSaveJob?.cancel()
+        // Immediately persist any pending changes when the ViewModel is destroyed.
+        // runBlocking is safe here: this is local SQLite, sub-millisecond, not a network call.
+        // The save indicator is skipped — the screen is already gone.
+        if (_userEditing.value) {
+            runBlocking {
+                performSave(currentSnapshot(), showIndicator = false)
             }
         }
     }
+
+    private suspend fun performSave(snapshot: EditSnapshot, showIndicator: Boolean = true) {
+        try {
+            repository.updateProductKind(
+                productId = productId,
+                name = snapshot.name.trim(),
+                groupId = snapshot.groupId,
+                minimumStock = snapshot.minimumStock,
+                currentStock = snapshot.currentStock,
+                imagePath = product.value?.imagePath,
+            )
+            // Only reset _userEditing if the current values still match what we saved.
+            // If the user edited during the save, leave _userEditing = true so the
+            // debounce fires again for the new changes.
+            if (_name.value == snapshot.name &&
+                _groupId.value == snapshot.groupId &&
+                _currentStock.value == snapshot.currentStock &&
+                _minimumStock.value == snapshot.minimumStock
+            ) {
+                _userEditing.value = false
+            }
+            if (showIndicator) {
+                _savedIndicator.value = true
+                delay(1_500)
+                _savedIndicator.value = false
+            }
+        } catch (e: Exception) {
+            Logger.e("Failed to save changes", e)
+            _snackbarMessage.emit(SnackbarMessage(text = "Failed to save changes", productId = productId))
+        }
+    }
+
+    private fun currentSnapshot() = EditSnapshot(
+        name = _name.value,
+        groupId = _groupId.value,
+        currentStock = _currentStock.value,
+        minimumStock = _minimumStock.value,
+    )
+
+    private data class EditSnapshot(
+        val name: String,
+        val groupId: String?,
+        val currentStock: Int,
+        val minimumStock: Int,
+    )
 }
