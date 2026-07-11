@@ -59,7 +59,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Tests updated to expect new columns in SQL
 
 - [ ] **Task 4: Add `created_at` and `updated_at` to Supabase (server-side)**
-  - **Description:** Write Supabase SQL migration to add `created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL` and `updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL` to all 4 tables (`households`, `product_groups`, `product_kinds`, `barcodes`). Backfill existing rows. Create a `moddatetime` trigger on each table to auto-update `updated_at` on server-side changes.
+  - **Description:** **Has to be performed by different agent than Builder! Stop here and bail out if you are the Builder agent!** Write Supabase SQL migration to add `created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL` and `updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL` to all 4 tables (`households`, `product_groups`, `product_kinds`, `barcodes`). Backfill existing rows. Create a `moddatetime` trigger on each table to auto-update `updated_at` on server-side changes.
   - **Files:** New migration SQL file (document in plan, execute manually in Supabase dashboard)
   - **Review Criteria:**
     - ALTER TABLE statements for all 4 tables with `DEFAULT NOW()` and `NOT NULL`
@@ -68,7 +68,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Migration is idempotent (uses `IF NOT EXISTS` or similar guards)
 
 - [ ] **Task 5: Remove signup screen and Route.SignUp**
-  - **Description:** Delete `SignUpScreen.kt`, remove `Route.SignUp` from `Routes.kt`, remove the `composable(Route.SignUp.path)` entry from the NavHost in `GroceryApp.kt`. Note: `SignInScreen.kt` does NOT contain a link to signup — no changes needed there.
+  - **Description:** Create a bash command to delete `SignUpScreen.kt`, remove `Route.SignUp` from `Routes.kt`, remove the `composable(Route.SignUp.path)` entry from the NavHost in `GroceryApp.kt`. Note: `SignInScreen.kt` does NOT contain a link to signup — no changes needed there. A human will perform the deletion as you have no permissions to do so.
   - **Files:** `ui/screens/SignUpScreen.kt` (delete), `ui/navigation/Routes.kt`, `GroceryApp.kt`
   - **Review Criteria:**
     - `SignUpScreen.kt` is deleted
@@ -123,7 +123,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     1. Add `deleteProductKind(productId: String)` to `GroceryRepository` interface
     2. Implement in `GroceryRepositoryImpl`: `UPDATE product_kinds SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`
     3. **Barcode cascade decision:** Barcodes are NOT cascade-deleted. Task 1's `findByBarcode()` fix already filters by `pk.deleted_at IS NULL`, so barcodes linked to deleted products won't resolve. If the product is restored via undo, its barcodes remain intact.
-    4. Add a delete icon button in the TopAppBar actions (trash icon)
+    4. Add a delete button "delete product" under all existing elements in the detail screen.
     5. Show confirmation `AlertDialog` on tap: "Delete {productName}? This can be undone."
     6. On confirm: call `viewModel.deleteProduct()` → `repository.deleteProductKind(productId)`
     7. Navigate back to inventory after deletion, passing the deleted product ID via `savedStateHandle` navigation result (use `previousBackStackEntry.savedStateHandle.set("deleted_product_id", productId)`)
@@ -162,27 +162,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `onCleared()` triggers immediate save of pending changes
     - Unit test: verify debounce triggers save, verify `onCleared()` triggers save
 
-- [ ] **Task 12: Add barcode scanning to product detail screen**
-  - **Description:** Add barcode scanning capability to the detail screen's barcode section:
-    1. Add a scan button (camera icon) next to the existing "Add barcode" button in the `BarcodesSection`
-    2. On tap, open a lightweight scanner bottom sheet. **Implementation approach:** Do NOT reuse `BarcodeScannerBottomSheet` (it's tightly coupled to `ScannerProcessor` and product creation flow). Instead, create a new `BarcodeScanOnlySheet` composable that:
-       - Uses `ModalBottomSheet` with `CameraPreview` + `BarcodeAnalyzer` (reuse existing composables)
-       - On barcode detected, calls an `onBarcodeScanned: (String) -> Unit` callback and dismisses
-       - No product creation, no Open Food Facts lookup, no `ScannerProcessor` involvement
-       - Handles camera permission via existing `CameraPermissionHandler`
-    3. On successful scan callback, call `viewModel.addBarcode(scannedBarcodeNumber)` (same path as manual entry)
-    4. The scanner should close after one successful scan
-    5. If the barcode is already linked to another product, show error Snackbar (handle exception from `repository.addBarcode()`)
-  - **Files:** `ui/screens/detail/DetailScreen.kt`, `ui/screens/detail/DetailViewModel.kt`, `scanner/BarcodeScanOnlySheet.kt` (new file — lightweight, ~60 lines)
-  - **Review Criteria:**
-    - Scan button is visible in barcode section
-    - `BarcodeScanOnlySheet` is a focused composable: camera + barcode detection + callback only
-    - Scanned barcode is added to the product via existing `addBarcode()` path
-    - Duplicate barcode is handled with error Snackbar
-    - Scanner closes after one successful scan
-    - Camera permission is handled properly
-
-- [ ] **Task 13: Add product group creation in detail screen**
+- [ ] **Task 12: Add product group creation in detail screen**
   - **Depends on:** Task 3 (new INSERT must include `created_at`/`updated_at`)
   - **Description:** Add ability to create new product groups from the detail screen's group dropdown:
     1. Add "Create new group..." option at the bottom of the `GroupDropdown` menu
@@ -201,7 +181,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - New group auto-selected after creation
     - Group list refreshes reactively (via existing `watchProductGroups()` flow)
 
-- [ ] **Task 14a: Inventory barcode linking — state & processor logic**
+- [ ] **Task 13a: Inventory barcode linking — state & processor logic**
   - **Depends on:** Task 3 (new INSERT must include timestamps)
   - **Description:** Backend logic for linking an unknown barcode to an existing product:
     1. Add `ScannerState.LinkToExisting(val barcode: String)` to `ScannerState` sealed class
@@ -216,8 +196,8 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Duplicate barcode exception is caught, logged, and re-thrown
     - Unit test for `linkBarcodeToProduct()` happy path and duplicate error
 
-- [ ] **Task 14b: Inventory barcode linking — UI**
-  - **Depends on:** Task 14a
+- [ ] **Task 13b: Inventory barcode linking — UI**
+  - **Depends on:** Task 13a
   - **Description:** UI for the barcode-to-existing-product linking flow:
     1. In `BarcodeScannerBottomSheet`, in the `CaptureRequired` state composable, add a "Link to Existing" `OutlinedButton` next to the "Save" button
     2. Tapping "Link to Existing" transitions state to `ScannerState.LinkToExisting(barcode)`
@@ -238,7 +218,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Snackbar shown on inventory/shopping screens for `ScanResult.Linked`
     - Flow works in both inventory and shopping scanner modes
 
-- [ ] **Task 15: Extract all hardcoded strings to strings.xml**
+- [ ] **Task 14: Extract all hardcoded strings to strings.xml**
   - **Description:** Move all ~80+ hardcoded user-facing strings to `res/values/strings.xml`. This includes:
     - Screen titles ("Sign In", "Product Detail", "Shopping", "Inventory", "Unloading")
     - Button labels ("Save", "Cancel", "Add", "Submit", etc.)
@@ -256,8 +236,8 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Format strings use proper `%s`/`%d` placeholders
     - App behavior is unchanged (visual verification)
 
-- [ ] **Task 16: Add German translation**
-  - **Description:** Create `res/values-de/strings.xml` with German translations for all strings extracted in Task 15. Translate professionally — not machine-literal. Use formal "Sie" form. Ensure format placeholders (`%s`, `%d`) are preserved.
+- [ ] **Task 15: Add German translation**
+  - **Description:** Create `res/values-de/strings.xml` with German translations for all strings extracted in Task 14. Translate professionally — not machine-literal. Use formal "Sie" form. Ensure format placeholders (`%s`, `%d`) are preserved.
   - **Files:** `res/values-de/strings.xml` (new file)
   - **Review Criteria:**
     - All strings from `values/strings.xml` have German counterparts
@@ -306,7 +286,9 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - Dependency chain is sound: Tasks 1,2 independent; Task 3 gates 10,13,14a; Task 14b gates on 14a; Task 16 gates on 15.
   - Minor note (non-blocking): Task 11 Step 7 `runBlocking` in `onCleared()` — builder should add comment explaining safety (local SQLite, sub-ms).
   - Minor note (non-blocking): Task 15 should be executed after all UI tasks (8–14b) to capture all new strings in one sweep.
-- **Round 3:** [N/A]
+- **Round 3:** APPROVED (2026-07-11)
+  - Verified by a human
+  - Dropped **Task 12: Add barcode scanning to product detail screen** to leave it for a later refactor of the scanner UI.
 
 ## Final Status (Code Review)
 

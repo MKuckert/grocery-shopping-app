@@ -1,31 +1,30 @@
 # TODO
 
-- [ ] Database schema has to include `created_at` and `updated_at` for every table to enable proper synchronization and conflict resolution.
-- [ ] `deleted_at IS NULL` wird nicht überall überprüft (`GroceryRepositoryImpl`)
+- [/] Database schema has to include `created_at` and `updated_at` for every table to enable proper synchronization and conflict resolution.
+- [/] `deleted_at IS NULL` wird nicht überall überprüft (`GroceryRepositoryImpl`)
 - [ ] Replace foreground service with workmanager
-- [ ] Following sql is copied multiple times in `GroceryRepositoryImpl`: 
+- [/] Following sql is copied multiple times in `GroceryRepositoryImpl`: 
       ```
       tx.execute(
           sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
           parameters = listOf(productId),
         )
         ```
-- [ ] lock to portrait only
+- [/] lock to portrait only
 - [ ] add dark screen
-- [ ] add deletion for products
-- [ ] remove signup screen (incl. `Route.SignUp`)
-- [ ] product details
-    - [ ] renaming/changing product immediately saves, no FAB necessary
-    - [ ] add barcode by scanning it
-    - [ ] add creation of product groups
-- [ ] inventory
-    - [ ] scanning unknown barcode triggers adding to existing product
-- [ ] sign in has to be password manager fillup, currently only triggered for password
-- [ ] Camera screen overlaps bottom sheet
-- [ ] move all texts to strings.xml and add german translation
+- [/] add deletion for products
+- [/] remove signup screen (incl. `Route.SignUp`)
+- [/] product details
+    - [/] renaming/changing product immediately saves, no FAB necessary
+    - [/] add creation of product groups
+- [/] inventory
+    - [/] scanning unknown barcode triggers adding to existing product
+- [/] sign in has to be password manager fillup, currently only triggered for password
+- [/] Camera screen overlaps bottom sheet
+- [/] move all texts to strings.xml and add german translation
 - [ ] Research different barcode api
 - [ ] AudioFeedback: Use domain model and ENUMs for sounds loaded instead of named fields to be more generic
-- [ ] Add .editorconfig
+- [/] Add .editorconfig
 - [ ] Foreground service
     - For apps targeting Android 14+ you must declare valid Foreground Service (FGS) types in the manifest and Play Console, providing descriptions, user impact, and a demo video justifying their use based on user-initiated, perceptible actions.
           Dos:
@@ -43,4 +42,5 @@
 - [ ] OpenFoodFactsClient: Move base url and user agent out of client and into constants collection. Make Version and E-Mail in User Agent separate. Use App Version for User Agent Version instead of separate field
 - [ ] ScannerProcessor
     - [ ] Refactor with ScannerMode: Don't `when/is` in ScannerProcessor and decide about method to call on Repository but add a polymorph command mechanism encapsulating this part
+    - [ ] add barcode in detail screen by scanning it
 - [ ] xml/backup_rules.xml && xml/data_extraction_rules.xml
