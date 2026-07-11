@@ -7,9 +7,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -121,6 +123,47 @@ class GroceryRepositoryImplTest {
                 listOf("p-42"),
             )
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // watchProductKind — soft-delete filter
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `watchProductKind SQL includes deleted_at IS NULL filter`() {
+        val capturedSql = mutableListOf<String>()
+        every { db.watch(capture(capturedSql), any(), any()) } returns emptyFlow()
+
+        repository.watchProductKind("p-deleted")
+
+        assert(capturedSql.any { it.contains("deleted_at IS NULL") }) {
+            "Expected SQL to contain 'deleted_at IS NULL' but got: ${capturedSql.firstOrNull()}"
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // findByBarcode — soft-delete filter
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `findByBarcode SQL includes deleted_at IS NULL filter`() = runTest {
+        val capturedSql = mutableListOf<String>()
+        coEvery { db.getOptional(capture(capturedSql), any(), any()) } returns null
+
+        repository.findByBarcode(barcodeNumber = "1234", householdId = "hh-1")
+
+        assert(capturedSql.any { it.contains("pk.deleted_at IS NULL") }) {
+            "Expected SQL to contain 'pk.deleted_at IS NULL' but got: ${capturedSql.firstOrNull()}"
+        }
+    }
+
+    @Test
+    fun `findByBarcode returns null when product is deleted`() = runTest {
+        coEvery { db.getOptional(any(), any(), any()) } returns null
+
+        val result = repository.findByBarcode(barcodeNumber = "1234", householdId = "hh-1")
+
+        assertNull(result)
     }
 
     // -------------------------------------------------------------------------

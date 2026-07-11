@@ -24,7 +24,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
 >
 > **Dependency chain:** Tasks 10, 13, and 14 add new INSERT/UPDATE SQL statements. Task 3 adds `created_at`/`updated_at` to ALL SQL statements. **Task 3 must be completed before Tasks 10, 13, and 14** to ensure new SQL includes timestamps from the start. Task 4 (Supabase migration) should be deployed before or alongside Task 3.
 
-- [ ] **Task 1: Fix soft-delete query bugs in GroceryRepositoryImpl**
+- [/] **Task 1: Fix soft-delete query bugs in GroceryRepositoryImpl**
   - **Description:** Add `WHERE deleted_at IS NULL` filter to `watchProductKind()` (line ~128) and `findByBarcode()` (line ~172). Both currently return deleted products as if they were active.
   - **Files:** `data/repository/GroceryRepositoryImpl.kt`
   - **Review Criteria:**

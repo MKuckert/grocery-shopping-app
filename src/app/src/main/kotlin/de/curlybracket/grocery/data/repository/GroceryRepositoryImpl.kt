@@ -131,7 +131,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 SELECT id, household_id, group_id, name, current_stock, minimum_stock,
                        quantity_to_buy, pending_stock, image_path, unload_open, deleted_at
                 FROM product_kinds
-                WHERE id = ?
+                WHERE id = ? AND deleted_at IS NULL
             """.trimIndent(),
             parameters = listOf(productId),
         ) { cursor: SqlCursor -> productKindFromCursor(cursor) }
@@ -177,7 +177,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                        pk.image_path, pk.unload_open, pk.deleted_at
                 FROM product_kinds pk
                 INNER JOIN barcodes b ON b.product_kind_id = pk.id
-                WHERE b.household_id = ? AND b.barcode_number = ?
+                WHERE b.household_id = ? AND b.barcode_number = ? AND pk.deleted_at IS NULL
                 LIMIT 1
             """.trimIndent(),
             parameters = listOf(householdId, barcodeNumber),
