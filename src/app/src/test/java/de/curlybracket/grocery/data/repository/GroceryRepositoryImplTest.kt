@@ -3,11 +3,12 @@ package de.curlybracket.grocery.data.repository
 import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import com.powersync.db.internal.PowerSyncTransaction
+import de.curlybracket.grocery.domain.model.ProductKind
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.emptyFlow
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -131,13 +132,17 @@ class GroceryRepositoryImplTest {
 
     @Test
     fun `watchProductKind SQL includes deleted_at IS NULL filter`() {
-        val capturedSql = mutableListOf<String>()
-        every { db.watch(capture(capturedSql), any(), any()) } returns emptyFlow()
-
+        // db is a relaxed mock — watch() is auto-stubbed; verify the SQL it received.
+        // Actual signature: watch(sql, parameters, throttleMs: Long, mapper: (SqlCursor) -> T)
         repository.watchProductKind("p-deleted")
 
-        assert(capturedSql.any { it.contains("deleted_at IS NULL") }) {
-            "Expected SQL to contain 'deleted_at IS NULL' but got: ${capturedSql.firstOrNull()}"
+        verify {
+            db.watch(
+                match { sql -> sql.contains("deleted_at IS NULL") },
+                any<List<Any?>>(),
+                any<Long>(),
+                any<(com.powersync.db.SqlCursor) -> Any>(),
+            )
         }
     }
 
@@ -147,19 +152,28 @@ class GroceryRepositoryImplTest {
 
     @Test
     fun `findByBarcode SQL includes deleted_at IS NULL filter`() = runTest {
-        val capturedSql = mutableListOf<String>()
-        coEvery { db.getOptional(capture(capturedSql), any(), any()) } returns null
-
+        // db is a relaxed mock — getOptional() returns null by default.
+        // Actual signature: getOptional(sql, parameters, mapper: (SqlCursor) -> T)
         repository.findByBarcode(barcodeNumber = "1234", householdId = "hh-1")
 
-        assert(capturedSql.any { it.contains("pk.deleted_at IS NULL") }) {
-            "Expected SQL to contain 'pk.deleted_at IS NULL' but got: ${capturedSql.firstOrNull()}"
+        coVerify {
+            db.getOptional(
+                match { sql -> sql.contains("pk.deleted_at IS NULL") },
+                any<List<Any?>>(),
+                any<(com.powersync.db.SqlCursor) -> Any>(),
+            )
         }
     }
 
     @Test
     fun `findByBarcode returns null when product is deleted`() = runTest {
-        coEvery { db.getOptional(any(), any(), any()) } returns null
+        coEvery {
+            db.getOptional(
+                any<String>(),
+                any<List<Any?>>(),
+                any<(com.powersync.db.SqlCursor) -> ProductKind>(),
+            )
+        } returns null
 
         val result = repository.findByBarcode(barcodeNumber = "1234", householdId = "hh-1")
 
