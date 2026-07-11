@@ -67,7 +67,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `moddatetime` trigger is created for each table
     - Migration is idempotent (uses `IF NOT EXISTS` or similar guards)
 
-- [/] **Task 5: Remove signup screen and Route.SignUp**
+- [x] **Task 5: Remove signup screen and Route.SignUp**
   - **Description:** Create a bash command to delete `SignUpScreen.kt`, remove `Route.SignUp` from `Routes.kt`, remove the `composable(Route.SignUp.path)` entry from the NavHost in `GroceryApp.kt`. Note: `SignInScreen.kt` does NOT contain a link to signup — no changes needed there. A human will perform the deletion as you have no permissions to do so.
   - **Files:** `ui/screens/SignUpScreen.kt` (delete), `ui/navigation/Routes.kt`, `GroceryApp.kt`
   - **Review Criteria:**
@@ -311,4 +311,10 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - UPDATEs: All 13 UPDATE statements include `updated_at = datetime('now')`. `created_at` is never modified on UPDATE. Pass.
   - Completeness: 18 `.execute()` calls total = 4 INSERTs + 13 UPDATEs + 1 DELETE (`deleteBarcode`). DELETE correctly excluded from timestamp updates. No missed statements. Pass.
   - Tests: All SQL assertions updated to expect `updated_at = datetime('now')` in UPDATE statements, and INSERT tests verify presence of timestamp columns. Pass.
-  - Domain models remain unchanged — timestamps are sync/audit only. Pass.
+   - Domain models remain unchanged — timestamps are sync/audit only. Pass.
+- **Round 4:** APPROVED — Task 5 (2026-07-11)
+  - `SignUpScreen.kt` deleted: glob returns no matches. Pass.
+  - `Route.SignUp` removed from sealed class: `Routes.kt` contains no `SignUp` entry. Pass.
+  - Navigation references: grep for `SignUp` across all `.kt` files returns zero hits. No `composable(Route.SignUp.path)` in `GroceryApp.kt`. Pass.
+  - Build: `./gradlew :app:assembleDebug` reported BUILD SUCCESSFUL. Pass.
+  - Note (non-blocking): `AuthViewModel.signUp()` is now dead code (no callers). Recommend removing in a future cleanup task.
