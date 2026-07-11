@@ -162,7 +162,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `onCleared()` triggers immediate save of pending changes
     - Unit test: verify debounce triggers save, verify `onCleared()` triggers save
 
-- [/] **Task 12: Add product group creation in detail screen**
+- [x] **Task 12: Add product group creation in detail screen**
   - **Depends on:** Task 3 (new INSERT must include `created_at`/`updated_at`)
   - **Description:** Add ability to create new product groups from the detail screen's group dropdown:
     1. Add "Create new group..." option at the bottom of the `GroupDropdown` menu
@@ -352,3 +352,13 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - Error handling: `try/catch` with logging + snackbar in both `deleteProduct()` and `restoreProduct()`. Pass.
   - Unit tests: `deleteProductKind sets deleted_at and updated_at via soft-delete SQL` and `deleteProductKind does not hard-delete barcodes`. Pass.
   - Non-blocking note: Product name in undo snackbar may show fallback "Product" if reactive query filters the deleted product before name lookup. Cosmetic only — undo uses ID, not name.
+- **Round 10:** APPROVED — Task 12 (2026-07-12)
+  - Interface: `createProductGroup(householdId: String, name: String): String` at GroceryRepository.kt L86. Pass.
+  - Implementation: INSERT with UUID, `household_id`, `name`, `deleted_at = NULL`, `created_at = datetime('now')`, `updated_at = datetime('now')`. Returns new ID. Pass.
+  - UI — "Create new group..." menu item at bottom of `GroupDropdown` (DetailScreen.kt L321–332), styled in primary color. Pass.
+  - Dialog validation: `trimmed.isNotBlank()` gates confirm. `isError` flag on text field when blank after trim. Pass.
+  - Duplicate detection: case-insensitive match against existing groups list. Shows `"A group with this name already exists"` inline error text, disables confirm button. Client-side only. Pass.
+  - Auto-select: `DetailViewModel.createGroup()` calls `updateGroup(newGroupId)` after successful insert, triggering debounced auto-save. Pass.
+  - Reactive refresh: `groups` StateFlow backed by `watchProductGroups()` — PowerSync `db.watch()` re-emits on table change. Pass.
+  - Error handling: `try/catch` with Logger + Snackbar in `createGroup()`. Pass.
+  - Tests: 2 tests — INSERT SQL verification (table, timestamps, params) and non-blank return ID. Pass.
