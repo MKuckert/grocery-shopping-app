@@ -83,7 +83,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - `android:screenOrientation="portrait"` is present on `MainActivity`
     - App does not rotate to landscape
 
-- [/] **Task 7: Add .editorconfig**
+- [x] **Task 7: Add .editorconfig**
   - **Description:** Create `.editorconfig` at project root with Kotlin/Android conventions: 4-space indent, UTF-8, LF line endings, max line length 120, trailing whitespace trimmed, final newline enforced. Include sections for `*.kt`, `*.kts`, `*.xml`, `*.json`.
   - **Files:** `.editorconfig` (new file at project root)
   - **Review Criteria:**
@@ -322,3 +322,10 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - `android:screenOrientation="portrait"` confirmed on `<activity android:name=".MainActivity">` at AndroidManifest.xml line 34. Pass.
   - No other elements modified. No unintended changes. Pass.
   - Build: `./gradlew :app:assembleDebug` reported BUILD SUCCESSFUL. Pass.
+- **Round 6:** APPROVED — Task 7 (2026-07-11)
+  - File exists at project root (`.editorconfig`, 21 lines). Pass.
+  - `root = true` directive present at line 1. Pass.
+  - Kotlin section `[*.{kt,kts}]`: `indent_style = space`, `indent_size = 4`, `max_line_length = 120`. Pass.
+  - XML section `[*.xml]`: `indent_style = space`, `indent_size = 4`. Pass.
+  - Global section `[*]`: `charset = utf-8`, `end_of_line = lf`, `insert_final_newline = true`, `trim_trailing_whitespace = true`. Pass.
+  - JSON section `[*.json]`: `indent_size = 2` — appropriate convention. Pass.
