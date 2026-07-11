@@ -183,7 +183,7 @@ private fun ScanningContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp)
+                .height(200.dp)
                 .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
@@ -192,7 +192,7 @@ private fun ScanningContent(
                 imageCapture = imageCapture,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .fillMaxHeight()
             )
             if (isProcessing) {
                 CircularProgressIndicator()
