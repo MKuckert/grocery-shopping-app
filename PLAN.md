@@ -181,7 +181,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - New group auto-selected after creation
     - Group list refreshes reactively (via existing `watchProductGroups()` flow)
 
-- [/] **Task 13a: Inventory barcode linking — state & processor logic**
+- [x] **Task 13a: Inventory barcode linking — state & processor logic**
   - **Depends on:** Task 3 (new INSERT must include timestamps)
   - **Description:** Backend logic for linking an unknown barcode to an existing product:
     1. Add `ScannerState.LinkToExisting(val barcode: String)` to `ScannerState` sealed class
@@ -362,3 +362,11 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - Reactive refresh: `groups` StateFlow backed by `watchProductGroups()` — PowerSync `db.watch()` re-emits on table change. Pass.
   - Error handling: `try/catch` with Logger + Snackbar in `createGroup()`. Pass.
   - Tests: 2 tests — INSERT SQL verification (table, timestamps, params) and non-blank return ID. Pass.
+- **Round 11:** APPROVED — Task 13a (2026-07-12)
+  - `ScannerState.LinkToExisting(val barcode: String)` added to sealed class (ScannerState.kt L12). Pass.
+  - `ScanResult.Linked(val product: ProductKind)` added to sealed class (ScanResult.kt L9). Pass.
+  - `ScannerProcessor.linkBarcodeToProduct()`: success path calls `addBarcode`, fetches product via `watchProductKind().first()`, plays success audio, emits `ScanResult.Linked`. Error path catches exception, logs, plays failure audio, re-throws. Pass.
+  - Duplicate barcode exception: caught by `catch (e: Exception)`, logged via `Logger.e()`, re-thrown for UI layer. Pass.
+  - Unit tests: happy path (`linkBarcodeToProduct happy path emits Linked and plays success audio`) and duplicate error (`linkBarcodeToProduct on duplicate barcode plays failure audio and rethrows`). Both verify audio feedback and result emission/propagation. Pass.
+  - Exhaustive `when` fixes: `ScanResult.Linked` handled in BarcodeScannerBottomSheet (L74), InventoryScreen (L160), ShoppingScreen (L214). `ScannerState.LinkToExisting` branch added in BarcodeScannerBottomSheet (L152, placeholder for Task 13b). Pass.
+  - No security or stability issues. `watchProductKind().first() ?: error(...)` guard fails loud on pathological race — acceptable.
