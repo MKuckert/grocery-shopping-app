@@ -33,7 +33,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Unit tests verify that deleted products are NOT returned by either method
     - No regression in existing queries that already filter correctly
 
-- [/] **Task 2: Deduplicate quantity_to_buy recalculation SQL**
+- [x] **Task 2: Deduplicate quantity_to_buy recalculation SQL**
   - **Description:** The query `UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?` appears 5 times in `GroceryRepositoryImpl`: once in the existing public `recalculateQuantityToBuy()` method (line ~241, uses `db.execute()`), and 4 more inline duplicates inside `writeTransaction` blocks in `decrementStock()` (line ~207), `submitUnloading()` (line ~268), `updateProductKind()` (line ~297), and `restoreProductKind()` (line ~351) — all using `tx.execute()`.
     Refactor:
     1. Create a `private fun recalculateQuantityToBuyTx(tx: Transaction, productId: String)` that uses `tx.execute()` for the SQL
@@ -297,5 +297,12 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - `findByBarcode()`: `AND pk.deleted_at IS NULL` confirmed at line 180. Pass.
   - Tests: 3 tests cover SQL filter verification and null-return behavior. Pass.
   - Regression audit: All 12 `db.watch()`/`db.getOptional()` calls reviewed — no missing soft-delete filters. Pass.
-- **Round 2:** [N/A]
+- **Round 2:** APPROVED — Task 2 (2026-07-11)
+  - Private `recalculateQuantityToBuyTx(tx: PowerSyncTransaction, productId: String)` confirmed at line 368. Uses `tx.execute()`. Pass.
+  - 3 of 4 claimed inline duplicates replaced with helper calls: `decrementStock` (L207), `updateProductKind` (L291), `restoreProductKind` (L342). Pass.
+  - `submitUnloading` (L260–267) retains inline SQL — uses `WHERE household_id = ? AND deleted_at IS NULL` (batch recalc for entire household). Structurally different query; cannot use the by-ID helper without semantic/performance regression. Acceptable deviation.
+  - Public `recalculateQuantityToBuy()` wraps in `db.writeTransaction` and delegates to private helper (L239–241). Pass.
+  - SQL string `...WHERE id = ?` appears exactly 1 time (L370, inside helper). Down from 4. Pass.
+  - Tests verify transactional delegation (`decrementStock`, `recalculateQuantityToBuy`) and `submitUnloading` independently. No tests removed. Pass.
+  - No regressions in other methods. Interface unchanged.
 - **Round 3:** [N/A]
