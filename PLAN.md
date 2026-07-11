@@ -48,7 +48,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Total occurrences of the SQL string reduced from 5 to 1
     - Existing behavior unchanged (verify via existing tests)
 
-- [/] **Task 3: Add `created_at` and `updated_at` to PowerSync schema (client-side)**
+- [x] **Task 3: Add `created_at` and `updated_at` to PowerSync schema (client-side)**
   - **Description:** Add `Column.text("created_at")` and `Column.text("updated_at")` to all 4 tables in `AppSchema.kt`. Update ALL INSERT statements in `GroceryRepositoryImpl` to include `datetime('now')` for both columns. Update ALL UPDATE statements to set `updated_at = datetime('now')`. Domain models (`ProductKind`, `ProductGroup`, `Household`, `Barcode`) do NOT need these fields exposed yet — they are for sync/audit only.
   - **Files:** `data/db/AppSchema.kt`, `data/repository/GroceryRepositoryImpl.kt`
   - **Review Criteria:**
@@ -305,4 +305,10 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - SQL string `...WHERE id = ?` appears exactly 1 time (L370, inside helper). Down from 4. Pass.
   - Tests verify transactional delegation (`decrementStock`, `recalculateQuantityToBuy`) and `submitUnloading` independently. No tests removed. Pass.
   - No regressions in other methods. Interface unchanged.
-- **Round 3:** [N/A]
+- **Round 3:** APPROVED — Task 3 (2026-07-11)
+  - Schema: All 4 tables (`households`, `product_groups`, `product_kinds`, `barcodes`) include `Column.text("created_at")` and `Column.text("updated_at")`. Pass.
+  - INSERTs: All 4 INSERT statements (`addBarcode`, `createProductKindWithBarcode` ×2, `ensureUnsortedGroup`) set both `created_at` and `updated_at` to `datetime('now')`. Pass.
+  - UPDATEs: All 13 UPDATE statements include `updated_at = datetime('now')`. `created_at` is never modified on UPDATE. Pass.
+  - Completeness: 18 `.execute()` calls total = 4 INSERTs + 13 UPDATEs + 1 DELETE (`deleteBarcode`). DELETE correctly excluded from timestamp updates. No missed statements. Pass.
+  - Tests: All SQL assertions updated to expect `updated_at = datetime('now')` in UPDATE statements, and INSERT tests verify presence of timestamp columns. Pass.
+  - Domain models remain unchanged — timestamps are sync/audit only. Pass.
