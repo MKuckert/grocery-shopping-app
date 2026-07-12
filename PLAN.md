@@ -218,7 +218,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Snackbar shown on inventory/shopping screens for `ScanResult.Linked`
     - Flow works in both inventory and shopping scanner modes
 
-- [/] **Task 14: Extract all hardcoded strings to strings.xml**
+- [x] **Task 14: Extract all hardcoded strings to strings.xml**
   - **Description:** Move all ~80+ hardcoded user-facing strings to `res/values/strings.xml`. This includes:
     - Screen titles ("Sign In", "Product Detail", "Shopping", "Inventory", "Unloading")
     - Button labels ("Save", "Cancel", "Add", "Submit", etc.)
@@ -380,4 +380,20 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
    - `ScanResult.Linked` handled in InventoryScreen (L160–162) and ShoppingScreen (L214–216): Snackbar "Barcode linked to {productName}". Pass.
    - Both scanner modes work: `mode.householdId` used generically in `LinkToExisting` flow. Pass.
    - Compose best practices: lifecycle-aware collection, proper `remember` scoping, `weight(1f, fill=false)` on LazyColumn, `isProcessing` guard prevents double-taps. Pass.
-   - Non-blocking: redundant `Scanning` state set in both `onLink` handler (L183) and `LaunchedEffect` collector (L85–87) — harmless, same dispatcher. `linkError!!` at L420 required due to `by` delegate (no smart-cast). Accepted.
+    - Non-blocking: redundant `Scanning` state set in both `onLink` handler (L183) and `LaunchedEffect` collector (L85–87) — harmless, same dispatcher. `linkError!!` at L420 required due to `by` delegate (no smart-cast). Accepted.
+- **Round 13:** APPROVED — Task 14 (2026-07-12)
+   - **Round 1 fix verification:**
+     - ISSUE 1: `InventoryScreen.kt` L73 reads `stringResource(R.string.inventory_product_name_fallback)`, used at L103 as fallback. `strings.xml` L32 defines `inventory_product_name_fallback`. Pass.
+     - ISSUE 2: `UnloadingScreen.kt` L136–141 uses `stringResource(R.string.unloading_stock_formula, ...)` with three int args. `strings.xml` L106 defines `%1$d + %2$d = %3$d`. Pass.
+     - ISSUE 3: No `detailsLabel` variable in `InventoryScreen.kt`. Removed. Pass.
+   - **File-by-file sweep (in-scope files per PLAN):**
+     - `strings.xml`: 136 entries, well-structured by screen. Naming convention `screen_component_description` consistently followed. Format strings use `%1$s`/`%1$d` positional placeholders. Pass.
+     - `InventoryScreen.kt`: All titles, buttons, content descriptions, and snackbar messages use `stringResource()`. No hardcoded user-facing strings. Pass.
+     - `UnloadingScreen.kt`: All dialog text, buttons, content descriptions use `stringResource()`. Stock formula uses format string. Pass.
+     - `SignInScreen.kt`: Title, labels, error messages use `stringResource()` or `context.getString()`. Pass.
+     - `ShoppingScreen.kt`: All titles, section headers, buttons, content descriptions, snackbar messages use `stringResource()`. Numeric fraction `"${pending}/${qty}"` is data formatting, not translatable text. Acceptable. Pass.
+     - `DetailScreen.kt`: All labels, dialog text, content descriptions, section headers use `stringResource()` or `context.getString()`. Pass.
+     - `BarcodeScannerBottomSheet.kt`: All titles, labels, buttons, content descriptions use `stringResource()`. Error message at L188 uses `context.getString(R.string.scanner_error_barcode_already_linked)`. Pass.
+     - `CameraPermissionHandler.kt`: All dialog titles, messages, buttons use `stringResource()`. Pass.
+   - **ViewModel files:** All 4 ViewModels confirmed clean — every `SnackbarMessage` text uses `context.getString(R.string.xxx)`. Pass.
+   - Non-blocking observation: `ScannerProcessor.kt` L82/L86 contain hardcoded `"Unknown Item"` fallback. `ScannerProcessor` is outside Task 14's explicit file scope (not a Composable) and is a `@Singleton` without `Context` in `processScan()`. The string resource `scanner_unknown_item` exists (L127) but is only used in `BarcodeScannerBottomSheet` for comparison. Recommend injecting `Context` or passing it to `processScan()` in a future cleanup task.
