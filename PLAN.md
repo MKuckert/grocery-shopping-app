@@ -92,7 +92,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - XML section uses 4-space indent
     - Root directive is `root = true`
 
-- [x] **Task 8: Fix camera preview overlapping bottom sheet**
+- [/] **Task 8: Fix camera preview overlapping bottom sheet**
   - **Description:** In `CameraPreviewComposable.kt`, replace `ViewGroup.LayoutParams.MATCH_PARENT` for both width and height with `0` (or remove explicit layout params entirely and let Compose modifiers control sizing). The `AndroidView` modifier from callers already specifies dimensions. Additionally, add `Modifier.clipToBounds()` to the camera `Box` containers in `BarcodeScannerBottomSheet.kt` (`ScanningContent` at ~line 182 and `CaptureRequiredContent` at ~line 253) to prevent any overflow.
   - **Files:** `scanner/CameraPreviewComposable.kt`, `scanner/BarcodeScannerBottomSheet.kt`
   - **Review Criteria:**
