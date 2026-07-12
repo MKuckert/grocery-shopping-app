@@ -133,7 +133,12 @@ private fun UnloadingRow(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = "${product.currentStock} + ${product.pendingStock} = ${product.currentStock + product.pendingStock}",
+                text = stringResource(
+                    R.string.unloading_stock_formula,
+                    product.currentStock,
+                    product.pendingStock,
+                    product.currentStock + product.pendingStock,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 8.dp),
             )

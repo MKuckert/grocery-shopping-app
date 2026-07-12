@@ -70,7 +70,7 @@ internal fun InventoryScreen(
     var showScanner by remember { mutableStateOf(false) }
 
     val undoLabel = stringResource(R.string.action_undo)
-    val detailsLabel = stringResource(R.string.action_details)
+    val productNameFallback = stringResource(R.string.inventory_product_name_fallback)
     val msgRemaining = stringResource(R.string.inventory_snackbar_remaining)
     val msgRestored = stringResource(R.string.inventory_snackbar_restored)
     val msgBarcodeLinked = stringResource(R.string.inventory_snackbar_barcode_linked)
@@ -100,7 +100,7 @@ internal fun InventoryScreen(
         val pid = deletedProductId ?: return@LaunchedEffect
         onDeletedProductConsumed()
         val groupsSnapshot = viewModel.groupsWithProducts.value
-        val productName = groupsSnapshot.flatMap { it.products }.find { it.id == pid }?.name ?: "Product"
+        val productName = groupsSnapshot.flatMap { it.products }.find { it.id == pid }?.name ?: productNameFallback
         viewModel.showDeletedProductUndo(pid, productName)
     }
 

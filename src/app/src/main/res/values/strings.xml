@@ -29,6 +29,7 @@
     <string name="inventory_snackbar_barcode_linked">Barcode linked to %1$s</string>
     <string name="inventory_snackbar_restored">Restored: %1$s</string>
     <string name="inventory_group_unsorted">Unsorted</string>
+    <string name="inventory_product_name_fallback">Product</string>
     <string name="inventory_error_start_shopping">Failed to start shopping</string>
     <string name="inventory_error_decrement_stock">Failed to decrement stock</string>
     <string name="inventory_error_restore_product">Failed to restore product</string>
@@ -102,6 +103,7 @@
     <string name="unloading_dialog_message">%1$d item(s) still have open adjustments. Submit anyway?</string>
     <string name="unloading_dialog_btn_submit_anyway">Submit Anyway</string>
     <string name="unloading_dialog_btn_go_back">Go Back</string>
+    <string name="unloading_stock_formula">%1$d + %2$d = %3$d</string>
     <string name="unloading_cd_decrease_item">Decrease %1$s</string>
     <string name="unloading_cd_increase_item">Increase %1$s</string>
     <string name="unloading_error_toggle_unload_state">Failed to toggle unload state</string>
