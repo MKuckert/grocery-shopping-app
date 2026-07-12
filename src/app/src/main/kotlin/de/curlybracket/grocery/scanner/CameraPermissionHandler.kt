@@ -14,10 +14,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import de.curlybracket.grocery.R
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -34,13 +36,17 @@ fun CameraPermissionHandler(
             rationaleShown = true
             AlertDialog(
                 onDismissRequest = {},
-                title = { Text("Camera Required") },
-                text = { Text("The camera is needed to scan barcodes. Please grant camera access.") },
+                title = { Text(stringResource(R.string.permission_dialog_camera_required_title)) },
+                text = { Text(stringResource(R.string.permission_dialog_camera_required_message)) },
                 confirmButton = {
-                    TextButton(onClick = { permissionState.launchPermissionRequest() }) { Text("Grant") }
+                    TextButton(onClick = { permissionState.launchPermissionRequest() }) {
+                        Text(stringResource(R.string.permission_btn_grant))
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = { /* close bottom sheet */ }) { Text("Cancel") }
+                    TextButton(onClick = { /* close bottom sheet */ }) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
                 },
             )
         }
@@ -49,15 +55,15 @@ fun CameraPermissionHandler(
             val context = LocalContext.current
             AlertDialog(
                 onDismissRequest = {},
-                title = { Text("Camera Permission Required") },
-                text = { Text("Camera access was denied. Open Settings to grant it.") },
+                title = { Text(stringResource(R.string.permission_dialog_camera_denied_title)) },
+                text = { Text(stringResource(R.string.permission_dialog_camera_denied_message)) },
                 confirmButton = {
                     TextButton(onClick = {
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.fromParts("package", context.packageName, null)
                         }
                         context.startActivity(intent)
-                    }) { Text("Open Settings") }
+                    }) { Text(stringResource(R.string.permission_btn_open_settings)) }
                 },
             )
         }

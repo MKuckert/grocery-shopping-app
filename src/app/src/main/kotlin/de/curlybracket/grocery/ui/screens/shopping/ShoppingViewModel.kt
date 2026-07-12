@@ -1,10 +1,13 @@
 package de.curlybracket.grocery.ui.screens.shopping
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import co.touchlab.kermit.Logger
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.auth.householdIdFlow
 import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.domain.model.ProductKind
@@ -27,6 +30,7 @@ import javax.inject.Inject
 class ShoppingViewModel @Inject constructor(
     private val repository: GroceryRepository,
     private val connector: SupabaseConnector,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     val householdIdFlow: StateFlow<String?> = connector.householdIdFlow(viewModelScope)
@@ -70,7 +74,12 @@ class ShoppingViewModel @Inject constructor(
                 repository.setHouseholdState(HouseholdState.UNLOADING)
             } catch (e: Exception) {
                 Logger.e("Failed to finish shopping", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to finish shopping", productId = ""))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.shopping_error_finish_shopping),
+                        productId = "",
+                    ),
+                )
             }
         }
     }
@@ -81,7 +90,12 @@ class ShoppingViewModel @Inject constructor(
                 repository.fulfillFull(product.id)
             } catch (e: Exception) {
                 Logger.e("Failed to fulfill item", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to fulfill item", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.shopping_error_fulfill_item),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }
@@ -92,7 +106,12 @@ class ShoppingViewModel @Inject constructor(
                 repository.incrementPendingStock(product.id)
             } catch (e: Exception) {
                 Logger.e("Failed to increment pending", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to increment pending", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.shopping_error_increment_pending),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }
@@ -103,7 +122,12 @@ class ShoppingViewModel @Inject constructor(
                 repository.decrementPendingStock(product.id)
             } catch (e: Exception) {
                 Logger.e("Failed to decrement pending", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to decrement pending", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.shopping_error_decrement_pending),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }
@@ -120,7 +144,12 @@ class ShoppingViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Logger.e("Failed to force-add item", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to force-add item", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.shopping_error_force_add_item),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }

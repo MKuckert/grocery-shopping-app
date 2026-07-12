@@ -44,11 +44,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.BuildConfig
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.domain.model.ProductKind
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -183,7 +185,7 @@ fun BarcodeScannerBottomSheet(
                                     scannerState = ScannerState.Scanning
                                 } catch (e: Exception) {
                                     Logger.e("Link barcode to product failed", e)
-                                    linkError = "This barcode is already linked to another product."
+                                    linkError = context.getString(R.string.scanner_error_barcode_already_linked)
                                 } finally {
                                     isProcessing = false
                                 }
@@ -223,9 +225,9 @@ private fun ScanningContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Scan Barcode", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.scanner_title_scan_barcode), style = MaterialTheme.typography.titleMedium)
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Filled.Close, contentDescription = "Close scanner")
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.scanner_cd_close))
             }
         }
 
@@ -266,8 +268,9 @@ private fun CaptureRequiredContent(
     isProcessing: Boolean,
 ) {
     val context = LocalContext.current
+    val unknownItem = stringResource(R.string.scanner_unknown_item)
     val saveEnabled = state.prefillName.isNotBlank() &&
-        (state.prefillName != "Unknown Item" || state.photoPath != null) &&
+        (state.prefillName != unknownItem || state.photoPath != null) &&
         !isProcessing
 
     Column(
@@ -282,14 +285,14 @@ private fun CaptureRequiredContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("New Product", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.scanner_title_new_product), style = MaterialTheme.typography.titleMedium)
             if (isProcessing) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
             }
         }
 
         Text(
-            text = "Barcode: ${state.barcode}",
+            text = stringResource(R.string.scanner_label_barcode, state.barcode),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -297,7 +300,7 @@ private fun CaptureRequiredContent(
         OutlinedTextField(
             value = state.prefillName,
             onValueChange = onNameChange,
-            label = { Text("Product name") },
+            label = { Text(stringResource(R.string.scanner_label_product_name)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
@@ -325,7 +328,7 @@ private fun CaptureRequiredContent(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Camera,
-                    contentDescription = "Capture photo",
+                    contentDescription = stringResource(R.string.scanner_cd_capture_photo),
                     modifier = Modifier.size(48.dp),
                 )
             }
@@ -333,7 +336,7 @@ private fun CaptureRequiredContent(
 
         if (state.photoPath != null) {
             Text(
-                text = "Photo captured",
+                text = stringResource(R.string.scanner_msg_photo_captured),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -345,20 +348,20 @@ private fun CaptureRequiredContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(onClick = onCancel) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
             OutlinedButton(
                 onClick = onLinkToExisting,
                 enabled = !isProcessing,
             ) {
-                Text("Link to Existing")
+                Text(stringResource(R.string.scanner_btn_link_to_existing))
             }
             Spacer(Modifier.size(8.dp))
             Button(
                 onClick = onSave,
                 enabled = saveEnabled,
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         }
 
@@ -395,14 +398,14 @@ private fun LinkToExistingContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Link to Existing Product", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.scanner_title_link_to_existing), style = MaterialTheme.typography.titleMedium)
             if (isProcessing) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
             }
         }
 
         Text(
-            text = "Barcode: $barcode",
+            text = stringResource(R.string.scanner_label_barcode, barcode),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -410,7 +413,7 @@ private fun LinkToExistingContent(
         OutlinedTextField(
             value = query,
             onValueChange = { queryFlow.value = it },
-            label = { Text("Search products") },
+            label = { Text(stringResource(R.string.scanner_label_search_products)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
@@ -447,7 +450,7 @@ private fun LinkToExistingContent(
             horizontalArrangement = Arrangement.End,
         ) {
             TextButton(onClick = onCancel) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         }
 
@@ -478,7 +481,7 @@ private fun ProductSearchItem(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = "Stock: ${product.currentStock}",
+                text = stringResource(R.string.scanner_label_stock, product.currentStock),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

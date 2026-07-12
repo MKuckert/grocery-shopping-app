@@ -1,10 +1,13 @@
 package de.curlybracket.grocery.ui.screens.detail
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.ProductGroup
 import de.curlybracket.grocery.domain.model.ProductKind
@@ -29,6 +32,7 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val repository: GroceryRepository,
     savedStateHandle: SavedStateHandle,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val productId: String = savedStateHandle["productId"]!!
@@ -127,7 +131,12 @@ class DetailViewModel @Inject constructor(
                 repository.addBarcode(productId, barcodeNumber, hid)
             } catch (e: Exception) {
                 Logger.e("Failed to add barcode", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to add barcode", productId = productId))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.detail_error_add_barcode),
+                        productId = productId,
+                    ),
+                )
             }
         }
     }
@@ -138,7 +147,12 @@ class DetailViewModel @Inject constructor(
                 repository.deleteBarcode(barcode.id)
             } catch (e: Exception) {
                 Logger.e("Failed to delete barcode", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to delete barcode", productId = productId))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.detail_error_delete_barcode),
+                        productId = productId,
+                    ),
+                )
             }
         }
     }
@@ -153,7 +167,12 @@ class DetailViewModel @Inject constructor(
                 updateGroup(newGroupId)
             } catch (e: Exception) {
                 Logger.e("Failed to create product group", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to create group", productId = productId))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.detail_error_create_group),
+                        productId = productId,
+                    ),
+                )
             }
         }
     }
@@ -165,7 +184,12 @@ class DetailViewModel @Inject constructor(
                 _deleteEvent.emit(productId)
             } catch (e: Exception) {
                 Logger.e("Failed to delete product", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to delete product", productId = productId))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.detail_error_delete_product),
+                        productId = productId,
+                    ),
+                )
             }
         }
     }
@@ -210,7 +234,12 @@ class DetailViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Logger.e("Failed to save changes", e)
-            _snackbarMessage.emit(SnackbarMessage(text = "Failed to save changes", productId = productId))
+            _snackbarMessage.emit(
+                SnackbarMessage(
+                    text = context.getString(R.string.detail_error_save_changes),
+                    productId = productId,
+                ),
+            )
         }
     }
 

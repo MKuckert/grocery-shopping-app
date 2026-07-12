@@ -218,7 +218,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Snackbar shown on inventory/shopping screens for `ScanResult.Linked`
     - Flow works in both inventory and shopping scanner modes
 
-- [ ] **Task 14: Extract all hardcoded strings to strings.xml**
+- [/] **Task 14: Extract all hardcoded strings to strings.xml**
   - **Description:** Move all ~80+ hardcoded user-facing strings to `res/values/strings.xml`. This includes:
     - Screen titles ("Sign In", "Product Detail", "Shopping", "Inventory", "Unloading")
     - Button labels ("Save", "Cancel", "Add", "Submit", etc.)

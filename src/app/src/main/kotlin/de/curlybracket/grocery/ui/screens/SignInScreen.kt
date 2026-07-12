@@ -29,12 +29,15 @@ import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalAutofillManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.auth.AuthViewModel
 import io.github.jan.supabase.exceptions.BadRequestRestException
 import kotlinx.coroutines.launch
@@ -52,6 +55,7 @@ internal fun SignInScreen(
     val scrollState = rememberScrollState()
     val autofillManager = LocalAutofillManager.current
     val passwordFocusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
 
     fun signIn() {
         coroutineScope.launch {
@@ -63,9 +67,9 @@ internal fun SignInScreen(
             } catch (e: Exception) {
                 Logger.e("Sign-in failed", e)
                 errorMessage = if (e is BadRequestRestException) {
-                    "Invalid email or password"
+                    context.getString(R.string.sign_in_error_invalid_credentials)
                 } else {
-                    e.message ?: "An error occurred during sign-in"
+                    e.message ?: context.getString(R.string.sign_in_error_generic)
                 }
             } finally {
                 isLoading = false
@@ -82,7 +86,7 @@ internal fun SignInScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            "Sign In",
+            stringResource(R.string.sign_in_title),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 32.dp),
         )
@@ -90,7 +94,7 @@ internal fun SignInScreen(
         TextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.sign_in_label_email)) },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next,
@@ -107,7 +111,7 @@ internal fun SignInScreen(
 
         SecureTextField(
             state = passwordState,
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.sign_in_label_password)) },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
@@ -133,7 +137,10 @@ internal fun SignInScreen(
             modifier = Modifier.align(Alignment.End),
             enabled = !isLoading,
         ) {
-            Text(if (isLoading) "Signing In..." else "Sign In")
+            Text(
+                if (isLoading) stringResource(R.string.sign_in_btn_signing_in)
+                else stringResource(R.string.sign_in_title),
+            )
         }
     }
 

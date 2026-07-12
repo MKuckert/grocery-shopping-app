@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,6 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import de.curlybracket.grocery.BuildConfig
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.ProductGroup
 import java.io.File
@@ -97,8 +99,15 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete ${product?.name ?: "product"}?") },
-            text = { Text("This can be undone.") },
+            title = {
+                Text(
+                    stringResource(
+                        R.string.detail_dialog_delete_title,
+                        product?.name ?: stringResource(R.string.detail_label_product_name),
+                    ),
+                )
+            },
+            text = { Text(stringResource(R.string.detail_dialog_delete_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -106,12 +115,12 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                         viewModel.deleteProduct()
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         )
@@ -120,15 +129,17 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Product Detail") },
+                title = { Text(stringResource(R.string.detail_title)) },
                 navigationIcon = {
                     IconButton(
                         onClick = { onBack(null) },
-                        modifier = Modifier.semantics { contentDescription = "Navigate back" },
+                        modifier = Modifier.semantics {
+                            contentDescription = context.getString(R.string.detail_cd_navigate_back)
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.detail_cd_back),
                         )
                     }
                 },
@@ -140,18 +151,20 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Check,
-                            contentDescription = "Saved",
+                            contentDescription = stringResource(R.string.detail_cd_saved),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 8.dp),
                         )
                     }
                     IconButton(
                         onClick = { showDeleteDialog = true },
-                        modifier = Modifier.semantics { contentDescription = "Delete product" },
+                        modifier = Modifier.semantics {
+                            contentDescription = context.getString(R.string.detail_cd_delete_product)
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete product",
+                            contentDescription = stringResource(R.string.detail_cd_delete_product),
                         )
                     }
                 },
@@ -185,11 +198,13 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { viewModel.updateName(it) },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.detail_label_product_name)) },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { contentDescription = "Product name field" },
+                        .semantics {
+                            contentDescription = context.getString(R.string.detail_cd_product_name_field)
+                        },
                 )
 
                 GroupDropdown(
@@ -200,25 +215,25 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                 )
 
                 StepperField(
-                    label = "Current stock",
+                    label = stringResource(R.string.detail_label_current_stock),
                     value = currentStock,
                     onDecrement = { viewModel.updateCurrentStock(currentStock - 1) },
                     onIncrement = { viewModel.updateCurrentStock(currentStock + 1) },
                     onValueChange = { viewModel.updateCurrentStock(it) },
-                    contentDescriptionDecrement = "Decrease current stock",
-                    contentDescriptionIncrement = "Increase current stock",
-                    contentDescriptionField = "Current stock field",
+                    contentDescriptionDecrement = stringResource(R.string.detail_cd_decrease_current_stock),
+                    contentDescriptionIncrement = stringResource(R.string.detail_cd_increase_current_stock),
+                    contentDescriptionField = stringResource(R.string.detail_cd_current_stock_field),
                 )
 
                 StepperField(
-                    label = "Minimum stock",
+                    label = stringResource(R.string.detail_label_minimum_stock),
                     value = minimumStock,
                     onDecrement = { viewModel.updateMinimumStock(minimumStock - 1) },
                     onIncrement = { viewModel.updateMinimumStock(minimumStock + 1) },
                     onValueChange = { viewModel.updateMinimumStock(it) },
-                    contentDescriptionDecrement = "Decrease minimum stock",
-                    contentDescriptionIncrement = "Increase minimum stock",
-                    contentDescriptionField = "Minimum stock field",
+                    contentDescriptionDecrement = stringResource(R.string.detail_cd_decrease_minimum_stock),
+                    contentDescriptionIncrement = stringResource(R.string.detail_cd_increase_minimum_stock),
+                    contentDescriptionField = stringResource(R.string.detail_cd_minimum_stock_field),
                 )
 
                 BarcodesSection(
@@ -248,7 +263,7 @@ private fun ImagePreview(imagePath: String?, context: Context) {
     if (imageUri != null) {
         AsyncImage(
             model = imageUri,
-            contentDescription = "Product image",
+            contentDescription = stringResource(R.string.detail_cd_product_image),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
@@ -263,7 +278,7 @@ private fun ImagePreview(imagePath: String?, context: Context) {
         ) {
             Icon(
                 imageVector = Icons.Filled.Image,
-                contentDescription = "No product image",
+                contentDescription = stringResource(R.string.detail_cd_no_product_image),
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -282,28 +297,31 @@ private fun GroupDropdown(
     var expanded by remember { mutableStateOf(false) }
     var showCreateDialog by remember { mutableStateOf(false) }
     val selectedGroup = groups.find { it.id == selectedGroupId }
+    val context = LocalContext.current
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it },
     ) {
         OutlinedTextField(
-            value = selectedGroup?.name ?: "None",
+            value = selectedGroup?.name ?: stringResource(R.string.detail_group_option_none),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Group") },
+            label = { Text(stringResource(R.string.detail_label_group)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                .semantics { contentDescription = "Product group selector" },
+                .semantics {
+                    contentDescription = context.getString(R.string.detail_cd_group_selector)
+                },
         )
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
             DropdownMenuItem(
-                text = { Text("None") },
+                text = { Text(stringResource(R.string.detail_group_option_none)) },
                 onClick = {
                     onGroupSelected(null)
                     expanded = false
@@ -321,7 +339,7 @@ private fun GroupDropdown(
             DropdownMenuItem(
                 text = {
                     Text(
-                        "Create new group...",
+                        stringResource(R.string.detail_group_option_create_new),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 },
@@ -357,25 +375,28 @@ private fun CreateGroupDialog(
         trimmed.isNotBlank() && existingGroups.any { it.name.equals(trimmed, ignoreCase = true) }
     }
     val isConfirmEnabled = trimmed.isNotBlank() && !isDuplicate
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create group") },
+        title = { Text(stringResource(R.string.detail_dialog_create_group_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = { input = it },
-                    label = { Text("Group name") },
+                    label = { Text(stringResource(R.string.detail_dialog_create_group_label)) },
                     singleLine = true,
                     isError = isDuplicate,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { contentDescription = "New group name input" },
+                        .semantics {
+                            contentDescription = context.getString(R.string.detail_cd_new_group_name_input)
+                        },
                 )
                 if (isDuplicate) {
                     Text(
-                        text = "A group with this name already exists",
+                        text = stringResource(R.string.detail_dialog_create_group_error_duplicate),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -387,12 +408,12 @@ private fun CreateGroupDialog(
                 onClick = { if (isConfirmEnabled) onConfirm(trimmed) },
                 enabled = isConfirmEnabled,
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )
@@ -446,6 +467,7 @@ private fun BarcodesSection(
     onDeleteBarcode: (Barcode) -> Unit,
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
@@ -453,21 +475,26 @@ private fun BarcodesSection(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Barcodes",
+                text = stringResource(R.string.detail_section_barcodes),
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.weight(1f),
             )
             IconButton(
                 onClick = { showAddDialog = true },
-                modifier = Modifier.semantics { contentDescription = "Add barcode" },
+                modifier = Modifier.semantics {
+                    contentDescription = context.getString(R.string.detail_cd_add_barcode)
+                },
             ) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add barcode")
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.detail_cd_add_barcode),
+                )
             }
         }
 
         if (barcodes.isEmpty()) {
             Text(
-                text = "No barcodes assigned",
+                text = stringResource(R.string.detail_no_barcodes),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -486,7 +513,10 @@ private fun BarcodesSection(
                                 modifier = Modifier
                                     .size(18.dp)
                                     .semantics {
-                                        contentDescription = "Delete barcode ${barcode.barcodeNumber}"
+                                        contentDescription = context.getString(
+                                            R.string.detail_cd_delete_barcode,
+                                            barcode.barcodeNumber,
+                                        )
                                     },
                             ) {
                                 Icon(
@@ -519,32 +549,35 @@ private fun AddBarcodeDialog(
     onDismiss: () -> Unit,
 ) {
     var input by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Barcode") },
+        title = { Text(stringResource(R.string.detail_dialog_add_barcode_title)) },
         text = {
             OutlinedTextField(
                 value = input,
                 onValueChange = { input = it },
-                label = { Text("Barcode number") },
+                label = { Text(stringResource(R.string.detail_dialog_add_barcode_label)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .semantics { contentDescription = "Barcode number input" },
+                    .semantics {
+                        contentDescription = context.getString(R.string.detail_cd_barcode_number_input)
+                    },
             )
         },
         confirmButton = {
             TextButton(
                 onClick = { if (input.isNotBlank()) onConfirm(input.trim()) },
             ) {
-                Text("Add")
+                Text(stringResource(R.string.action_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
     )

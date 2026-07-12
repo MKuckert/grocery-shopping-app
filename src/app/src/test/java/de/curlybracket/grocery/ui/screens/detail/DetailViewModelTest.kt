@@ -1,10 +1,12 @@
 package de.curlybracket.grocery.ui.screens.detail
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +28,7 @@ class DetailViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var repository: GroceryRepository
+    private lateinit var context: Context
     private val productId = "p-1"
     private val householdId = "hh-1"
 
@@ -33,6 +36,9 @@ class DetailViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         repository = mockk(relaxed = true)
+        context = mockk(relaxed = true)
+        every { context.getString(any()) } returns ""
+        every { context.getString(any(), *anyVararg()) } returns ""
     }
 
     @After
@@ -63,6 +69,7 @@ class DetailViewModelTest {
         return DetailViewModel(
             repository = repository,
             savedStateHandle = SavedStateHandle(mapOf("productId" to productId)),
+            context = context,
         )
     }
 

@@ -29,9 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.domain.model.ProductKind
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,16 +56,16 @@ internal fun UnloadingScreen() {
         val openCount = items.count { it.unloadOpen }
         AlertDialog(
             onDismissRequest = { viewModel.dismissDialog() },
-            title = { Text("Unverified Items") },
-            text = { Text("$openCount item(s) still have open adjustments. Submit anyway?") },
+            title = { Text(stringResource(R.string.unloading_dialog_title)) },
+            text = { Text(stringResource(R.string.unloading_dialog_message, openCount)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.confirmSubmit() }) {
-                    Text("Submit Anyway")
+                    Text(stringResource(R.string.unloading_dialog_btn_submit_anyway))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissDialog() }) {
-                    Text("Go Back")
+                    Text(stringResource(R.string.unloading_dialog_btn_go_back))
                 }
             },
         )
@@ -72,10 +74,10 @@ internal fun UnloadingScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Unloading") },
+                title = { Text(stringResource(R.string.unloading_title)) },
                 actions = {
                     TextButton(onClick = { viewModel.requestSubmit() }) {
-                        Text("Submit Unloading")
+                        Text(stringResource(R.string.unloading_btn_submit_unloading))
                     }
                 },
             )
@@ -141,7 +143,7 @@ private fun UnloadingRow(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Remove,
-                    contentDescription = "Decrease ${product.name}",
+                    contentDescription = stringResource(R.string.unloading_cd_decrease_item, product.name),
                 )
             }
             IconButton(
@@ -150,7 +152,7 @@ private fun UnloadingRow(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Increase ${product.name}",
+                    contentDescription = stringResource(R.string.unloading_cd_increase_item, product.name),
                 )
             }
         }
