@@ -196,7 +196,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Duplicate barcode exception is caught, logged, and re-thrown
     - Unit test for `linkBarcodeToProduct()` happy path and duplicate error
 
-- [ ] **Task 13b: Inventory barcode linking — UI**
+- [/] **Task 13b: Inventory barcode linking — UI**
   - **Depends on:** Task 13a
   - **Description:** UI for the barcode-to-existing-product linking flow:
     1. In `BarcodeScannerBottomSheet`, in the `CaptureRequired` state composable, add a "Link to Existing" `OutlinedButton` next to the "Save" button

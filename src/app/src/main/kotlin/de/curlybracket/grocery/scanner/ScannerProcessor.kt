@@ -93,6 +93,8 @@ class ScannerProcessor @Inject constructor(
         }
     }
 
+    fun watchSearch(query: String, householdId: String) = repository.watchSearch(query, householdId)
+
     suspend fun linkBarcodeToProduct(barcode: String, productId: String, householdId: String) {
         try {
             repository.addBarcode(productId, barcode, householdId)

@@ -14,17 +14,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -41,7 +46,13 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.BuildConfig
+import de.curlybracket.grocery.domain.model.ProductKind
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
@@ -145,12 +156,48 @@ fun BarcodeScannerBottomSheet(
                             }
                         },
                         onCancel = { scannerState = ScannerState.Scanning },
+                        onLinkToExisting = {
+                            scannerState = ScannerState.LinkToExisting(state.barcode)
+                        },
                         isProcessing = isProcessing,
                     )
                 }
 
                 is ScannerState.LinkToExisting -> {
-                    // UI implemented in Task 13b
+                    var linkError by remember { mutableStateOf<String?>(null) }
+                    LinkToExistingContent(
+                        barcode = state.barcode,
+                        householdId = mode.householdId,
+                        processor = processor,
+                        linkError = linkError,
+                        onLink = { productId ->
+                            scope.launch {
+                                isProcessing = true
+                                linkError = null
+                                try {
+                                    processor.linkBarcodeToProduct(
+                                        barcode = state.barcode,
+                                        productId = productId,
+                                        householdId = mode.householdId,
+                                    )
+                                    scannerState = ScannerState.Scanning
+                                } catch (e: Exception) {
+                                    Logger.e("Link barcode to product failed", e)
+                                    linkError = "This barcode is already linked to another product."
+                                } finally {
+                                    isProcessing = false
+                                }
+                            }
+                        },
+                        onCancel = {
+                            scannerState = ScannerState.CaptureRequired(
+                                barcode = state.barcode,
+                                prefillName = "",
+                                photoPath = null,
+                            )
+                        },
+                        isProcessing = isProcessing,
+                    )
                 }
             }
         }
@@ -215,6 +262,7 @@ private fun CaptureRequiredContent(
     onPhotoCapture: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
+    onLinkToExisting: () -> Unit,
     isProcessing: Boolean,
 ) {
     val context = LocalContext.current
@@ -299,6 +347,13 @@ private fun CaptureRequiredContent(
             TextButton(onClick = onCancel) {
                 Text("Cancel")
             }
+            OutlinedButton(
+                onClick = onLinkToExisting,
+                enabled = !isProcessing,
+            ) {
+                Text("Link to Existing")
+            }
+            Spacer(Modifier.size(8.dp))
             Button(
                 onClick = onSave,
                 enabled = saveEnabled,
@@ -308,6 +363,126 @@ private fun CaptureRequiredContent(
         }
 
         Spacer(Modifier.height(8.dp))
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+@Composable
+private fun LinkToExistingContent(
+    barcode: String,
+    householdId: String,
+    processor: ScannerProcessor,
+    linkError: String?,
+    onLink: (productId: String) -> Unit,
+    onCancel: () -> Unit,
+    isProcessing: Boolean,
+) {
+    val queryFlow = remember { MutableStateFlow("") }
+    val query by queryFlow.collectAsStateWithLifecycle()
+    val searchResults by remember(householdId) {
+        queryFlow.flatMapLatest { q -> processor.watchSearch(q, householdId) }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Link to Existing Product", style = MaterialTheme.typography.titleMedium)
+            if (isProcessing) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            }
+        }
+
+        Text(
+            text = "Barcode: $barcode",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        OutlinedTextField(
+            value = query,
+            onValueChange = { queryFlow.value = it },
+            label = { Text("Search products") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+
+        if (linkError != null) {
+            Text(
+                text = linkError!!,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
+        ) {
+            items(
+                items = searchResults,
+                key = { it.id },
+            ) { product ->
+                ProductSearchItem(
+                    product = product,
+                    enabled = !isProcessing,
+                    onTap = { onLink(product.id) },
+                )
+                HorizontalDivider()
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            TextButton(onClick = onCancel) {
+                Text("Cancel")
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun ProductSearchItem(
+    product: ProductKind,
+    enabled: Boolean,
+    onTap: () -> Unit,
+) {
+    Surface(
+        onClick = onTap,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "Stock: ${product.currentStock}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
