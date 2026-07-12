@@ -236,7 +236,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Format strings use proper `%s`/`%d` placeholders
     - App behavior is unchanged (visual verification)
 
-- [ ] **Task 15: Add German translation**
+- [/] **Task 15: Add German translation**
   - **Description:** Create `res/values-de/strings.xml` with German translations for all strings extracted in Task 14. Translate professionally — not machine-literal. Use formal "Sie" form. Ensure format placeholders (`%s`, `%d`) are preserved.
   - **Files:** `res/values-de/strings.xml` (new file)
   - **Review Criteria:**
