@@ -236,7 +236,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Format strings use proper `%s`/`%d` placeholders
     - App behavior is unchanged (visual verification)
 
-- [/] **Task 15: Add German translation**
+- [x] **Task 15: Add German translation**
   - **Description:** Create `res/values-de/strings.xml` with German translations for all strings extracted in Task 14. Translate professionally — not machine-literal. Use formal "Sie" form. Ensure format placeholders (`%s`, `%d`) are preserved.
   - **Files:** `res/values-de/strings.xml` (new file)
   - **Review Criteria:**
@@ -382,6 +382,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
    - Compose best practices: lifecycle-aware collection, proper `remember` scoping, `weight(1f, fill=false)` on LazyColumn, `isProcessing` guard prevents double-taps. Pass.
     - Non-blocking: redundant `Scanning` state set in both `onLink` handler (L183) and `LaunchedEffect` collector (L85–87) — harmless, same dispatcher. `linkError!!` at L420 required due to `by` delegate (no smart-cast). Accepted.
 - **Round 13:** APPROVED — Task 14 (2026-07-12)
+
    - **Round 1 fix verification:**
      - ISSUE 1: `InventoryScreen.kt` L73 reads `stringResource(R.string.inventory_product_name_fallback)`, used at L103 as fallback. `strings.xml` L32 defines `inventory_product_name_fallback`. Pass.
      - ISSUE 2: `UnloadingScreen.kt` L136–141 uses `stringResource(R.string.unloading_stock_formula, ...)` with three int args. `strings.xml` L106 defines `%1$d + %2$d = %3$d`. Pass.
@@ -396,4 +397,10 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
      - `BarcodeScannerBottomSheet.kt`: All titles, labels, buttons, content descriptions use `stringResource()`. Error message at L188 uses `context.getString(R.string.scanner_error_barcode_already_linked)`. Pass.
      - `CameraPermissionHandler.kt`: All dialog titles, messages, buttons use `stringResource()`. Pass.
    - **ViewModel files:** All 4 ViewModels confirmed clean — every `SnackbarMessage` text uses `context.getString(R.string.xxx)`. Pass.
-   - Non-blocking observation: `ScannerProcessor.kt` L82/L86 contain hardcoded `"Unknown Item"` fallback. `ScannerProcessor` is outside Task 14's explicit file scope (not a Composable) and is a `@Singleton` without `Context` in `processScan()`. The string resource `scanner_unknown_item` exists (L127) but is only used in `BarcodeScannerBottomSheet` for comparison. Recommend injecting `Context` or passing it to `processScan()` in a future cleanup task.
+    - Non-blocking observation: `ScannerProcessor.kt` L82/L86 contain hardcoded `"Unknown Item"` fallback. `ScannerProcessor` is outside Task 14's explicit file scope (not a Composable) and is a `@Singleton` without `Context` in `processScan()`. The string resource `scanner_unknown_item` exists (L127) but is only used in `BarcodeScannerBottomSheet` for comparison. Recommend injecting `Context` or passing it to `processScan()` in a future cleanup task.
+- **Round 14:** APPROVED — Task 15 (2026-07-12)
+   - Key completeness: 118/118 keys present in `values-de/strings.xml`. Zero missing, zero extra. Pass.
+   - Placeholder integrity: All 17 format strings verified — placeholder count, order, and type (`%1$s`, `%1$d`, `%2$d`, `%3$d`) match exactly between EN and DE. Pass.
+   - Translation quality: Natural German throughout. No machine-literal translations. Domain terms appropriate (Einlagerung, Spontankäufe, Abgehakte Artikel). Error messages follow consistent passive pattern ("konnte nicht … werden"). "Force Add" → "Trotzdem hinzufügen" is contextually apt. Pass.
+   - Formal register: "Sie" form used in both user-facing permission messages (L132, L135). All other strings are labels/actions where "Sie" does not apply. Pass.
+   - XML well-formedness: Declaration, encoding, root element, all tags closed, Unicode escapes preserved. Pass.
