@@ -196,7 +196,7 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
     - Duplicate barcode exception is caught, logged, and re-thrown
     - Unit test for `linkBarcodeToProduct()` happy path and duplicate error
 
-- [/] **Task 13b: Inventory barcode linking — UI**
+- [x] **Task 13b: Inventory barcode linking — UI**
   - **Depends on:** Task 13a
   - **Description:** UI for the barcode-to-existing-product linking flow:
     1. In `BarcodeScannerBottomSheet`, in the `CaptureRequired` state composable, add a "Link to Existing" `OutlinedButton` next to the "Save" button
@@ -368,5 +368,16 @@ Fix critical soft-delete bugs, add missing database timestamps, remove dead code
   - `ScannerProcessor.linkBarcodeToProduct()`: success path calls `addBarcode`, fetches product via `watchProductKind().first()`, plays success audio, emits `ScanResult.Linked`. Error path catches exception, logs, plays failure audio, re-throws. Pass.
   - Duplicate barcode exception: caught by `catch (e: Exception)`, logged via `Logger.e()`, re-thrown for UI layer. Pass.
   - Unit tests: happy path (`linkBarcodeToProduct happy path emits Linked and plays success audio`) and duplicate error (`linkBarcodeToProduct on duplicate barcode plays failure audio and rethrows`). Both verify audio feedback and result emission/propagation. Pass.
-  - Exhaustive `when` fixes: `ScanResult.Linked` handled in BarcodeScannerBottomSheet (L74), InventoryScreen (L160), ShoppingScreen (L214). `ScannerState.LinkToExisting` branch added in BarcodeScannerBottomSheet (L152, placeholder for Task 13b). Pass.
-  - No security or stability issues. `watchProductKind().first() ?: error(...)` guard fails loud on pathological race — acceptable.
+   - Exhaustive `when` fixes: `ScanResult.Linked` handled in BarcodeScannerBottomSheet (L74), InventoryScreen (L160), ShoppingScreen (L214). `ScannerState.LinkToExisting` branch added in BarcodeScannerBottomSheet (L152, placeholder for Task 13b). Pass.
+   - No security or stability issues. `watchProductKind().first() ?: error(...)` guard fails loud on pathological race — acceptable.
+- **Round 12:** APPROVED — Task 13b (2026-07-12)
+   - "Link to Existing" `OutlinedButton` in `CaptureRequiredContent` (L350–355), disabled during processing. Pass.
+   - State transition: `onLinkToExisting` sets `ScannerState.LinkToExisting(state.barcode)` (L159–161). Pass.
+   - `LinkToExistingContent` composable (L371–456): search `OutlinedTextField` (L410–416), `MutableStateFlow` query with `flatMapLatest` → `processor.watchSearch()`, collected via `collectAsStateWithLifecycle()` (L380–384). Reactive search. Pass.
+   - `LazyColumn` (L426–443) with `ProductSearchItem` (L458–487): tappable `Surface`, keyed by `it.id`, disabled during processing. Pass.
+   - On product tap: `scope.launch` calls `processor.linkBarcodeToProduct()` (L174–189). Success → `ScannerState.Scanning` (L183). Error → inline error text via `linkError` state (L184–186, displayed L418–424 in `error` color). No crash on duplicate barcode. Pass.
+   - "Cancel" returns to `CaptureRequired` preserving barcode (L192–198). Pass.
+   - `ScanResult.Linked` handled in InventoryScreen (L160–162) and ShoppingScreen (L214–216): Snackbar "Barcode linked to {productName}". Pass.
+   - Both scanner modes work: `mode.householdId` used generically in `LinkToExisting` flow. Pass.
+   - Compose best practices: lifecycle-aware collection, proper `remember` scoping, `weight(1f, fill=false)` on LazyColumn, `isProcessing` guard prevents double-taps. Pass.
+   - Non-blocking: redundant `Scanning` state set in both `onLink` handler (L183) and `LaunchedEffect` collector (L85–87) — harmless, same dispatcher. `linkError!!` at L420 required due to `by` delegate (no smart-cast). Accepted.
