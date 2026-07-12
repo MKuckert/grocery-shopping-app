@@ -2,6 +2,8 @@ package de.curlybracket.grocery.scanner
 
 import android.content.Context
 import co.touchlab.kermit.Logger
+import dagger.hilt.android.qualifiers.ApplicationContext
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.repository.GroceryRepository
@@ -24,6 +26,7 @@ class ScannerProcessor @Inject constructor(
     private val repository: GroceryRepository,
     private val audioFeedback: AudioFeedback,
     private val openFoodFactsClient: OpenFoodFactsClient,
+    @ApplicationContext private val context: Context,
 ) {
 
     private val _scanResultFlow = MutableSharedFlow<ScanResult>(extraBufferCapacity = 1)
@@ -76,14 +79,15 @@ class ScannerProcessor @Inject constructor(
 
             else -> {
                 audioFeedback.playFailure()
+                val unknownItem = context.getString(R.string.scanner_unknown_item)
                 val prefillName = try {
                     when (val result = openFoodFactsClient.lookupBarcode(barcode)) {
                         is OFResult.Hit -> result.productName
-                        else -> "Unknown Item"
+                        else -> unknownItem
                     }
                 } catch (e: Exception) {
                     Logger.e("Open Food Facts lookup failed", e)
-                    "Unknown Item"
+                    unknownItem
                 }
                 _openFoodFactsResultFlow.emit(
                     OpenFoodFactsLookupResult(barcode, prefillName)

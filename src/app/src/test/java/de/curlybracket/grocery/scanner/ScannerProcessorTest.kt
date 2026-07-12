@@ -1,5 +1,6 @@
 package de.curlybracket.grocery.scanner
 
+import android.content.Context
 import app.cash.turbine.test
 import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.domain.model.ProductKind
@@ -8,6 +9,7 @@ import de.curlybracket.grocery.network.OFResult
 import de.curlybracket.grocery.network.OpenFoodFactsClient
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -21,6 +23,7 @@ class ScannerProcessorTest {
     private lateinit var repository: GroceryRepository
     private lateinit var audioFeedback: AudioFeedback
     private lateinit var openFoodFactsClient: OpenFoodFactsClient
+    private lateinit var context: Context
     private lateinit var processor: ScannerProcessor
 
     private val householdId = "hh-1"
@@ -50,7 +53,9 @@ class ScannerProcessorTest {
         repository = mockk(relaxed = true)
         audioFeedback = mockk(relaxed = true)
         openFoodFactsClient = mockk(relaxed = true)
-        processor = ScannerProcessor(repository, audioFeedback, openFoodFactsClient)
+        context = mockk(relaxed = true)
+        every { context.getString(any()) } returns "Unknown Item"
+        processor = ScannerProcessor(repository, audioFeedback, openFoodFactsClient, context)
     }
 
     @Test

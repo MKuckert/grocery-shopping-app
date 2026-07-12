@@ -1,6 +1,9 @@
 package de.curlybracket.grocery.network
 
+import android.content.Context
 import co.touchlab.kermit.Logger
+import dagger.hilt.android.qualifiers.ApplicationContext
+import de.curlybracket.grocery.R
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -14,7 +17,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class OpenFoodFactsClient @Inject constructor(
-  @param:Named("offs") private val httpClient: HttpClient,
+    @param:Named("offs") private val httpClient: HttpClient,
+    @ApplicationContext private val context: Context,
 ) {
     private val baseUrl = "https://world.openfoodfacts.org/api/v3.6/product"
     private val userAgent = "GroceryShoppingApp/0.1.0 (grocery@curlybracket.de)"
@@ -45,7 +49,7 @@ class OpenFoodFactsClient @Inject constructor(
                 if (body.status == "ok") {
                     val name = body.product?.productName?.takeIf { it.isNotBlank() }
                         ?: body.product?.brands?.takeIf { it.isNotBlank() }
-                        ?: "Unknown Item"
+                        ?: context.getString(R.string.scanner_unknown_item)
                     OFResult.Hit(name)
                 } else OFResult.Miss
             }
