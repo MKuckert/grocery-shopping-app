@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Grocery</string>
+    <string name="app_name">Einkaufszettel</string>
     <string name="background_channel_name">Aktive Hintergrundsynchronisierung</string>
     <string name="sync_notification_title">Hintergrundsynchronisierung läuft</string>
 
@@ -22,7 +22,7 @@
     <string name="sign_in_error_generic">Bei der Anmeldung ist ein Fehler aufgetreten</string>
 
     <!-- Inventory screen -->
-    <string name="inventory_title">Grocery</string>
+    <string name="inventory_title">Inventar</string>
     <string name="inventory_btn_start_shopping">Einkauf starten</string>
     <string name="inventory_fab_cd_scan_barcode">Barcode scannen</string>
     <string name="inventory_snackbar_remaining">%1$s: noch %2$d vorhanden</string>
