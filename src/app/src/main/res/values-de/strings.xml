@@ -125,6 +125,7 @@
     <string name="scanner_label_search_products">Produkte suchen</string>
     <string name="scanner_label_stock">Bestand: %1$d</string>
     <string name="scanner_error_barcode_already_linked">Dieser Barcode ist bereits mit einem anderen Produkt verknüpft.</string>
+    <string name="scanner_error_link_failed">Die Verknüpfung des Barcodes ist fehlgeschlagen. Bitte versuche es erneut.</string>
     <string name="scanner_unknown_item">Unbekannter Artikel</string>
 
     <!-- Camera permission -->

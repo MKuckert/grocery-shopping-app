@@ -109,7 +109,13 @@ class ScannerProcessor @Inject constructor(
         } catch (e: Exception) {
             Logger.e("linkBarcodeToProduct failed", e)
             audioFeedback.playFailure()
-            throw e
+            // Diagnose whether the failure is a duplicate-barcode conflict
+            val alreadyLinked = try {
+                repository.findByBarcode(barcode, householdId) != null
+            } catch (_: Exception) {
+                false
+            }
+            throw if (alreadyLinked) BarcodeAlreadyLinkedException(barcode) else e
         }
     }
 

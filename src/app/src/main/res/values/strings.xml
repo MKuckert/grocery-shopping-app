@@ -124,6 +124,7 @@
     <string name="scanner_label_search_products">Search products</string>
     <string name="scanner_label_stock">Stock: %1$d</string>
     <string name="scanner_error_barcode_already_linked">This barcode is already linked to another product.</string>
+    <string name="scanner_error_link_failed">Linking the barcode failed. Please try again.</string>
     <string name="scanner_unknown_item">Unknown Item</string>
 
     <!-- Camera permission -->

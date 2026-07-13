@@ -166,7 +166,7 @@ fun BarcodeScannerBottomSheet(
                 }
 
                 is ScannerState.LinkToExisting -> {
-                    var linkError by remember { mutableStateOf<String?>(null) }
+                    var linkError by remember { mutableStateOf<LinkError?>(null) }
                     LinkToExistingContent(
                         barcode = state.barcode,
                         householdId = mode.householdId,
@@ -183,9 +183,12 @@ fun BarcodeScannerBottomSheet(
                                         householdId = mode.householdId,
                                     )
                                     scannerState = ScannerState.Scanning
+                                } catch (e: BarcodeAlreadyLinkedException) {
+                                    Logger.e("Link barcode to product failed: already linked", e)
+                                    linkError = LinkError.AlreadyLinked
                                 } catch (e: Exception) {
                                     Logger.e("Link barcode to product failed", e)
-                                    linkError = context.getString(R.string.scanner_error_barcode_already_linked)
+                                    linkError = LinkError.GenericFailure
                                 } finally {
                                     isProcessing = false
                                 }
@@ -375,7 +378,7 @@ private fun LinkToExistingContent(
     barcode: String,
     householdId: String,
     processor: ScannerProcessor,
-    linkError: String?,
+    linkError: LinkError?,
     onLink: (productId: String) -> Unit,
     onCancel: () -> Unit,
     isProcessing: Boolean,
@@ -419,8 +422,12 @@ private fun LinkToExistingContent(
         )
 
         if (linkError != null) {
+            val errorText = when (linkError) {
+                LinkError.AlreadyLinked -> stringResource(R.string.scanner_error_barcode_already_linked)
+                LinkError.GenericFailure -> stringResource(R.string.scanner_error_link_failed)
+            }
             Text(
-                text = linkError!!,
+                text = errorText,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
