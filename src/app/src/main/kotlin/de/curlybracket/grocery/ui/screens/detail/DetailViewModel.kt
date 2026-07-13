@@ -52,7 +52,7 @@ class DetailViewModel @Inject constructor(
     private val _savedIndicator = MutableStateFlow(false)
     val savedIndicator: StateFlow<Boolean> = _savedIndicator
 
-    private val _snackbarMessage = MutableSharedFlow<SnackbarMessage>()
+    private val _snackbarMessage = MutableSharedFlow<SnackbarMessage>(extraBufferCapacity = 1)
     val snackbarMessage: SharedFlow<SnackbarMessage> = _snackbarMessage
 
     private val _deleteEvent = MutableSharedFlow<String>()
