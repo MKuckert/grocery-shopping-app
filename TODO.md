@@ -3,7 +3,7 @@
 - [/] Database schema has to include `created_at` and `updated_at` for every table to enable proper synchronization and conflict resolution.
 - [/] `deleted_at IS NULL` wird nicht überall überprüft (`GroceryRepositoryImpl`)
 - [ ] Replace foreground service with workmanager
-- [/] Following sql is copied multiple times in `GroceryRepositoryImpl`: 
+- [/] Following sql is copied multiple times in `GroceryRepositoryImpl`:
       ```
       tx.execute(
           sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
@@ -44,3 +44,6 @@
     - [ ] Refactor with ScannerMode: Don't `when/is` in ScannerProcessor and decide about method to call on Repository but add a polymorph command mechanism encapsulating this part
     - [ ] add barcode in detail screen by scanning it
 - [ ] xml/backup_rules.xml && xml/data_extraction_rules.xml
+- [ ] split classes into files
+- [ ] product delete as button
+- [ ] add more pending to bottom for FAB
