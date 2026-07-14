@@ -57,7 +57,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
     Keep screen-level composable in original file; extracted components get their own files in same package.
   - **Review Criteria:** No file exceeds ~200 lines; extracted composables are `@Preview`-able; no behavioral changes.
 
-- [/] **Task 9: Configure backup rules**
+- [x] **Task 9: Configure backup rules**
    - **Description:** Update `backup_rules.xml` to exclude: `sharedpref/` (contains auth tokens), `databases/` (PowerSync local DB, re-syncs on restore). Update `data_extraction_rules.xml` with matching `<exclude>` rules for cloud backup. Rationale: auth tokens are device-specific; local DB rebuilds from server.
    - **Review Criteria:** Both XML files have explicit exclude rules; no sensitive data backed up; app still functions after restore (re-auth + re-sync).
 
@@ -135,3 +135,4 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 - **Round 9:** Task 7 APPROVED. ScanCommand sealed interface cleanly encapsulates the two repository mutations as data object commands — minimal, testable, no state leakage. toCommand() extension isolates the ScannerMode → ScanCommand mapping in a single location outside the processor. processScan() is now a clean three-branch when on product state (restored/hit/miss), with mode-specific logic delegated entirely to the command. 4 new unit tests independently verify command execution and mode-to-command conversion. No regressions: existing 14 ScannerProcessorTest tests remain valid since behavior is preserved.
 - **Round 10:** Task 8 NOT APPROVED. (1) `DetailScreen.kt` is 363 lines — `GroupDropdown` and `CreateGroupDialog` must be extracted to a separate file. (2) `ShoppingProductCard.kt` has no `@Preview` for `ShoppingRow` or `SearchResultCard`. (3) `InventoryProductRow.kt` has no `@Preview` for `ProductRow`. All three must be fixed.
 - **Round 11:** Task 8 APPROVED. All extracted composables are in separate files with @Preview functions, no file is unreasonably large, and no behavioral changes were introduced.
+- **Round 12:** Task 9 APPROVED. Both `backup_rules.xml` and `data_extraction_rules.xml` correctly exclude `sharedpref` and `database` domains. Files are well-formed XML, properly referenced in manifest via `android:fullBackupContent` and `android:dataExtractionRules`. Post-restore UX is correct: re-auth + re-sync.
