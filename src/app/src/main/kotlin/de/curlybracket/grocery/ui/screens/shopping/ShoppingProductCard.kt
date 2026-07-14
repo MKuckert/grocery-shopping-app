@@ -107,3 +107,39 @@ internal fun SearchResultCard(
         }
     }
 }
+
+private val previewProduct = ProductKind(
+    id = "1",
+    householdId = "h1",
+    groupId = null,
+    name = "Milk",
+    currentStock = 1,
+    minimumStock = 2,
+    quantityToBuy = 2,
+    pendingStock = 1,
+    imagePath = null,
+    unloadOpen = false,
+    deletedAt = null,
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun ShoppingRowPreview() {
+    ShoppingRow(
+        product = previewProduct,
+        isStruckThrough = false,
+        onRowTap = {},
+        onIncrement = {},
+        onDecrement = {},
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SearchResultCardPreview() {
+    SearchResultCard(
+        product = previewProduct,
+        onForceAdd = {},
+        onDetails = {},
+    )
+}

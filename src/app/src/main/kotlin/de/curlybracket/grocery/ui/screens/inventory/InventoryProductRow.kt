@@ -84,3 +84,25 @@ internal fun ProductRow(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun ProductRowPreview() {
+    ProductRow(
+        product = ProductKind(
+            id = "1",
+            householdId = "h1",
+            groupId = null,
+            name = "Eggs",
+            currentStock = 6,
+            minimumStock = 6,
+            quantityToBuy = 0,
+            pendingStock = 0,
+            imagePath = null,
+            unloadOpen = false,
+            deletedAt = null,
+        ),
+        onSwipe = {},
+        onTap = {},
+    )
+}

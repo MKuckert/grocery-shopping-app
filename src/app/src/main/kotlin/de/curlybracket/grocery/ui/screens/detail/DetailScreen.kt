@@ -17,11 +17,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.curlybracket.grocery.R
-import de.curlybracket.grocery.domain.model.ProductGroup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -229,135 +224,3 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun GroupDropdown(
-    groups: List<ProductGroup>,
-    selectedGroupId: String?,
-    onGroupSelected: (String?) -> Unit,
-    onCreateGroup: (String) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var showCreateDialog by remember { mutableStateOf(false) }
-    val selectedGroup = groups.find { it.id == selectedGroupId }
-    val context = LocalContext.current
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-    ) {
-        OutlinedTextField(
-            value = selectedGroup?.name ?: stringResource(R.string.detail_group_option_none),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(R.string.detail_label_group)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                .semantics {
-                    contentDescription = context.getString(R.string.detail_cd_group_selector)
-                },
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.detail_group_option_none)) },
-                onClick = {
-                    onGroupSelected(null)
-                    expanded = false
-                },
-            )
-            groups.forEach { group ->
-                DropdownMenuItem(
-                    text = { Text(group.name) },
-                    onClick = {
-                        onGroupSelected(group.id)
-                        expanded = false
-                    },
-                )
-            }
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        stringResource(R.string.detail_group_option_create_new),
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                onClick = {
-                    expanded = false
-                    showCreateDialog = true
-                },
-            )
-        }
-    }
-
-    if (showCreateDialog) {
-        CreateGroupDialog(
-            existingGroups = groups,
-            onConfirm = { name ->
-                onCreateGroup(name)
-                showCreateDialog = false
-            },
-            onDismiss = { showCreateDialog = false },
-        )
-    }
-}
-
-@Composable
-private fun CreateGroupDialog(
-    existingGroups: List<ProductGroup>,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var input by remember { mutableStateOf("") }
-    val trimmed = input.trim()
-    val isDuplicate = remember(trimmed, existingGroups) {
-        trimmed.isNotBlank() && existingGroups.any { it.name.equals(trimmed, ignoreCase = true) }
-    }
-    val isConfirmEnabled = trimmed.isNotBlank() && !isDuplicate
-    val context = LocalContext.current
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.detail_dialog_create_group_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                OutlinedTextField(
-                    value = input,
-                    onValueChange = { input = it },
-                    label = { Text(stringResource(R.string.detail_dialog_create_group_label)) },
-                    singleLine = true,
-                    isError = isDuplicate,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics {
-                            contentDescription = context.getString(R.string.detail_cd_new_group_name_input)
-                        },
-                )
-                if (isDuplicate) {
-                    Text(
-                        text = stringResource(R.string.detail_dialog_create_group_error_duplicate),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { if (isConfirmEnabled) onConfirm(trimmed) },
-                enabled = isConfirmEnabled,
-            ) {
-                Text(stringResource(R.string.action_create))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_cancel))
-            }
-        },
-    )
-}
