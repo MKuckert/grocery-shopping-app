@@ -5,5 +5,5 @@ sealed interface LinkError {
     data object GenericFailure : LinkError
 }
 
-class BarcodeAlreadyLinkedException(barcode: String) :
+class BarcodeAlreadyLinkedException(val barcode: String) :
     Exception("Barcode $barcode is already linked to a product")

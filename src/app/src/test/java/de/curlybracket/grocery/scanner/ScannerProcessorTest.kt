@@ -191,17 +191,17 @@ class ScannerProcessorTest {
     @Test
     fun `linkBarcodeToProduct on duplicate barcode plays failure audio and rethrows`() = runTest {
         val product = makeProduct()
-        val duplicateException = RuntimeException("UNIQUE constraint failed: barcodes.barcode_number")
+        val duplicateException = BarcodeAlreadyLinkedException(barcode)
         coEvery { repository.addBarcode(product.id, barcode, householdId) } throws duplicateException
 
-        var caughtException: Exception? = null
+        var caughtException: BarcodeAlreadyLinkedException? = null
         try {
             processor.linkBarcodeToProduct(barcode, product.id, householdId)
-        } catch (e: Exception) {
+        } catch (e: BarcodeAlreadyLinkedException) {
             caughtException = e
         }
 
-        assertEquals(duplicateException, caughtException)
+        assertEquals(barcode, caughtException?.barcode)
         coVerify(exactly = 1) { audioFeedback.playFailure() }
         coVerify(exactly = 0) { audioFeedback.playSuccess() }
     }
