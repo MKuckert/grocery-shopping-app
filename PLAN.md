@@ -29,7 +29,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** Create `SyncLifecycleManager` that observes `ProcessLifecycleOwner`. On `ON_START` (app foreground): call `database.connect(connector)` to establish real-time WebSocket sync. On `ON_STOP` (app background): call `database.disconnect()`. Register as `DefaultLifecycleObserver` and inject via Hilt `@Singleton`. This replaces the FGS's always-on connection with a foreground-only connection.
   - **Review Criteria:** Real-time sync active while app visible; connection dropped when backgrounded; no leaked connections. Auth state checked before connect (skip if not authenticated).
 
-- [ ] **Task 3: Implement background SyncWorker**
+- [/] **Task 3: Implement background SyncWorker**
   - **Description:** Create `BackgroundSyncWorker : CoroutineWorker` with `@HiltWorker`. On `doWork()`: check auth state → if not authenticated, return `Result.failure()`. Otherwise call `database.connect(connector)`, wait for `hasSynced` status (with 30s timeout), then `database.disconnect()` and return `Result.success()`. On timeout or network error, return `Result.retry()`. Schedule as `PeriodicWorkRequest` every 15 min with `NetworkType.CONNECTED` constraint in `Application.onCreate()`.
   - **Review Criteria:** Worker completes finite sync burst; doesn't hold connection indefinitely; retries on transient failures; unit test covers success/retry/failure/timeout paths.
 
