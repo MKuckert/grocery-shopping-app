@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Einkaufszettel</string>
-    <string name="background_channel_name">Aktive Hintergrundsynchronisierung</string>
-    <string name="sync_notification_title">Hintergrundsynchronisierung läuft</string>
 
     <!-- Common actions -->
     <string name="action_cancel">Abbrechen</string>

@@ -33,7 +33,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** Create `BackgroundSyncWorker : CoroutineWorker` with `@HiltWorker`. On `doWork()`: check auth state → if not authenticated, return `Result.failure()`. Otherwise call `database.connect(connector)`, wait for `hasSynced` status (with 30s timeout), then `database.disconnect()` and return `Result.success()`. On timeout or network error, return `Result.retry()`. Schedule as `PeriodicWorkRequest` every 15 min with `NetworkType.CONNECTED` constraint in `Application.onCreate()`.
   - **Review Criteria:** Worker completes finite sync burst; doesn't hold connection indefinitely; retries on transient failures; unit test covers success/retry/failure/timeout paths.
 
-- [ ] **Task 4: Remove SyncService**
+- [/] **Task 4: Remove SyncService**
   - **Description:** Delete `SyncService.kt`. Remove `<service>` declaration and `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` permissions from `AndroidManifest.xml`. Remove any startService/bindService calls. Move `database.disconnectAndClear()` logic to logout flow (already in auth handling). Remove notification channel if no longer needed.
   - **Review Criteria:** App compiles; no references to `SyncService` remain; sync works via `SyncLifecycleManager` (foreground) + `BackgroundSyncWorker` (background).
 

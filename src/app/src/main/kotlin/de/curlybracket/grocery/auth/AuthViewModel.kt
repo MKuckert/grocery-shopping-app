@@ -3,6 +3,7 @@ package de.curlybracket.grocery.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
+import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.auth
@@ -22,6 +23,7 @@ sealed class AuthState {
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val connector: SupabaseConnector,
+    private val database: PowerSyncDatabase,
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.SignedOut)
@@ -73,6 +75,7 @@ class AuthViewModel @Inject constructor(
     suspend fun signOut() {
         try {
             connector.signOut()
+            database.disconnectAndClear()
         } catch (e: Exception) {
             Logger.e("Error signing out: $e")
         }
