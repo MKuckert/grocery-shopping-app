@@ -21,7 +21,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
 
 > Status Markers: [ ] Open, [/] In Progress, [x] Completed
 
-- [ ] **Task 1: Add WorkManager dependency**
+- [x] **Task 1: Add WorkManager dependency**
   - **Description:** Add `androidx.work:work-runtime-ktx` to `libs.versions.toml` and `build.gradle.kts`. Remove foreground service permission from manifest if no longer needed.
   - **Review Criteria:** Dependency resolves; app compiles without errors.
 
@@ -124,6 +124,6 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 
 ## Final Status (Code Review)
 
-- **Round 1:** [N/A]
+- **Round 1:** Task 1 APPROVED. Dependencies correct: WorkManager 2.10.1, hilt-work/compiler 1.2.0, proper `ksp` for annotation processor. Build compiles.
 - **Round 2:** [N/A]
 - **Round 3:** [N/A]

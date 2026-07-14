@@ -96,6 +96,11 @@ dependencies {
   implementation(libs.ktor.client.content.negotiation)
   implementation(libs.ktor.serialization.json)
 
+  // WorkManager
+  implementation(libs.androidx.work.runtime.ktx)
+  implementation(libs.hilt.work)
+  ksp(libs.hilt.work.compiler)
+
   // AndroidX Core
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.core.splashscreen)
