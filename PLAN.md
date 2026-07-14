@@ -45,9 +45,9 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** Create `SoundEffect` enum with properties: `resourceId: Int`, `volume: Float`, `rate: Float`. Values: `SUCCESS(R.raw.beep_success, 1f, 1f)`, `FAILURE(R.raw.beep_failure, 0.7f, 0.8f)`. Refactor `AudioFeedback` to use a `Map<SoundEffect, Int>` for sound IDs and a `Set<SoundEffect>` for loaded state. Replace `playSuccess()`/`playFailure()` with `play(effect: SoundEffect)`. Update all call sites.
   - **Review Criteria:** Enum-based; no named fields for individual sounds; existing behavior preserved; unit test verifies `play()` dispatches correctly.
 
-- [ ] **Task 7: Refactor ScannerProcessor with polymorphic commands**
-  - **Description:** Extract the `when(mode)` block into a sealed interface `ScanCommand` with implementations: `DecrementStockCommand`, `IncrementPendingStockCommand`. Each command has a `suspend fun execute(repository: GroceryRepository, productId: String)` method. `ScannerProcessor.processScan()` calls `mode.toCommand().execute(...)` instead of branching. Also extract the three top-level branches (restored, hit, miss) into private methods: `handleRestored()`, `handleHit()`, `handleMiss()`.
-  - **Review Criteria:** No `when/is` on `ScannerMode` in `ScannerProcessor`; command pattern is testable independently; existing behavior preserved.
+- [x] **Task 7: Refactor ScannerProcessor with polymorphic commands**
+   - **Description:** Extract the `when(mode)` block into a sealed interface `ScanCommand` with implementations: `DecrementStockCommand`, `IncrementPendingStockCommand`. Each command has a `suspend fun execute(repository: GroceryRepository, productId: String)` method. `ScannerProcessor.processScan()` calls `mode.toCommand().execute(...)` instead of branching. Also extract the three top-level branches (restored, hit, miss) into private methods: `handleRestored()`, `handleHit()`, `handleMiss()`.
+   - **Review Criteria:** No `when/is` on `ScannerMode` in `ScannerProcessor`; command pattern is testable independently; existing behavior preserved.
 
 - [ ] **Task 8: Split large screen files**
   - **Description:** Extract composables into separate files:
