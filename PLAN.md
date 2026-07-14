@@ -37,7 +37,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** Delete `SyncService.kt`. Remove `<service>` declaration and `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` permissions from `AndroidManifest.xml`. Remove any startService/bindService calls. Move `database.disconnectAndClear()` logic to logout flow (already in auth handling). Remove notification channel if no longer needed.
   - **Review Criteria:** App compiles; no references to `SyncService` remain; sync works via `SyncLifecycleManager` (foreground) + `BackgroundSyncWorker` (background).
 
-- [/] **Task 5: Implement Dynamic Theme**
+- [x] **Task 5: Implement Dynamic Theme**
   - **Description:** In `GroceryApp.kt` (or theme wrapper), detect system dark mode via `isSystemInDarkTheme()` and apply `dynamicDarkColorScheme(context)` or `dynamicLightColorScheme(context)`. Remove hardcoded `Theme.Material.Light` from `res/values/themes.xml` and `res/values-night/themes.xml`; use `Theme.Material3.DayNight.NoActionBar` or just let Compose handle it. Update splash screen theme if needed.
   - **Review Criteria:** App respects system dark/light toggle; colors change dynamically; no hardcoded light-only colors in Compose code.
 
