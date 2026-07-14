@@ -32,11 +32,11 @@
       "~/.cache",
       "~/.config",
       "~/.config/nono",
-      "~/.gradle/caches/"
+      "~/.gradle"
     ],
     "allow": [
       "~/.npm/_cacache/tmp",
-      "~/private/dev/grocery-shopping-app/main"
+      "~/private/dev/grocery-shopping-app"
     ],
     "deny": ["~/.gitconfig",
       "~/private/dev/grocery-shopping-app/main/src/gradlew",

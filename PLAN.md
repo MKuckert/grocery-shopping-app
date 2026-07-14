@@ -126,4 +126,4 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 
 - **Round 1:** Task 1 APPROVED. Dependencies correct: WorkManager 2.10.1, hilt-work/compiler 1.2.0, proper `ksp` for annotation processor. Build compiles.
 - **Round 2:** Task 2 APPROVED. Clean lifecycle management: debounce prevents rapid toggle thrashing, auth gating prevents unauthenticated connects, PowerSync connector handles token refresh internally. No leaks possible.
-- **Round 3:** [N/A]
+- **Round 3:** Task 3 NOT APPROVED — Missing timeout test. Criteria require coverage of success/retry/failure/timeout paths. Current tests cover success, failure (not-auth), and retry (network error), but no test verifies `TimeoutCancellationException` → `Result.retry()`. Add a test with a `statusFlow` that never emits idle status to trigger the 30s timeout path.

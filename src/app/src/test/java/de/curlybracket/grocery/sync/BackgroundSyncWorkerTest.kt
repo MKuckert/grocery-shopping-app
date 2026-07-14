@@ -94,9 +94,27 @@ class BackgroundSyncWorkerTest {
     }
 
     @Test
-    fun `doWork waits past Initializing then succeeds when authenticated`() = runTest {
-        val authenticatedStatus = mockk<SessionStatus.Authenticated>(relaxed = true)
-        every { connector.sessionStatus } returns MutableStateFlow<SessionStatus>(authenticatedStatus)
+    fun `doWork returns retry on timeout when sync never completes`() = runTest {
+        every { connector.sessionStatus } returns MutableStateFlow(
+            mockk<SessionStatus.Authenticated>(relaxed = true)
+        )
+
+        // Status flow never emits an idle state — triggers withTimeout
+        every { database.currentStatus } returns mockk {
+            every { asFlow() } returns MutableSharedFlow() // no replay, never emits
+        }
+
+        val result = buildWorker().doWork()
+
+        assertEquals(Result.retry(), result)
+        coVerify { database.disconnect() }
+    }
+
+    @Test
+    fun `doWork skips Initializing and succeeds when authenticated`() = runTest {
+        every { connector.sessionStatus } returns MutableStateFlow<SessionStatus>(
+            mockk<SessionStatus.Authenticated>(relaxed = true)
+        )
 
         val statusFlow = mockIdleStatusFlow()
         every { database.currentStatus } returns mockk {
