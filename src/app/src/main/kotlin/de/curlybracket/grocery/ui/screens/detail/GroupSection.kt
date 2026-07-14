@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -39,7 +38,7 @@ internal fun GroupDropdown(
     var expanded by remember { mutableStateOf(false) }
     var showCreateDialog by remember { mutableStateOf(false) }
     val selectedGroup = groups.find { it.id == selectedGroupId }
-    val context = LocalContext.current
+    val cdGroupSelector = stringResource(R.string.detail_cd_group_selector)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -55,7 +54,7 @@ internal fun GroupDropdown(
                 .fillMaxWidth()
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .semantics {
-                    contentDescription = context.getString(R.string.detail_cd_group_selector)
+                    contentDescription = cdGroupSelector
                 },
         )
         ExposedDropdownMenu(
@@ -117,7 +116,7 @@ internal fun CreateGroupDialog(
         trimmed.isNotBlank() && existingGroups.any { it.name.equals(trimmed, ignoreCase = true) }
     }
     val isConfirmEnabled = trimmed.isNotBlank() && !isDuplicate
-    val context = LocalContext.current
+    val cdNewGroupNameInput = stringResource(R.string.detail_cd_new_group_name_input)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -133,7 +132,7 @@ internal fun CreateGroupDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .semantics {
-                            contentDescription = context.getString(R.string.detail_cd_new_group_name_input)
+                            contentDescription = cdNewGroupNameInput
                         },
                 )
                 if (isDuplicate) {

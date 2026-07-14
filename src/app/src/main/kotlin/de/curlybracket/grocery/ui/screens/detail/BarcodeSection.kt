@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -40,7 +39,7 @@ internal fun BarcodesSection(
     onDeleteBarcode: (Barcode) -> Unit,
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    val cdAddBarcode = stringResource(R.string.detail_cd_add_barcode)
 
     androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
@@ -55,12 +54,12 @@ internal fun BarcodesSection(
             IconButton(
                 onClick = { showAddDialog = true },
                 modifier = Modifier.semantics {
-                    contentDescription = context.getString(R.string.detail_cd_add_barcode)
+                    contentDescription = cdAddBarcode
                 },
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.detail_cd_add_barcode),
+                    contentDescription = cdAddBarcode,
                 )
             }
         }
@@ -77,6 +76,10 @@ internal fun BarcodesSection(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 barcodes.forEach { barcode ->
+                    val cdDeleteBarcode = stringResource(
+                        R.string.detail_cd_delete_barcode,
+                        barcode.barcodeNumber,
+                    )
                     AssistChip(
                         onClick = {},
                         label = { Text(barcode.barcodeNumber) },
@@ -86,10 +89,7 @@ internal fun BarcodesSection(
                                 modifier = Modifier
                                     .size(18.dp)
                                     .semantics {
-                                        contentDescription = context.getString(
-                                            R.string.detail_cd_delete_barcode,
-                                            barcode.barcodeNumber,
-                                        )
+                                        contentDescription = cdDeleteBarcode
                                     },
                             ) {
                                 Icon(
@@ -122,7 +122,7 @@ internal fun AddBarcodeDialog(
     onDismiss: () -> Unit,
 ) {
     var input by remember { mutableStateOf("") }
-    val context = LocalContext.current
+    val cdBarcodeInput = stringResource(R.string.detail_cd_barcode_number_input)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -137,7 +137,7 @@ internal fun AddBarcodeDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics {
-                        contentDescription = context.getString(R.string.detail_cd_barcode_number_input)
+                        contentDescription = cdBarcodeInput
                     },
             )
         },

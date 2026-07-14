@@ -29,7 +29,6 @@ import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalAutofillManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
@@ -55,7 +54,9 @@ internal fun SignInScreen(
     val scrollState = rememberScrollState()
     val autofillManager = LocalAutofillManager.current
     val passwordFocusRequester = remember { FocusRequester() }
-    val context = LocalContext.current
+    
+    val errorInvalidCredentials = stringResource(R.string.sign_in_error_invalid_credentials)
+    val errorGeneric = stringResource(R.string.sign_in_error_generic)
 
     fun signIn() {
         coroutineScope.launch {
@@ -67,9 +68,9 @@ internal fun SignInScreen(
             } catch (e: Exception) {
                 Logger.e("Sign-in failed", e)
                 errorMessage = if (e is BadRequestRestException) {
-                    context.getString(R.string.sign_in_error_invalid_credentials)
+                    errorInvalidCredentials
                 } else {
-                    e.message ?: context.getString(R.string.sign_in_error_generic)
+                    e.message ?: errorGeneric
                 }
             } finally {
                 isLoading = false

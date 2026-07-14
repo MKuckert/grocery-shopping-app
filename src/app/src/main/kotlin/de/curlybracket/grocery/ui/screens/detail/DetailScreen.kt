@@ -36,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -60,7 +59,10 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    
+    val cdNavigateBack = stringResource(R.string.detail_cd_navigate_back)
+    val cdDeleteProduct = stringResource(R.string.detail_cd_delete_product)
+    val cdProductNameField = stringResource(R.string.detail_cd_product_name_field)
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { msg ->
@@ -112,7 +114,7 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     IconButton(
                         onClick = { onBack(null) },
                         modifier = Modifier.semantics {
-                            contentDescription = context.getString(R.string.detail_cd_navigate_back)
+                            contentDescription = cdNavigateBack
                         },
                     ) {
                         Icon(
@@ -137,7 +139,7 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     IconButton(
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier.semantics {
-                            contentDescription = context.getString(R.string.detail_cd_delete_product)
+                            contentDescription = cdDeleteProduct
                         },
                     ) {
                         Icon(
@@ -170,7 +172,6 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
             ) {
                 ImagePreview(
                     imagePath = product?.imagePath,
-                    context = context,
                 )
 
                 OutlinedTextField(
@@ -181,7 +182,7 @@ internal fun DetailScreen(onBack: (deletedProductId: String?) -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .semantics {
-                            contentDescription = context.getString(R.string.detail_cd_product_name_field)
+                            contentDescription = cdProductNameField
                         },
                 )
 

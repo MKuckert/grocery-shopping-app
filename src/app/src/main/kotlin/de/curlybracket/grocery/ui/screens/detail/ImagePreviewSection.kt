@@ -1,6 +1,5 @@
 package de.curlybracket.grocery.ui.screens.detail
 
-import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,7 +24,8 @@ import de.curlybracket.grocery.R
 import java.io.File
 
 @Composable
-internal fun ImagePreview(imagePath: String?, context: Context) {
+internal fun ImagePreview(imagePath: String?) {
+    val context = LocalContext.current
     val imageUri = remember(imagePath) {
         imagePath?.let { path ->
             runCatching {
@@ -66,5 +67,5 @@ internal fun ImagePreview(imagePath: String?, context: Context) {
 @Preview(showBackground = true)
 @Composable
 private fun ImagePreviewNoImagePreview() {
-    ImagePreview(imagePath = null, context = androidx.compose.ui.platform.LocalContext.current)
+    ImagePreview(imagePath = null)
 }

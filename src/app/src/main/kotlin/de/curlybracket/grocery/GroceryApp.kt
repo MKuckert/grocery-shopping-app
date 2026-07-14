@@ -44,6 +44,7 @@ interface AudioFeedbackEntryPoint {
 }
 
 @Composable
+@Suppress("UnusedMaterial3ScaffoldPaddingParameter")
 fun GroceryApp() {
     val appViewModel: AppViewModel = hiltViewModel()
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -96,7 +97,7 @@ fun GroceryApp() {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { _ ->
-        NavHost(navController = navController, startDestination = Route.SignIn.path) {
+            NavHost(navController = navController, startDestination = Route.SignIn.path) {
             composable(Route.SignIn.path) {
                 SignInScreen(authViewModel = authViewModel)
             }
