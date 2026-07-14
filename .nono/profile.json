@@ -36,15 +36,14 @@
     ],
     "allow": [
       "~/.npm/_cacache/tmp",
-      "~/private/dev/grocery-shopping-app/main/.git",
-      "~/private/dev/grocery-shopping-app/feature/fix-triage"
+      "~/private/dev/grocery-shopping-app/main"
     ],
     "deny": ["~/.gitconfig",
-      "~/private/dev/grocery-shopping-app/feature/fix-triage/src/gradlew",
-      "~/private/dev/grocery-shopping-app/feature/fix-triage/src/gradlew.bat",
-      "~/private/dev/grocery-shopping-app/feature/fix-triage/src/.env",
-      "~/private/dev/grocery-shopping-app/feature/fix-triage/src/local.properties",
-      "~/private/dev/grocery-shopping-app/feature/fix-triage/tools"
+      "~/private/dev/grocery-shopping-app/main/src/gradlew",
+      "~/private/dev/grocery-shopping-app/main/src/gradlew.bat",
+      "~/private/dev/grocery-shopping-app/main/src/.env",
+      "~/private/dev/grocery-shopping-app/main/src/local.properties",
+      "~/private/dev/grocery-shopping-app/main/tools"
     ]
   },
   "network": {
