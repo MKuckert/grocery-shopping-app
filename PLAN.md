@@ -25,7 +25,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** Add `androidx.work:work-runtime-ktx` to `libs.versions.toml` and `build.gradle.kts`. Remove foreground service permission from manifest if no longer needed.
   - **Review Criteria:** Dependency resolves; app compiles without errors.
 
-- [/] **Task 2: Implement foreground sync lifecycle manager**
+- [x] **Task 2: Implement foreground sync lifecycle manager**
   - **Description:** Create `SyncLifecycleManager` that observes `ProcessLifecycleOwner`. On `ON_START` (app foreground): call `database.connect(connector)` to establish real-time WebSocket sync. On `ON_STOP` (app background): call `database.disconnect()`. Register as `DefaultLifecycleObserver` and inject via Hilt `@Singleton`. This replaces the FGS's always-on connection with a foreground-only connection.
   - **Review Criteria:** Real-time sync active while app visible; connection dropped when backgrounded; no leaked connections. Auth state checked before connect (skip if not authenticated).
 
@@ -125,5 +125,5 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 ## Final Status (Code Review)
 
 - **Round 1:** Task 1 APPROVED. Dependencies correct: WorkManager 2.10.1, hilt-work/compiler 1.2.0, proper `ksp` for annotation processor. Build compiles.
-- **Round 2:** [N/A]
+- **Round 2:** Task 2 APPROVED. Clean lifecycle management: debounce prevents rapid toggle thrashing, auth gating prevents unauthenticated connects, PowerSync connector handles token refresh internally. No leaks possible.
 - **Round 3:** [N/A]
