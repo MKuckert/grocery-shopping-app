@@ -1,6 +1,7 @@
 package de.curlybracket.grocery.ui.screens.shopping
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -132,7 +133,10 @@ internal fun ShoppingScreen(
             }
 
             if (!searchExpanded) {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                ) {
                     if (activeShopping.isNotEmpty()) {
                         stickyHeader(key = "header_active") {
                             SectionHeader(stringResource(R.string.shopping_section_active))
