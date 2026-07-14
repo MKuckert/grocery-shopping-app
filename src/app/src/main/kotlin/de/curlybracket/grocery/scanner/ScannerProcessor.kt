@@ -2,6 +2,8 @@ package de.curlybracket.grocery.scanner
 
 import android.content.Context
 import co.touchlab.kermit.Logger
+import dagger.hilt.android.qualifiers.ApplicationContext
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.repository.GroceryRepository
@@ -9,6 +11,7 @@ import de.curlybracket.grocery.network.OFResult
 import de.curlybracket.grocery.network.OpenFoodFactsClient
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +26,7 @@ class ScannerProcessor @Inject constructor(
     private val repository: GroceryRepository,
     private val audioFeedback: AudioFeedback,
     private val openFoodFactsClient: OpenFoodFactsClient,
+    @ApplicationContext private val context: Context,
 ) {
 
     private val _scanResultFlow = MutableSharedFlow<ScanResult>(extraBufferCapacity = 1)
@@ -75,20 +79,43 @@ class ScannerProcessor @Inject constructor(
 
             else -> {
                 audioFeedback.playFailure()
+                val unknownItem = context.getString(R.string.scanner_unknown_item)
                 val prefillName = try {
                     when (val result = openFoodFactsClient.lookupBarcode(barcode)) {
                         is OFResult.Hit -> result.productName
-                        else -> "Unknown Item"
+                        else -> unknownItem
                     }
                 } catch (e: Exception) {
                     Logger.e("Open Food Facts lookup failed", e)
-                    "Unknown Item"
+                    unknownItem
                 }
                 _openFoodFactsResultFlow.emit(
                     OpenFoodFactsLookupResult(barcode, prefillName)
                 )
                 _scanResultFlow.emit(ScanResult.Miss(barcode))
             }
+        }
+    }
+
+    fun watchSearch(query: String, householdId: String) = repository.watchSearch(query, householdId)
+
+    suspend fun linkBarcodeToProduct(barcode: String, productId: String, householdId: String) {
+        try {
+            repository.addBarcode(productId, barcode, householdId)
+            val product = repository.watchProductKind(productId).first()
+                ?: error("Product $productId not found after barcode link")
+            audioFeedback.playSuccess()
+            _scanResultFlow.emit(ScanResult.Linked(product))
+        } catch (e: Exception) {
+            Logger.e("linkBarcodeToProduct failed", e)
+            audioFeedback.playFailure()
+            // Diagnose whether the failure is a duplicate-barcode conflict
+            val alreadyLinked = try {
+                repository.findByBarcode(barcode, householdId) != null
+            } catch (_: Exception) {
+                false
+            }
+            throw if (alreadyLinked) BarcodeAlreadyLinkedException(barcode) else e
         }
     }
 

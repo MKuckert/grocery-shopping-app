@@ -3,13 +3,16 @@ package de.curlybracket.grocery.data.repository
 import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import com.powersync.db.internal.PowerSyncTransaction
+import de.curlybracket.grocery.domain.model.ProductKind
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -53,7 +56,7 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1) WHERE id = ?",
+                "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1), updated_at = datetime('now') WHERE id = ?",
                 listOf("p-1"),
             )
         }
@@ -68,7 +71,7 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
+                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock), updated_at = datetime('now') WHERE id = ?",
                 listOf("p-1"),
             )
         }
@@ -102,25 +105,82 @@ class GroceryRepositoryImplTest {
 
         coVerify {
             tx.execute(
-                "UPDATE households SET current_state = 'IDLE' WHERE id = (SELECT id FROM households LIMIT 1)",
+                "UPDATE households SET current_state = 'IDLE', updated_at = datetime('now') WHERE id = (SELECT id FROM households LIMIT 1)",
             )
         }
     }
 
     // -------------------------------------------------------------------------
-    // recalculateQuantityToBuy — non-transactional, verifies MAX(0) formula
+    // recalculateQuantityToBuy — transactional, verifies MAX(0) formula via helper
     // -------------------------------------------------------------------------
 
     @Test
     fun `recalculateQuantityToBuy uses MAX(0, minimumStock - currentStock) formula`() = runTest {
+        val tx = mockk<PowerSyncTransaction>(relaxed = true)
+        captureAndRunTransaction(tx)
+
         repository.recalculateQuantityToBuy("p-42")
 
         coVerify {
-            db.execute(
-                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
+            tx.execute(
+                "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock), updated_at = datetime('now') WHERE id = ?",
                 listOf("p-42"),
             )
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // watchProductKind — soft-delete filter
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `watchProductKind SQL includes deleted_at IS NULL filter`() {
+        // db is a relaxed mock — watch() is auto-stubbed; verify the SQL it received.
+        // Actual signature: watch(sql, parameters, throttleMs: Long, mapper: (SqlCursor) -> T)
+        repository.watchProductKind("p-deleted")
+
+        verify {
+            db.watch(
+                match { sql -> sql.contains("deleted_at IS NULL") },
+                any<List<Any?>>(),
+                any<Long>(),
+                any<(com.powersync.db.SqlCursor) -> Any>(),
+            )
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // findByBarcode — soft-delete filter
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `findByBarcode SQL includes deleted_at IS NULL filter`() = runTest {
+        // db is a relaxed mock — getOptional() returns null by default.
+        // Actual signature: getOptional(sql, parameters, mapper: (SqlCursor) -> T)
+        repository.findByBarcode(barcodeNumber = "1234", householdId = "hh-1")
+
+        coVerify {
+            db.getOptional(
+                match { sql -> sql.contains("pk.deleted_at IS NULL") },
+                any<List<Any?>>(),
+                any<(com.powersync.db.SqlCursor) -> Any>(),
+            )
+        }
+    }
+
+    @Test
+    fun `findByBarcode returns null when product is deleted`() = runTest {
+        coEvery {
+            db.getOptional(
+                any<String>(),
+                any<List<Any?>>(),
+                any<(com.powersync.db.SqlCursor) -> ProductKind>(),
+            )
+        } returns null
+
+        val result = repository.findByBarcode(barcodeNumber = "1234", householdId = "hh-1")
+
+        assertNull(result)
     }
 
     // -------------------------------------------------------------------------
@@ -161,6 +221,62 @@ class GroceryRepositoryImplTest {
 
         assertNotNull(productId)
         assert(productId.isNotBlank())
+    }
+
+    // -------------------------------------------------------------------------
+    // deleteProductKind — soft-delete sets deleted_at and updated_at
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `deleteProductKind sets deleted_at and updated_at via soft-delete SQL`() = runTest {
+        repository.deleteProductKind("p-99")
+
+        coVerify {
+            db.execute(
+                "UPDATE product_kinds SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+                listOf("p-99"),
+            )
+        }
+    }
+
+    @Test
+    fun `deleteProductKind does not hard-delete barcodes`() = runTest {
+        repository.deleteProductKind("p-99")
+
+        coVerify(exactly = 0) {
+            db.execute(match { sql -> sql.contains("DELETE") && sql.contains("barcodes") }, any())
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // createProductGroup — verifies INSERT with timestamps and returns non-blank ID
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `createProductGroup inserts into product_groups with name and timestamps`() = runTest {
+        val capturedSqls = mutableListOf<String>()
+        val capturedParams = mutableListOf<List<Any?>>()
+        coEvery { db.execute(capture(capturedSqls), capture(capturedParams)) } returns 1L
+
+        repository.createProductGroup(householdId = "hh-1", name = "Dairy")
+
+        assertEquals(1, capturedSqls.size)
+        val sql = capturedSqls[0]
+        assert(sql.contains("INSERT INTO product_groups")) { "SQL must insert into product_groups" }
+        assert(sql.contains("datetime('now')")) { "SQL must include timestamps" }
+        val params = capturedParams[0]
+        assertEquals("hh-1", params[1])
+        assertEquals("Dairy", params[2])
+    }
+
+    @Test
+    fun `createProductGroup returns a non-null non-blank group ID`() = runTest {
+        coEvery { db.execute(any<String>(), any<List<Any?>>()) } returns 1L
+
+        val groupId = repository.createProductGroup(householdId = "hh-1", name = "Bakery")
+
+        assertNotNull(groupId)
+        assert(groupId.isNotBlank()) { "Group ID must be non-blank" }
     }
 
     @Test

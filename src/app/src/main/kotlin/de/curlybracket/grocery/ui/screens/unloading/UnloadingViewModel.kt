@@ -1,10 +1,13 @@
 package de.curlybracket.grocery.ui.screens.unloading
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import co.touchlab.kermit.Logger
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.auth.householdIdFlow
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.model.SnackbarMessage
@@ -26,6 +29,7 @@ import javax.inject.Inject
 internal class UnloadingViewModel @Inject constructor(
     private val repository: GroceryRepository,
     private val connector: SupabaseConnector,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val householdIdFlow: StateFlow<String?> = connector.householdIdFlow(viewModelScope)
@@ -50,7 +54,12 @@ internal class UnloadingViewModel @Inject constructor(
                 repository.setUnloadOpen(product.id, open)
             } catch (e: Exception) {
                 Logger.e("Failed to toggle unload state", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to toggle unload state", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.unloading_error_toggle_unload_state),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }
@@ -72,7 +81,12 @@ internal class UnloadingViewModel @Inject constructor(
                 repository.submitUnloading(hid)
             } catch (e: Exception) {
                 Logger.e("Failed to submit unloading", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to submit unloading", productId = ""))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.unloading_error_submit_unloading),
+                        productId = "",
+                    ),
+                )
             }
         }
     }
@@ -87,7 +101,12 @@ internal class UnloadingViewModel @Inject constructor(
                 repository.incrementPendingStock(product.id)
             } catch (e: Exception) {
                 Logger.e("Failed to increment pending", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to increment pending", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.unloading_error_increment_pending),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }
@@ -98,7 +117,12 @@ internal class UnloadingViewModel @Inject constructor(
                 repository.decrementPendingStock(product.id)
             } catch (e: Exception) {
                 Logger.e("Failed to decrement pending", e)
-                _snackbarMessage.emit(SnackbarMessage(text = "Failed to decrement pending", productId = product.id))
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.unloading_error_decrement_pending),
+                        productId = product.id,
+                    ),
+                )
             }
         }
     }

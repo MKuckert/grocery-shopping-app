@@ -31,7 +31,8 @@
     "read": [
       "~/.cache",
       "~/.config",
-      "~/.config/nono"
+      "~/.config/nono",
+      "~/.gradle/caches/"
     ],
     "allow": [
       "~/.npm/_cacache/tmp",

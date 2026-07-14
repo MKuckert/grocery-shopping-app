@@ -5,6 +5,7 @@ import com.powersync.db.SqlCursor
 import com.powersync.db.getLong
 import com.powersync.db.getString
 import com.powersync.db.getStringOptional
+import com.powersync.db.internal.PowerSyncTransaction
 import de.curlybracket.grocery.domain.model.Barcode
 import de.curlybracket.grocery.domain.model.Household
 import de.curlybracket.grocery.domain.model.HouseholdState
@@ -131,7 +132,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 SELECT id, household_id, group_id, name, current_stock, minimum_stock,
                        quantity_to_buy, pending_stock, image_path, unload_open, deleted_at
                 FROM product_kinds
-                WHERE id = ?
+                WHERE id = ? AND deleted_at IS NULL
             """.trimIndent(),
             parameters = listOf(productId),
         ) { cursor: SqlCursor -> productKindFromCursor(cursor) }
@@ -177,7 +178,7 @@ internal class GroceryRepositoryImpl @Inject constructor(
                        pk.image_path, pk.unload_open, pk.deleted_at
                 FROM product_kinds pk
                 INNER JOIN barcodes b ON b.product_kind_id = pk.id
-                WHERE b.household_id = ? AND b.barcode_number = ?
+                WHERE b.household_id = ? AND b.barcode_number = ? AND pk.deleted_at IS NULL
                 LIMIT 1
             """.trimIndent(),
             parameters = listOf(householdId, barcodeNumber),
@@ -190,7 +191,8 @@ internal class GroceryRepositoryImpl @Inject constructor(
             sql = """
                 UPDATE households
                 SET current_state = ?,
-                    shopping_started_at = CASE WHEN ? = 'SHOPPING' THEN datetime('now') ELSE shopping_started_at END
+                    shopping_started_at = CASE WHEN ? = 'SHOPPING' THEN datetime('now') ELSE shopping_started_at END,
+                    updated_at = datetime('now')
                 WHERE id = (SELECT id FROM households LIMIT 1)
             """.trimIndent(),
             parameters = listOf(state.name, state.name),
@@ -200,54 +202,48 @@ internal class GroceryRepositoryImpl @Inject constructor(
     override suspend fun decrementStock(productId: String) {
         db.writeTransaction { tx ->
             tx.execute(
-                sql = "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1) WHERE id = ?",
+                sql = "UPDATE product_kinds SET current_stock = MAX(0, current_stock - 1), updated_at = datetime('now') WHERE id = ?",
                 parameters = listOf(productId),
             )
-            tx.execute(
-                sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-                parameters = listOf(productId),
-            )
+            recalculateQuantityToBuyTx(tx, productId)
         }
     }
 
     override suspend fun setPendingStock(productId: String, value: Int) {
         db.execute(
-            sql = "UPDATE product_kinds SET pending_stock = MAX(0, ?) WHERE id = ?",
+            sql = "UPDATE product_kinds SET pending_stock = MAX(0, ?), updated_at = datetime('now') WHERE id = ?",
             parameters = listOf(value, productId),
         )
     }
 
     override suspend fun incrementPendingStock(productId: String) {
         db.execute(
-            sql = "UPDATE product_kinds SET pending_stock = pending_stock + 1 WHERE id = ?",
+            sql = "UPDATE product_kinds SET pending_stock = pending_stock + 1, updated_at = datetime('now') WHERE id = ?",
             parameters = listOf(productId),
         )
     }
 
     override suspend fun decrementPendingStock(productId: String) {
         db.execute(
-            sql = "UPDATE product_kinds SET pending_stock = MAX(0, pending_stock - 1) WHERE id = ?",
+            sql = "UPDATE product_kinds SET pending_stock = MAX(0, pending_stock - 1), updated_at = datetime('now') WHERE id = ?",
             parameters = listOf(productId),
         )
     }
 
     override suspend fun fulfillFull(productId: String) {
         db.execute(
-            sql = "UPDATE product_kinds SET pending_stock = quantity_to_buy WHERE id = ?",
+            sql = "UPDATE product_kinds SET pending_stock = quantity_to_buy, updated_at = datetime('now') WHERE id = ?",
             parameters = listOf(productId),
         )
     }
 
     override suspend fun recalculateQuantityToBuy(productId: String) {
-        db.execute(
-            sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-            parameters = listOf(productId),
-        )
+        db.writeTransaction { tx -> recalculateQuantityToBuyTx(tx, productId) }
     }
 
     override suspend fun setUnloadOpen(productId: String, open: Boolean) {
         db.execute(
-            sql = "UPDATE product_kinds SET unload_open = ? WHERE id = ?",
+            sql = "UPDATE product_kinds SET unload_open = ?, updated_at = datetime('now') WHERE id = ?",
             parameters = listOf(if (open) 1L else 0L, productId),
         )
     }
@@ -257,7 +253,8 @@ internal class GroceryRepositoryImpl @Inject constructor(
             tx.execute(
                 sql = """
                     UPDATE product_kinds
-                    SET current_stock = current_stock + pending_stock, pending_stock = 0, unload_open = 0
+                    SET current_stock = current_stock + pending_stock, pending_stock = 0, unload_open = 0,
+                        updated_at = datetime('now')
                     WHERE household_id = ? AND pending_stock > 0
                 """.trimIndent(),
                 parameters = listOf(householdId),
@@ -265,13 +262,13 @@ internal class GroceryRepositoryImpl @Inject constructor(
             tx.execute(
                 sql = """
                     UPDATE product_kinds
-                    SET quantity_to_buy = MAX(0, minimum_stock - current_stock)
+                    SET quantity_to_buy = MAX(0, minimum_stock - current_stock), updated_at = datetime('now')
                     WHERE household_id = ? AND deleted_at IS NULL
                 """.trimIndent(),
                 parameters = listOf(householdId),
             )
             tx.execute(
-                sql = "UPDATE households SET current_state = 'IDLE' WHERE id = (SELECT id FROM households LIMIT 1)",
+                sql = "UPDATE households SET current_state = 'IDLE', updated_at = datetime('now') WHERE id = (SELECT id FROM households LIMIT 1)",
             )
         }
     }
@@ -288,21 +285,19 @@ internal class GroceryRepositoryImpl @Inject constructor(
             tx.execute(
                 sql = """
                     UPDATE product_kinds
-                    SET name = ?, group_id = ?, minimum_stock = ?, current_stock = ?, image_path = ?
+                    SET name = ?, group_id = ?, minimum_stock = ?, current_stock = ?, image_path = ?,
+                        updated_at = datetime('now')
                     WHERE id = ?
                 """.trimIndent(),
                 parameters = listOf(name, groupId, minimumStock, currentStock, imagePath, productId),
             )
-            tx.execute(
-                sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-                parameters = listOf(productId),
-            )
+            recalculateQuantityToBuyTx(tx, productId)
         }
     }
 
     override suspend fun addBarcode(productKindId: String, barcodeNumber: String, householdId: String) {
         db.execute(
-            sql = "INSERT INTO barcodes (id, household_id, product_kind_id, barcode_number) VALUES (?, ?, ?, ?)",
+            sql = "INSERT INTO barcodes (id, household_id, product_kind_id, barcode_number, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))",
             parameters = listOf(UUID.randomUUID().toString(), householdId, productKindId, barcodeNumber),
         )
     }
@@ -328,29 +323,34 @@ internal class GroceryRepositoryImpl @Inject constructor(
                 sql = """
                     INSERT INTO product_kinds
                       (id, household_id, group_id, name, current_stock, minimum_stock,
-                       quantity_to_buy, pending_stock, image_path, unload_open, deleted_at)
-                    VALUES (?, ?, ?, ?, 0, ?, ?, 0, null, 0, null)
+                       quantity_to_buy, pending_stock, image_path, unload_open, deleted_at,
+                       created_at, updated_at)
+                    VALUES (?, ?, ?, ?, 0, ?, ?, 0, null, 0, null, datetime('now'), datetime('now'))
                 """.trimIndent(),
                 parameters = listOf(productId, householdId, groupId, name, minimumStock, minimumStock),
             )
             tx.execute(
-                sql = "INSERT INTO barcodes (id, household_id, product_kind_id, barcode_number) VALUES (?, ?, ?, ?)",
+                sql = "INSERT INTO barcodes (id, household_id, product_kind_id, barcode_number, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))",
                 parameters = listOf(barcodeId, householdId, productId, barcodeNumber),
             )
         }
         return productId
     }
 
+    override suspend fun deleteProductKind(productId: String) {
+        db.execute(
+            sql = "UPDATE product_kinds SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?",
+            parameters = listOf(productId),
+        )
+    }
+
     override suspend fun restoreProductKind(productId: String) {
         db.writeTransaction { tx ->
             tx.execute(
-                sql = "UPDATE product_kinds SET deleted_at = NULL WHERE id = ?",
+                sql = "UPDATE product_kinds SET deleted_at = NULL, updated_at = datetime('now') WHERE id = ?",
                 parameters = listOf(productId),
             )
-            tx.execute(
-                sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock) WHERE id = ?",
-                parameters = listOf(productId),
-            )
+            recalculateQuantityToBuyTx(tx, productId)
         }
     }
 
@@ -368,13 +368,29 @@ internal class GroceryRepositoryImpl @Inject constructor(
 
         val newId = UUID.randomUUID().toString()
         db.execute(
-            sql = "INSERT INTO product_groups (id, household_id, name, deleted_at) VALUES (?, ?, 'Unsorted', NULL)",
+            sql = "INSERT INTO product_groups (id, household_id, name, deleted_at, created_at, updated_at) VALUES (?, ?, 'Unsorted', NULL, datetime('now'), datetime('now'))",
             parameters = listOf(newId, householdId),
         )
         return newId
     }
 
+    override suspend fun createProductGroup(householdId: String, name: String): String {
+        val newId = UUID.randomUUID().toString()
+        db.execute(
+            sql = "INSERT INTO product_groups (id, household_id, name, deleted_at, created_at, updated_at) VALUES (?, ?, ?, NULL, datetime('now'), datetime('now'))",
+            parameters = listOf(newId, householdId, name),
+        )
+        return newId
+    }
+
     // --- Private helpers ---
+
+    private fun recalculateQuantityToBuyTx(tx: PowerSyncTransaction, productId: String) {
+        tx.execute(
+            sql = "UPDATE product_kinds SET quantity_to_buy = MAX(0, minimum_stock - current_stock), updated_at = datetime('now') WHERE id = ?",
+            parameters = listOf(productId),
+        )
+    }
 
     private fun productKindFromCursor(cursor: SqlCursor): ProductKind = ProductKind(
         id = cursor.getString("id"),

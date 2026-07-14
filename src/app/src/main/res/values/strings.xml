@@ -2,4 +2,136 @@
     <string name="app_name">Grocery</string>
     <string name="background_channel_name">Active background sync</string>
     <string name="sync_notification_title">Background sync in progress</string>
+
+    <!-- Common actions -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_add">Add</string>
+    <string name="action_create">Create</string>
+    <string name="action_save">Save</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_details">Details</string>
+
+    <!-- Sign In screen -->
+    <string name="sign_in_title">Sign In</string>
+    <string name="sign_in_label_email">Email</string>
+    <string name="sign_in_label_password">Password</string>
+    <string name="sign_in_btn_signing_in">Signing In\u2026</string>
+    <string name="sign_in_error_invalid_credentials">Invalid email or password</string>
+    <string name="sign_in_error_generic">An error occurred during sign-in</string>
+
+    <!-- Inventory screen -->
+    <string name="inventory_title">Grocery</string>
+    <string name="inventory_btn_start_shopping">Start Shopping</string>
+    <string name="inventory_fab_cd_scan_barcode">Scan barcode</string>
+    <string name="inventory_snackbar_remaining">%1$s: %2$d remaining</string>
+    <string name="inventory_snackbar_product_deleted">%1$s deleted</string>
+    <string name="inventory_snackbar_barcode_linked">Barcode linked to %1$s</string>
+    <string name="inventory_snackbar_restored">Restored: %1$s</string>
+    <string name="inventory_group_unsorted">Unsorted</string>
+    <string name="inventory_product_name_fallback">Product</string>
+    <string name="inventory_error_start_shopping">Failed to start shopping</string>
+    <string name="inventory_error_decrement_stock">Failed to decrement stock</string>
+    <string name="inventory_error_restore_product">Failed to restore product</string>
+
+    <!-- Shopping screen -->
+    <string name="shopping_title">Shopping</string>
+    <string name="shopping_btn_finish_shopping">Finish Shopping</string>
+    <string name="shopping_fab_cd_scan_barcode">Scan barcode</string>
+    <string name="shopping_search_placeholder">Search products\u2026</string>
+    <string name="shopping_section_active">▼ Active Shopping List</string>
+    <string name="shopping_section_struck_through">▼ Struck-Through Cart Items</string>
+    <string name="shopping_section_impulse_buys">▼ Impulse Buys</string>
+    <string name="shopping_cd_decrease_item">Decrease %1$s</string>
+    <string name="shopping_cd_increase_item">Increase %1$s</string>
+    <string name="shopping_btn_force_add">Force Add</string>
+    <string name="shopping_btn_details">Details</string>
+    <string name="shopping_snackbar_added">Added: %1$s</string>
+    <string name="shopping_snackbar_restored">Restored: %1$s</string>
+    <string name="shopping_snackbar_barcode_linked">Barcode linked to %1$s</string>
+    <string name="shopping_error_finish_shopping">Failed to finish shopping</string>
+    <string name="shopping_error_fulfill_item">Failed to fulfill item</string>
+    <string name="shopping_error_increment_pending">Failed to increment pending</string>
+    <string name="shopping_error_decrement_pending">Failed to decrement pending</string>
+    <string name="shopping_error_force_add_item">Failed to force-add item</string>
+
+    <!-- Detail screen -->
+    <string name="detail_title">Product Detail</string>
+    <string name="detail_cd_navigate_back">Navigate back</string>
+    <string name="detail_cd_back">Back</string>
+    <string name="detail_cd_saved">Saved</string>
+    <string name="detail_cd_delete_product">Delete product</string>
+    <string name="detail_dialog_delete_title">Delete %1$s?</string>
+    <string name="detail_dialog_delete_message">This can be undone.</string>
+    <string name="detail_label_product_name">Name</string>
+    <string name="detail_cd_product_name_field">Product name field</string>
+    <string name="detail_label_current_stock">Current stock</string>
+    <string name="detail_cd_decrease_current_stock">Decrease current stock</string>
+    <string name="detail_cd_increase_current_stock">Increase current stock</string>
+    <string name="detail_cd_current_stock_field">Current stock field</string>
+    <string name="detail_label_minimum_stock">Minimum stock</string>
+    <string name="detail_cd_decrease_minimum_stock">Decrease minimum stock</string>
+    <string name="detail_cd_increase_minimum_stock">Increase minimum stock</string>
+    <string name="detail_cd_minimum_stock_field">Minimum stock field</string>
+    <string name="detail_cd_product_image">Product image</string>
+    <string name="detail_cd_no_product_image">No product image</string>
+    <string name="detail_label_group">Group</string>
+    <string name="detail_cd_group_selector">Product group selector</string>
+    <string name="detail_group_option_none">None</string>
+    <string name="detail_group_option_create_new">Create new group\u2026</string>
+    <string name="detail_dialog_create_group_title">Create group</string>
+    <string name="detail_dialog_create_group_label">Group name</string>
+    <string name="detail_cd_new_group_name_input">New group name input</string>
+    <string name="detail_dialog_create_group_error_duplicate">A group with this name already exists</string>
+    <string name="detail_section_barcodes">Barcodes</string>
+    <string name="detail_cd_add_barcode">Add barcode</string>
+    <string name="detail_no_barcodes">No barcodes assigned</string>
+    <string name="detail_cd_delete_barcode">Delete barcode %1$s</string>
+    <string name="detail_dialog_add_barcode_title">Add Barcode</string>
+    <string name="detail_dialog_add_barcode_label">Barcode number</string>
+    <string name="detail_cd_barcode_number_input">Barcode number input</string>
+    <string name="detail_error_add_barcode">Failed to add barcode</string>
+    <string name="detail_error_delete_barcode">Failed to delete barcode</string>
+    <string name="detail_error_create_group">Failed to create group</string>
+    <string name="detail_error_delete_product">Failed to delete product</string>
+    <string name="detail_error_save_changes">Failed to save changes</string>
+
+    <!-- Unloading screen -->
+    <string name="unloading_title">Unloading</string>
+    <string name="unloading_btn_submit_unloading">Submit Unloading</string>
+    <string name="unloading_dialog_title">Unverified Items</string>
+    <string name="unloading_dialog_message">%1$d item(s) still have open adjustments. Submit anyway?</string>
+    <string name="unloading_dialog_btn_submit_anyway">Submit Anyway</string>
+    <string name="unloading_dialog_btn_go_back">Go Back</string>
+    <string name="unloading_stock_formula">%1$d + %2$d = %3$d</string>
+    <string name="unloading_cd_decrease_item">Decrease %1$s</string>
+    <string name="unloading_cd_increase_item">Increase %1$s</string>
+    <string name="unloading_error_toggle_unload_state">Failed to toggle unload state</string>
+    <string name="unloading_error_submit_unloading">Failed to submit unloading</string>
+    <string name="unloading_error_increment_pending">Failed to increment pending</string>
+    <string name="unloading_error_decrement_pending">Failed to decrement pending</string>
+
+    <!-- Scanner / Barcode bottom sheet -->
+    <string name="scanner_title_scan_barcode">Scan Barcode</string>
+    <string name="scanner_cd_close">Close scanner</string>
+    <string name="scanner_title_new_product">New Product</string>
+    <string name="scanner_label_barcode">Barcode: %1$s</string>
+    <string name="scanner_label_product_name">Product name</string>
+    <string name="scanner_cd_capture_photo">Capture photo</string>
+    <string name="scanner_msg_photo_captured">Photo captured</string>
+    <string name="scanner_btn_link_to_existing">Link to Existing</string>
+    <string name="scanner_title_link_to_existing">Link to Existing Product</string>
+    <string name="scanner_label_search_products">Search products</string>
+    <string name="scanner_label_stock">Stock: %1$d</string>
+    <string name="scanner_error_barcode_already_linked">This barcode is already linked to another product.</string>
+    <string name="scanner_error_link_failed">Linking the barcode failed. Please try again.</string>
+    <string name="scanner_unknown_item">Unknown Item</string>
+
+    <!-- Camera permission -->
+    <string name="permission_dialog_camera_required_title">Camera Required</string>
+    <string name="permission_dialog_camera_required_message">The camera is needed to scan barcodes. Please grant camera access.</string>
+    <string name="permission_btn_grant">Grant</string>
+    <string name="permission_dialog_camera_denied_title">Camera Permission Required</string>
+    <string name="permission_dialog_camera_denied_message">Camera access was denied. Open Settings to grant it.</string>
+    <string name="permission_btn_open_settings">Open Settings</string>
 </resources>

@@ -77,7 +77,11 @@ interface GroceryRepository {
         barcodeNumber: String,
     ): String
 
+    suspend fun deleteProductKind(productId: String)
+
     suspend fun restoreProductKind(productId: String)
 
     suspend fun ensureUnsortedGroup(householdId: String): String
+
+    suspend fun createProductGroup(householdId: String, name: String): String
 }

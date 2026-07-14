@@ -37,10 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
@@ -48,6 +50,7 @@ import de.curlybracket.grocery.scanner.ScanResult
 import de.curlybracket.grocery.scanner.ScannerMode
 import de.curlybracket.grocery.scanner.ScannerProcessor
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,13 +58,22 @@ import kotlinx.coroutines.launch
 internal fun InventoryScreen(
     onNavigateToDetail: (String) -> Unit,
     scannerProcessor: ScannerProcessor,
+    deletedProductIdFlow: StateFlow<String?>,
+    onDeletedProductConsumed: () -> Unit,
 ) {
     val viewModel: InventoryViewModel = hiltViewModel()
     val groupsWithProducts by viewModel.groupsWithProducts.collectAsStateWithLifecycle()
     val householdId by viewModel.householdIdFlow.collectAsStateWithLifecycle()
+    val deletedProductId by deletedProductIdFlow.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showScanner by remember { mutableStateOf(false) }
+
+    val undoLabel = stringResource(R.string.action_undo)
+    val productNameFallback = stringResource(R.string.inventory_product_name_fallback)
+    val msgRemaining = stringResource(R.string.inventory_snackbar_remaining)
+    val msgRestored = stringResource(R.string.inventory_snackbar_restored)
+    val msgBarcodeLinked = stringResource(R.string.inventory_snackbar_barcode_linked)
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { productId ->
@@ -76,19 +88,29 @@ internal fun InventoryScreen(
                 actionLabel = msg.actionLabel,
                 duration = SnackbarDuration.Short,
             )
-            if (result == SnackbarResult.ActionPerformed) {
+            if (result == SnackbarResult.ActionPerformed && msg.actionLabel == undoLabel) {
+                viewModel.restoreProduct(msg.productId)
+            } else if (result == SnackbarResult.ActionPerformed) {
                 onNavigateToDetail(msg.productId)
             }
         }
     }
 
+    LaunchedEffect(deletedProductId) {
+        val pid = deletedProductId ?: return@LaunchedEffect
+        onDeletedProductConsumed()
+        val groupsSnapshot = viewModel.groupsWithProducts.value
+        val productName = groupsSnapshot.flatMap { it.products }.find { it.id == pid }?.name ?: productNameFallback
+        viewModel.showDeletedProductUndo(pid, productName)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Grocery") },
+                title = { Text(stringResource(R.string.inventory_title)) },
                 actions = {
                     TextButton(onClick = { viewModel.startShopping() }) {
-                        Text("Start Shopping")
+                        Text(stringResource(R.string.inventory_btn_start_shopping))
                     }
                 },
             )
@@ -97,7 +119,7 @@ internal fun InventoryScreen(
             FloatingActionButton(onClick = { showScanner = true }) {
                 Icon(
                     imageVector = Icons.Filled.CameraAlt,
-                    contentDescription = "Scan barcode",
+                    contentDescription = stringResource(R.string.inventory_fab_cd_scan_barcode),
                 )
             }
         },
@@ -137,11 +159,14 @@ internal fun InventoryScreen(
                 when (result) {
                     is ScanResult.Hit -> scope.launch {
                         snackbarHostState.showSnackbar(
-                            "${result.product.name}: ${result.product.currentStock} remaining",
+                            msgRemaining.format(result.product.name, result.product.currentStock),
                         )
                     }
                     is ScanResult.Restored -> scope.launch {
-                        snackbarHostState.showSnackbar("Restored: ${result.product.name}")
+                        snackbarHostState.showSnackbar(msgRestored.format(result.product.name))
+                    }
+                    is ScanResult.Linked -> scope.launch {
+                        snackbarHostState.showSnackbar(msgBarcodeLinked.format(result.product.name))
                     }
                     is ScanResult.Miss -> { /* CaptureRequired overlay handles this in-sheet */ }
                 }

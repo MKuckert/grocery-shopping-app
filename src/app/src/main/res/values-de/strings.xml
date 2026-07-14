@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Einkaufszettel</string>
+    <string name="background_channel_name">Aktive Hintergrundsynchronisierung</string>
+    <string name="sync_notification_title">Hintergrundsynchronisierung läuft</string>
+
+    <!-- Common actions -->
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_add">Hinzufügen</string>
+    <string name="action_create">Erstellen</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_undo">Rückgängig</string>
+    <string name="action_details">Details</string>
+
+    <!-- Sign In screen -->
+    <string name="sign_in_title">Anmelden</string>
+    <string name="sign_in_label_email">E-Mail</string>
+    <string name="sign_in_label_password">Passwort</string>
+    <string name="sign_in_btn_signing_in">Anmeldung läuft\u2026</string>
+    <string name="sign_in_error_invalid_credentials">Ungültige E-Mail-Adresse oder falsches Passwort</string>
+    <string name="sign_in_error_generic">Bei der Anmeldung ist ein Fehler aufgetreten</string>
+
+    <!-- Inventory screen -->
+    <string name="inventory_title">Inventar</string>
+    <string name="inventory_btn_start_shopping">Einkauf starten</string>
+    <string name="inventory_fab_cd_scan_barcode">Barcode scannen</string>
+    <string name="inventory_snackbar_remaining">%1$s: noch %2$d vorhanden</string>
+    <string name="inventory_snackbar_product_deleted">%1$s gelöscht</string>
+    <string name="inventory_snackbar_barcode_linked">Barcode mit %1$s verknüpft</string>
+    <string name="inventory_snackbar_restored">Wiederhergestellt: %1$s</string>
+    <string name="inventory_group_unsorted">Unsortiert</string>
+    <string name="inventory_product_name_fallback">Produkt</string>
+    <string name="inventory_error_start_shopping">Einkauf konnte nicht gestartet werden</string>
+    <string name="inventory_error_decrement_stock">Bestand konnte nicht verringert werden</string>
+    <string name="inventory_error_restore_product">Produkt konnte nicht wiederhergestellt werden</string>
+
+    <!-- Shopping screen -->
+    <string name="shopping_title">Einkauf</string>
+    <string name="shopping_btn_finish_shopping">Einkauf abschließen</string>
+    <string name="shopping_fab_cd_scan_barcode">Barcode scannen</string>
+    <string name="shopping_search_placeholder">Produkte suchen\u2026</string>
+    <string name="shopping_section_active">▼ Aktive Einkaufsliste</string>
+    <string name="shopping_section_struck_through">▼ Abgehakte Artikel</string>
+    <string name="shopping_section_impulse_buys">▼ Spontankäufe</string>
+    <string name="shopping_cd_decrease_item">%1$s verringern</string>
+    <string name="shopping_cd_increase_item">%1$s erhöhen</string>
+    <string name="shopping_btn_force_add">Trotzdem hinzufügen</string>
+    <string name="shopping_btn_details">Details</string>
+    <string name="shopping_snackbar_added">Hinzugefügt: %1$s</string>
+    <string name="shopping_snackbar_restored">Wiederhergestellt: %1$s</string>
+    <string name="shopping_snackbar_barcode_linked">Barcode mit %1$s verknüpft</string>
+    <string name="shopping_error_finish_shopping">Einkauf konnte nicht abgeschlossen werden</string>
+    <string name="shopping_error_fulfill_item">Artikel konnte nicht erfüllt werden</string>
+    <string name="shopping_error_increment_pending">Ausstehende Menge konnte nicht erhöht werden</string>
+    <string name="shopping_error_decrement_pending">Ausstehende Menge konnte nicht verringert werden</string>
+    <string name="shopping_error_force_add_item">Artikel konnte nicht hinzugefügt werden</string>
+
+    <!-- Detail screen -->
+    <string name="detail_title">Produktdetails</string>
+    <string name="detail_cd_navigate_back">Zurück navigieren</string>
+    <string name="detail_cd_back">Zurück</string>
+    <string name="detail_cd_saved">Gespeichert</string>
+    <string name="detail_cd_delete_product">Produkt löschen</string>
+    <string name="detail_dialog_delete_title">%1$s löschen?</string>
+    <string name="detail_dialog_delete_message">Dieser Vorgang kann rückgängig gemacht werden.</string>
+    <string name="detail_label_product_name">Name</string>
+    <string name="detail_cd_product_name_field">Produktname-Eingabefeld</string>
+    <string name="detail_label_current_stock">Aktueller Bestand</string>
+    <string name="detail_cd_decrease_current_stock">Aktuellen Bestand verringern</string>
+    <string name="detail_cd_increase_current_stock">Aktuellen Bestand erhöhen</string>
+    <string name="detail_cd_current_stock_field">Eingabefeld für aktuellen Bestand</string>
+    <string name="detail_label_minimum_stock">Mindestbestand</string>
+    <string name="detail_cd_decrease_minimum_stock">Mindestbestand verringern</string>
+    <string name="detail_cd_increase_minimum_stock">Mindestbestand erhöhen</string>
+    <string name="detail_cd_minimum_stock_field">Eingabefeld für Mindestbestand</string>
+    <string name="detail_cd_product_image">Produktbild</string>
+    <string name="detail_cd_no_product_image">Kein Produktbild vorhanden</string>
+    <string name="detail_label_group">Gruppe</string>
+    <string name="detail_cd_group_selector">Produktgruppen-Auswahl</string>
+    <string name="detail_group_option_none">Keine</string>
+    <string name="detail_group_option_create_new">Neue Gruppe erstellen\u2026</string>
+    <string name="detail_dialog_create_group_title">Gruppe erstellen</string>
+    <string name="detail_dialog_create_group_label">Gruppenname</string>
+    <string name="detail_cd_new_group_name_input">Eingabefeld für neuen Gruppennamen</string>
+    <string name="detail_dialog_create_group_error_duplicate">Eine Gruppe mit diesem Namen existiert bereits</string>
+    <string name="detail_section_barcodes">Barcodes</string>
+    <string name="detail_cd_add_barcode">Barcode hinzufügen</string>
+    <string name="detail_no_barcodes">Keine Barcodes zugewiesen</string>
+    <string name="detail_cd_delete_barcode">Barcode %1$s löschen</string>
+    <string name="detail_dialog_add_barcode_title">Barcode hinzufügen</string>
+    <string name="detail_dialog_add_barcode_label">Barcodenummer</string>
+    <string name="detail_cd_barcode_number_input">Eingabefeld für Barcodenummer</string>
+    <string name="detail_error_add_barcode">Barcode konnte nicht hinzugefügt werden</string>
+    <string name="detail_error_delete_barcode">Barcode konnte nicht gelöscht werden</string>
+    <string name="detail_error_create_group">Gruppe konnte nicht erstellt werden</string>
+    <string name="detail_error_delete_product">Produkt konnte nicht gelöscht werden</string>
+    <string name="detail_error_save_changes">Änderungen konnten nicht gespeichert werden</string>
+
+    <!-- Unloading screen -->
+    <string name="unloading_title">Einlagerung</string>
+    <string name="unloading_btn_submit_unloading">Einlagerung bestätigen</string>
+    <string name="unloading_dialog_title">Nicht verifizierte Artikel</string>
+    <string name="unloading_dialog_message">Bei %1$d Artikel(n) gibt es noch offene Anpassungen. Trotzdem bestätigen?</string>
+    <string name="unloading_dialog_btn_submit_anyway">Trotzdem bestätigen</string>
+    <string name="unloading_dialog_btn_go_back">Zurück</string>
+    <string name="unloading_stock_formula">%1$d + %2$d = %3$d</string>
+    <string name="unloading_cd_decrease_item">%1$s verringern</string>
+    <string name="unloading_cd_increase_item">%1$s erhöhen</string>
+    <string name="unloading_error_toggle_unload_state">Einlagerungsstatus konnte nicht geändert werden</string>
+    <string name="unloading_error_submit_unloading">Einlagerung konnte nicht bestätigt werden</string>
+    <string name="unloading_error_increment_pending">Ausstehende Menge konnte nicht erhöht werden</string>
+    <string name="unloading_error_decrement_pending">Ausstehende Menge konnte nicht verringert werden</string>
+
+    <!-- Scanner / Barcode bottom sheet -->
+    <string name="scanner_title_scan_barcode">Barcode scannen</string>
+    <string name="scanner_cd_close">Scanner schließen</string>
+    <string name="scanner_title_new_product">Neues Produkt</string>
+    <string name="scanner_label_barcode">Barcode: %1$s</string>
+    <string name="scanner_label_product_name">Produktname</string>
+    <string name="scanner_cd_capture_photo">Foto aufnehmen</string>
+    <string name="scanner_msg_photo_captured">Foto aufgenommen</string>
+    <string name="scanner_btn_link_to_existing">Mit vorhandenem Produkt verknüpfen</string>
+    <string name="scanner_title_link_to_existing">Mit vorhandenem Produkt verknüpfen</string>
+    <string name="scanner_label_search_products">Produkte suchen</string>
+    <string name="scanner_label_stock">Bestand: %1$d</string>
+    <string name="scanner_error_barcode_already_linked">Dieser Barcode ist bereits mit einem anderen Produkt verknüpft.</string>
+    <string name="scanner_error_link_failed">Die Verknüpfung des Barcodes ist fehlgeschlagen. Bitte versuche es erneut.</string>
+    <string name="scanner_unknown_item">Unbekannter Artikel</string>
+
+    <!-- Camera permission -->
+    <string name="permission_dialog_camera_required_title">Kamera erforderlich</string>
+    <string name="permission_dialog_camera_required_message">Die Kamera wird zum Scannen von Barcodes benötigt. Bitte erteilen Sie die Kameraberechtigung.</string>
+    <string name="permission_btn_grant">Erlauben</string>
+    <string name="permission_dialog_camera_denied_title">Kameraberechtigung erforderlich</string>
+    <string name="permission_dialog_camera_denied_message">Die Kameraberechtigung wurde verweigert. Öffnen Sie die Einstellungen, um sie zu erteilen.</string>
+    <string name="permission_btn_open_settings">Einstellungen öffnen</string>
+</resources>

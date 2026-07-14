@@ -8,7 +8,9 @@ val AppSchema = Schema(
       name = "households",
       columns = listOf(
         Column.text("current_state"),
-        Column.text("shopping_started_at")
+        Column.text("shopping_started_at"),
+        Column.text("created_at"),
+        Column.text("updated_at")
       )
     ),
     Table(
@@ -16,7 +18,9 @@ val AppSchema = Schema(
       columns = listOf(
         Column.text("household_id"),
         Column.text("name"),
-        Column.text("deleted_at")
+        Column.text("deleted_at"),
+        Column.text("created_at"),
+        Column.text("updated_at")
       )
     ),
     Table(
@@ -31,7 +35,9 @@ val AppSchema = Schema(
         Column.integer("pending_stock"),
         Column.text("image_path"),
         Column.integer("unload_open"),
-        Column.text("deleted_at")
+        Column.text("deleted_at"),
+        Column.text("created_at"),
+        Column.text("updated_at")
       ),
       indexes = listOf(
         Index(
@@ -56,7 +62,9 @@ val AppSchema = Schema(
       columns = listOf(
         Column.text("household_id"),
         Column.text("product_kind_id"),
-        Column.text("barcode_number")
+        Column.text("barcode_number"),
+        Column.text("created_at"),
+        Column.text("updated_at")
       ),
       indexes = listOf(
         Index(

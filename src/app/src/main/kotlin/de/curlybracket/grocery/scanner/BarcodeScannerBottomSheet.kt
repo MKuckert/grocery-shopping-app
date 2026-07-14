@@ -14,17 +14,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -37,10 +42,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.touchlab.kermit.Logger
 import de.curlybracket.grocery.BuildConfig
+import de.curlybracket.grocery.R
+import de.curlybracket.grocery.domain.model.ProductKind
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
@@ -70,7 +84,7 @@ fun BarcodeScannerBottomSheet(
             isProcessing = false
             onResult(result)
             when (result) {
-                is ScanResult.Hit, is ScanResult.Restored -> {
+                is ScanResult.Hit, is ScanResult.Restored, is ScanResult.Linked -> {
                     scannerState = ScannerState.Scanning
                 }
                 is ScanResult.Miss -> {
@@ -144,6 +158,49 @@ fun BarcodeScannerBottomSheet(
                             }
                         },
                         onCancel = { scannerState = ScannerState.Scanning },
+                        onLinkToExisting = {
+                            scannerState = ScannerState.LinkToExisting(state.barcode)
+                        },
+                        isProcessing = isProcessing,
+                    )
+                }
+
+                is ScannerState.LinkToExisting -> {
+                    var linkError by remember { mutableStateOf<LinkError?>(null) }
+                    LinkToExistingContent(
+                        barcode = state.barcode,
+                        householdId = mode.householdId,
+                        processor = processor,
+                        linkError = linkError,
+                        onLink = { productId ->
+                            scope.launch {
+                                isProcessing = true
+                                linkError = null
+                                try {
+                                    processor.linkBarcodeToProduct(
+                                        barcode = state.barcode,
+                                        productId = productId,
+                                        householdId = mode.householdId,
+                                    )
+                                    scannerState = ScannerState.Scanning
+                                } catch (e: BarcodeAlreadyLinkedException) {
+                                    Logger.e("Link barcode to product failed: already linked", e)
+                                    linkError = LinkError.AlreadyLinked
+                                } catch (e: Exception) {
+                                    Logger.e("Link barcode to product failed", e)
+                                    linkError = LinkError.GenericFailure
+                                } finally {
+                                    isProcessing = false
+                                }
+                            }
+                        },
+                        onCancel = {
+                            scannerState = ScannerState.CaptureRequired(
+                                barcode = state.barcode,
+                                prefillName = "",
+                                photoPath = null,
+                            )
+                        },
                         isProcessing = isProcessing,
                     )
                 }
@@ -171,9 +228,9 @@ private fun ScanningContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Scan Barcode", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.scanner_title_scan_barcode), style = MaterialTheme.typography.titleMedium)
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Filled.Close, contentDescription = "Close scanner")
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.scanner_cd_close))
             }
         }
 
@@ -182,7 +239,8 @@ private fun ScanningContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
+                .height(200.dp)
+                .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
             CameraPreview(
@@ -190,7 +248,7 @@ private fun ScanningContent(
                 imageCapture = imageCapture,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .fillMaxHeight()
             )
             if (isProcessing) {
                 CircularProgressIndicator()
@@ -209,11 +267,13 @@ private fun CaptureRequiredContent(
     onPhotoCapture: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
+    onLinkToExisting: () -> Unit,
     isProcessing: Boolean,
 ) {
     val context = LocalContext.current
+    val unknownItem = stringResource(R.string.scanner_unknown_item)
     val saveEnabled = state.prefillName.isNotBlank() &&
-        (state.prefillName != "Unknown Item" || state.photoPath != null) &&
+        (state.prefillName != unknownItem || state.photoPath != null) &&
         !isProcessing
 
     Column(
@@ -228,14 +288,14 @@ private fun CaptureRequiredContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("New Product", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.scanner_title_new_product), style = MaterialTheme.typography.titleMedium)
             if (isProcessing) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
             }
         }
 
         Text(
-            text = "Barcode: ${state.barcode}",
+            text = stringResource(R.string.scanner_label_barcode, state.barcode),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -243,7 +303,7 @@ private fun CaptureRequiredContent(
         OutlinedTextField(
             value = state.prefillName,
             onValueChange = onNameChange,
-            label = { Text("Product name") },
+            label = { Text(stringResource(R.string.scanner_label_product_name)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
@@ -253,7 +313,8 @@ private fun CaptureRequiredContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(200.dp)
+                .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
             CameraPreview(
@@ -270,7 +331,7 @@ private fun CaptureRequiredContent(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Camera,
-                    contentDescription = "Capture photo",
+                    contentDescription = stringResource(R.string.scanner_cd_capture_photo),
                     modifier = Modifier.size(48.dp),
                 )
             }
@@ -278,7 +339,7 @@ private fun CaptureRequiredContent(
 
         if (state.photoPath != null) {
             Text(
-                text = "Photo captured",
+                text = stringResource(R.string.scanner_msg_photo_captured),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -290,17 +351,148 @@ private fun CaptureRequiredContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(onClick = onCancel) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
+            OutlinedButton(
+                onClick = onLinkToExisting,
+                enabled = !isProcessing,
+            ) {
+                Text(stringResource(R.string.scanner_btn_link_to_existing))
+            }
+            Spacer(Modifier.size(8.dp))
             Button(
                 onClick = onSave,
                 enabled = saveEnabled,
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         }
 
         Spacer(Modifier.height(8.dp))
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+@Composable
+private fun LinkToExistingContent(
+    barcode: String,
+    householdId: String,
+    processor: ScannerProcessor,
+    linkError: LinkError?,
+    onLink: (productId: String) -> Unit,
+    onCancel: () -> Unit,
+    isProcessing: Boolean,
+) {
+    val queryFlow = remember { MutableStateFlow("") }
+    val query by queryFlow.collectAsStateWithLifecycle()
+    val searchResults by remember(householdId) {
+        queryFlow.flatMapLatest { q -> processor.watchSearch(q, householdId) }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.scanner_title_link_to_existing), style = MaterialTheme.typography.titleMedium)
+            if (isProcessing) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            }
+        }
+
+        Text(
+            text = stringResource(R.string.scanner_label_barcode, barcode),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        OutlinedTextField(
+            value = query,
+            onValueChange = { queryFlow.value = it },
+            label = { Text(stringResource(R.string.scanner_label_search_products)) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+
+        if (linkError != null) {
+            val errorText = when (linkError) {
+                LinkError.AlreadyLinked -> stringResource(R.string.scanner_error_barcode_already_linked)
+                LinkError.GenericFailure -> stringResource(R.string.scanner_error_link_failed)
+            }
+            Text(
+                text = errorText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
+        ) {
+            items(
+                items = searchResults,
+                key = { it.id },
+            ) { product ->
+                ProductSearchItem(
+                    product = product,
+                    enabled = !isProcessing,
+                    onTap = { onLink(product.id) },
+                )
+                HorizontalDivider()
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            TextButton(onClick = onCancel) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun ProductSearchItem(
+    product: ProductKind,
+    enabled: Boolean,
+    onTap: () -> Unit,
+) {
+    Surface(
+        onClick = onTap,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = stringResource(R.string.scanner_label_stock, product.currentStock),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

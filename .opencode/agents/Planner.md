@@ -5,19 +5,23 @@ model: manifest/ultra
 permission:
   read:
     "*": deny
+    TODO.md: allow
     PLAN.md: allow
     tasks/*: allow
   edit:
     "*": deny
+    TODO.md: allow
     PLAN.md: allow
     tasks/*: allow
   grep: deny
   glob:
     "*": deny
+    TODO.md: allow
     PLAN.md: allow
     tasks/*: allow
   list:
     "*": deny
+    TODO.md: allow
     PLAN.md: allow
     tasks/*: allow
   bash: deny

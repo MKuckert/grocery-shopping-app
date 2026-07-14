@@ -1,10 +1,13 @@
 package de.curlybracket.grocery.ui.screens.inventory
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import co.touchlab.kermit.Logger
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.auth.householdIdFlow
 import de.curlybracket.grocery.domain.model.GroupWithProducts
 import de.curlybracket.grocery.domain.model.HouseholdState
@@ -28,6 +31,7 @@ import javax.inject.Inject
 class InventoryViewModel @Inject constructor(
     private val repository: GroceryRepository,
     private val connector: SupabaseConnector,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     val householdIdFlow: StateFlow<String?> = connector.householdIdFlow(viewModelScope)
@@ -41,7 +45,7 @@ class InventoryViewModel @Inject constructor(
                     repository.watchProductsWithGroups(hid)
                         .map { list ->
                             list
-                                .groupBy { it.groupName ?: "Unsorted" }
+                                .groupBy { it.groupName ?: context.getString(R.string.inventory_group_unsorted) }
                                 .entries
                                 .sortedBy { it.key }
                                 .map { (groupName, items) ->
@@ -68,7 +72,10 @@ class InventoryViewModel @Inject constructor(
             } catch (e: Exception) {
                 Logger.e("Failed to start shopping", e)
                 _snackbarMessage.emit(
-                    SnackbarMessage(text = "Failed to start shopping", productId = ""),
+                    SnackbarMessage(
+                        text = context.getString(R.string.inventory_error_start_shopping),
+                        productId = "",
+                    ),
                 )
             }
         }
@@ -81,15 +88,18 @@ class InventoryViewModel @Inject constructor(
                 val newStock = (product.currentStock - 1).coerceAtLeast(0)
                 _snackbarMessage.emit(
                     SnackbarMessage(
-                        text = "${product.name}: $newStock remaining",
+                        text = context.getString(R.string.inventory_snackbar_remaining, product.name, newStock),
                         productId = product.id,
-                        actionLabel = "Details",
+                        actionLabel = context.getString(R.string.action_details),
                     ),
                 )
             } catch (e: Exception) {
                 Logger.e("Failed to decrement stock", e)
                 _snackbarMessage.emit(
-                    SnackbarMessage(text = "Failed to decrement stock", productId = product.id),
+                    SnackbarMessage(
+                        text = context.getString(R.string.inventory_error_decrement_stock),
+                        productId = product.id,
+                    ),
                 )
             }
         }
@@ -98,6 +108,34 @@ class InventoryViewModel @Inject constructor(
     fun navigateToDetail(product: ProductKind) {
         viewModelScope.launch {
             _navigationEvent.emit(product.id)
+        }
+    }
+
+    fun showDeletedProductUndo(deletedProductId: String, productName: String) {
+        viewModelScope.launch {
+            _snackbarMessage.emit(
+                SnackbarMessage(
+                    text = context.getString(R.string.inventory_snackbar_product_deleted, productName),
+                    productId = deletedProductId,
+                    actionLabel = context.getString(R.string.action_undo),
+                ),
+            )
+        }
+    }
+
+    fun restoreProduct(productId: String) {
+        viewModelScope.launch {
+            try {
+                repository.restoreProductKind(productId)
+            } catch (e: Exception) {
+                Logger.e("Failed to restore product", e)
+                _snackbarMessage.emit(
+                    SnackbarMessage(
+                        text = context.getString(R.string.inventory_error_restore_product),
+                        productId = productId,
+                    ),
+                )
+            }
         }
     }
 }

@@ -64,6 +64,9 @@
     "websearch": "deny",
     "supabase_*": "deny",
     "powersync_*": "deny",
+    "external_directory": {
+      "~/.gradle/caches/": "allow"
+    }
   },
   "disabled_providers": [
     "opencode",

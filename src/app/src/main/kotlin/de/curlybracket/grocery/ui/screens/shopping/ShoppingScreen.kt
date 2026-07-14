@@ -37,10 +37,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.curlybracket.grocery.R
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.scanner.BarcodeScannerBottomSheet
 import de.curlybracket.grocery.scanner.ScanResult
@@ -68,6 +70,10 @@ internal fun ShoppingScreen(
     var searchExpanded by rememberSaveable { mutableStateOf(false) }
     var showScanner by remember { mutableStateOf(false) }
 
+    val msgAdded = stringResource(R.string.shopping_snackbar_added)
+    val msgRestored = stringResource(R.string.shopping_snackbar_restored)
+    val msgBarcodeLinked = stringResource(R.string.shopping_snackbar_barcode_linked)
+
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { msg ->
             snackbarHostState.showSnackbar(msg.text)
@@ -77,10 +83,10 @@ internal fun ShoppingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Shopping") },
+                title = { Text(stringResource(R.string.shopping_title)) },
                 actions = {
                     TextButton(onClick = { viewModel.finishShopping() }) {
-                        Text("Finish Shopping")
+                        Text(stringResource(R.string.shopping_btn_finish_shopping))
                     }
                 },
             )
@@ -89,7 +95,7 @@ internal fun ShoppingScreen(
             FloatingActionButton(onClick = { showScanner = true }) {
                 Icon(
                     imageVector = Icons.Filled.CameraAlt,
-                    contentDescription = "Scan barcode",
+                    contentDescription = stringResource(R.string.shopping_fab_cd_scan_barcode),
                 )
             }
         },
@@ -108,7 +114,7 @@ internal fun ShoppingScreen(
                         onSearch = { },
                         expanded = searchExpanded,
                         onExpandedChange = { searchExpanded = it },
-                        placeholder = { Text("Search products…") },
+                        placeholder = { Text(stringResource(R.string.shopping_search_placeholder)) },
                     )
                 },
                 expanded = searchExpanded,
@@ -138,7 +144,7 @@ internal fun ShoppingScreen(
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     if (activeShopping.isNotEmpty()) {
                         stickyHeader(key = "header_active") {
-                            SectionHeader("▼ Active Shopping List")
+                            SectionHeader(stringResource(R.string.shopping_section_active))
                         }
                         items(
                             items = activeShopping,
@@ -157,7 +163,7 @@ internal fun ShoppingScreen(
 
                     if (struckThrough.isNotEmpty()) {
                         stickyHeader(key = "header_struck") {
-                            SectionHeader("▼ Struck-Through Cart Items")
+                            SectionHeader(stringResource(R.string.shopping_section_struck_through))
                         }
                         items(
                             items = struckThrough,
@@ -176,7 +182,7 @@ internal fun ShoppingScreen(
 
                     if (impulseBuys.isNotEmpty()) {
                         stickyHeader(key = "header_impulse") {
-                            SectionHeader("▼ Impulse Buys")
+                            SectionHeader(stringResource(R.string.shopping_section_impulse_buys))
                         }
                         items(
                             items = impulseBuys,
@@ -206,10 +212,13 @@ internal fun ShoppingScreen(
             onResult = { result ->
                 when (result) {
                     is ScanResult.Hit -> scope.launch {
-                        snackbarHostState.showSnackbar("Added: ${result.product.name}")
+                        snackbarHostState.showSnackbar(msgAdded.format(result.product.name))
                     }
                     is ScanResult.Restored -> scope.launch {
-                        snackbarHostState.showSnackbar("Restored: ${result.product.name}")
+                        snackbarHostState.showSnackbar(msgRestored.format(result.product.name))
+                    }
+                    is ScanResult.Linked -> scope.launch {
+                        snackbarHostState.showSnackbar(msgBarcodeLinked.format(result.product.name))
                     }
                     is ScanResult.Miss -> { /* CaptureRequired overlay handles this in-sheet */ }
                 }
@@ -277,13 +286,13 @@ private fun ShoppingRow(
             IconButton(onClick = onDecrement) {
                 Icon(
                     imageVector = Icons.Filled.Remove,
-                    contentDescription = "Decrease ${product.name}",
+                    contentDescription = stringResource(R.string.shopping_cd_decrease_item, product.name),
                 )
             }
             IconButton(onClick = onIncrement) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Increase ${product.name}",
+                    contentDescription = stringResource(R.string.shopping_cd_increase_item, product.name),
                 )
             }
         }
@@ -309,10 +318,10 @@ private fun SearchResultCard(
             modifier = Modifier.weight(1f),
         )
         TextButton(onClick = onForceAdd) {
-            Text("Force Add")
+            Text(stringResource(R.string.shopping_btn_force_add))
         }
         TextButton(onClick = onDetails) {
-            Text("Details")
+            Text(stringResource(R.string.shopping_btn_details))
         }
     }
 }

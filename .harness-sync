@@ -1,0 +1,4 @@
+main=/Users/mkuckert/env/agent-harness
+name=grocery-shopping-app
+base=798f6005e30ae4f62a623d4ce2abc7ea1713acbd
+paths=.opencode opencode.jsonc tui.jsonc

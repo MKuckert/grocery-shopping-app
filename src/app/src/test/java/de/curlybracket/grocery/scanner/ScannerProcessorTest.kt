@@ -1,5 +1,6 @@
 package de.curlybracket.grocery.scanner
 
+import android.content.Context
 import app.cash.turbine.test
 import de.curlybracket.grocery.audio.AudioFeedback
 import de.curlybracket.grocery.domain.model.ProductKind
@@ -8,7 +9,9 @@ import de.curlybracket.grocery.network.OFResult
 import de.curlybracket.grocery.network.OpenFoodFactsClient
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -20,6 +23,7 @@ class ScannerProcessorTest {
     private lateinit var repository: GroceryRepository
     private lateinit var audioFeedback: AudioFeedback
     private lateinit var openFoodFactsClient: OpenFoodFactsClient
+    private lateinit var context: Context
     private lateinit var processor: ScannerProcessor
 
     private val householdId = "hh-1"
@@ -49,7 +53,9 @@ class ScannerProcessorTest {
         repository = mockk(relaxed = true)
         audioFeedback = mockk(relaxed = true)
         openFoodFactsClient = mockk(relaxed = true)
-        processor = ScannerProcessor(repository, audioFeedback, openFoodFactsClient)
+        context = mockk(relaxed = true)
+        every { context.getString(any()) } returns "Unknown Item"
+        processor = ScannerProcessor(repository, audioFeedback, openFoodFactsClient, context)
     }
 
     @Test
@@ -164,6 +170,40 @@ class ScannerProcessorTest {
         }
 
         coVerify(exactly = 1) { audioFeedback.playFailure() }
+    }
+
+    @Test
+    fun `linkBarcodeToProduct happy path emits Linked and plays success audio`() = runTest {
+        val product = makeProduct()
+        coEvery { repository.addBarcode(product.id, barcode, householdId) } returns Unit
+        coEvery { repository.watchProductKind(product.id) } returns flowOf(product)
+
+        processor.scanResultFlow.test {
+            processor.linkBarcodeToProduct(barcode, product.id, householdId)
+            val result = awaitItem()
+            assertEquals(ScanResult.Linked(product), result)
+        }
+
+        coVerify(exactly = 1) { repository.addBarcode(product.id, barcode, householdId) }
+        coVerify(exactly = 1) { audioFeedback.playSuccess() }
+    }
+
+    @Test
+    fun `linkBarcodeToProduct on duplicate barcode plays failure audio and rethrows`() = runTest {
+        val product = makeProduct()
+        val duplicateException = BarcodeAlreadyLinkedException(barcode)
+        coEvery { repository.addBarcode(product.id, barcode, householdId) } throws duplicateException
+
+        var caughtException: BarcodeAlreadyLinkedException? = null
+        try {
+            processor.linkBarcodeToProduct(barcode, product.id, householdId)
+        } catch (e: BarcodeAlreadyLinkedException) {
+            caughtException = e
+        }
+
+        assertEquals(barcode, caughtException?.barcode)
+        coVerify(exactly = 1) { audioFeedback.playFailure() }
+        coVerify(exactly = 0) { audioFeedback.playSuccess() }
     }
 
     @Test

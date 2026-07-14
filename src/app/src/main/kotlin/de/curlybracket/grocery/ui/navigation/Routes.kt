@@ -2,7 +2,6 @@ package de.curlybracket.grocery.ui.navigation
 
 sealed class Route(val path: String) {
     data object SignIn : Route("sign_in")
-    data object SignUp : Route("sign_up")
     data object Inventory : Route("inventory")
     data object Shopping : Route("shopping")
     data object Unloading : Route("unloading")

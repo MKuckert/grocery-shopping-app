@@ -26,12 +26,12 @@ import de.curlybracket.grocery.domain.model.HouseholdState
 import de.curlybracket.grocery.ui.navigation.AppViewModel
 import de.curlybracket.grocery.ui.navigation.Route
 import de.curlybracket.grocery.ui.screens.SignInScreen
-import de.curlybracket.grocery.ui.screens.SignUpScreen
 import de.curlybracket.grocery.ui.screens.detail.DetailScreen
 import de.curlybracket.grocery.ui.screens.inventory.InventoryScreen
 import de.curlybracket.grocery.ui.screens.shopping.ShoppingScreen
 import de.curlybracket.grocery.ui.screens.unloading.UnloadingScreen
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.milliseconds
 
 @EntryPoint
@@ -58,6 +58,7 @@ fun GroceryApp() {
     val householdState by appViewModel.householdState.collectAsStateWithLifecycle()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val deletedProductIdFlow = remember { MutableStateFlow<String?>(null) }
 
     LaunchedEffect(authState) {
         if (authState is AuthState.SignedOut) {
@@ -91,15 +92,14 @@ fun GroceryApp() {
             composable(Route.SignIn.path) {
                 SignInScreen(authViewModel = authViewModel)
             }
-            composable(Route.SignUp.path) {
-                SignUpScreen(authViewModel = authViewModel)
-            }
             composable(Route.Inventory.path) {
                 InventoryScreen(
                     onNavigateToDetail = { productId ->
                         navController.navigate(Route.Detail(productId).path)
                     },
                     scannerProcessor = appViewModel.scannerProcessor,
+                    deletedProductIdFlow = deletedProductIdFlow,
+                    onDeletedProductConsumed = { deletedProductIdFlow.value = null },
                 )
             }
             composable(Route.Shopping.path) {
@@ -113,9 +113,14 @@ fun GroceryApp() {
             composable(Route.Unloading.path) {
                 UnloadingScreen()
             }
-            composable(Route.Detail.TEMPLATE) { _ ->
+            composable(Route.Detail.TEMPLATE) {
                 DetailScreen(
-                    onBack = { navController.popBackStack() },
+                    onBack = { deletedProductId ->
+                        if (deletedProductId != null) {
+                            deletedProductIdFlow.value = deletedProductId
+                        }
+                        navController.popBackStack()
+                    },
                 )
             }
         }
