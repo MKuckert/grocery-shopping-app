@@ -49,7 +49,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
    - **Description:** Extract the `when(mode)` block into a sealed interface `ScanCommand` with implementations: `DecrementStockCommand`, `IncrementPendingStockCommand`. Each command has a `suspend fun execute(repository: GroceryRepository, productId: String)` method. `ScannerProcessor.processScan()` calls `mode.toCommand().execute(...)` instead of branching. Also extract the three top-level branches (restored, hit, miss) into private methods: `handleRestored()`, `handleHit()`, `handleMiss()`.
    - **Review Criteria:** No `when/is` on `ScannerMode` in `ScannerProcessor`; command pattern is testable independently; existing behavior preserved.
 
-- [/] **Task 8: Split large screen files**
+- [x] **Task 8: Split large screen files**
   - **Description:** Extract composables into separate files:
     - `DetailScreen.kt` → extract `ImagePreviewSection.kt`, `BarcodeSection.kt`, `StockSection.kt`
     - `ShoppingScreen.kt` → extract `ShoppingProductCard.kt`
@@ -132,3 +132,4 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 - **Round 6:** Task 4 APPROVED. `WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG)` correctly called in `AuthViewModel.signOut()` before `connector.signOut()` and `database.disconnectAndClear()`. `@ApplicationContext` injected via Hilt. No `SyncService` references remain. All review criteria met.
 - **Round 7:** Task 6 APPROVED. `SoundEffect` enum correctly defines `resourceId`, `volume`, `rate`. `AudioFeedback` uses `Map<SoundEffect, Int>` / `Set<SoundEffect>` — no named fields for individual sounds. All call sites updated. `AudioFeedbackTest` verifies dispatch for both effects, no-op on unloaded, and load-error handling. Behavior preserved.
 - **Round 8:** Task 8 NOT APPROVED. (1) `DetailScreen.kt` is 363 lines — `GroupDropdown` and `CreateGroupDialog` must be extracted to a separate file. (2) `ShoppingProductCard.kt` has no `@Preview` for `ShoppingRow` or `SearchResultCard`. (3) `InventoryProductRow.kt` has no `@Preview` for `ProductRow`. All three must be fixed.
+- **Round 9:** Task 8 APPROVED. All extracted composables are in separate files with @Preview functions, no file is unreasonably large, and no behavioral changes were introduced.
