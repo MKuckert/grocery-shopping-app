@@ -57,9 +57,9 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
     Keep screen-level composable in original file; extracted components get their own files in same package.
   - **Review Criteria:** No file exceeds ~200 lines; extracted composables are `@Preview`-able; no behavioral changes.
 
-- [ ] **Task 9: Configure backup rules**
-  - **Description:** Update `backup_rules.xml` to exclude: `sharedpref/` (contains auth tokens), `databases/` (PowerSync local DB, re-syncs on restore). Update `data_extraction_rules.xml` with matching `<exclude>` rules for cloud backup. Rationale: auth tokens are device-specific; local DB rebuilds from server.
-  - **Review Criteria:** Both XML files have explicit exclude rules; no sensitive data backed up; app still functions after restore (re-auth + re-sync).
+- [/] **Task 9: Configure backup rules**
+   - **Description:** Update `backup_rules.xml` to exclude: `sharedpref/` (contains auth tokens), `databases/` (PowerSync local DB, re-syncs on restore). Update `data_extraction_rules.xml` with matching `<exclude>` rules for cloud backup. Rationale: auth tokens are device-specific; local DB rebuilds from server.
+   - **Review Criteria:** Both XML files have explicit exclude rules; no sensitive data backed up; app still functions after restore (re-auth + re-sync).
 
 - [ ] **Task 10: Add bottom padding for FAB overlap**
   - **Description:** In `ShoppingScreen` and `InventoryScreen`, add `contentPadding` to the `LazyColumn` with `PaddingValues(bottom = 80.dp)` to prevent last item from being obscured by the FAB.
