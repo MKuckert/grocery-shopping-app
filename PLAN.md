@@ -49,7 +49,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
    - **Description:** Extract the `when(mode)` block into a sealed interface `ScanCommand` with implementations: `DecrementStockCommand`, `IncrementPendingStockCommand`. Each command has a `suspend fun execute(repository: GroceryRepository, productId: String)` method. `ScannerProcessor.processScan()` calls `mode.toCommand().execute(...)` instead of branching. Also extract the three top-level branches (restored, hit, miss) into private methods: `handleRestored()`, `handleHit()`, `handleMiss()`.
    - **Review Criteria:** No `when/is` on `ScannerMode` in `ScannerProcessor`; command pattern is testable independently; existing behavior preserved.
 
-- [ ] **Task 8: Split large screen files**
+- [/] **Task 8: Split large screen files**
   - **Description:** Extract composables into separate files:
     - `DetailScreen.kt` → extract `ImagePreviewSection.kt`, `BarcodeSection.kt`, `StockSection.kt`
     - `ShoppingScreen.kt` → extract `ShoppingProductCard.kt`
