@@ -4,14 +4,13 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
 import dagger.hilt.android.qualifiers.ApplicationContext
-import de.curlybracket.grocery.R
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AudioFeedback @Inject constructor(@ApplicationContext context: Context) {
 
-    private val soundPool = SoundPool.Builder()
+    private val soundPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(3)
         .setAudioAttributes(
             AudioAttributes.Builder()
@@ -21,25 +20,27 @@ class AudioFeedback @Inject constructor(@ApplicationContext context: Context) {
         )
         .build()
 
-    private var successId = 0
-    private var failureId = 0
-    private var successLoaded = false
-    private var failureLoaded = false
+    private val soundIds = mutableMapOf<SoundEffect, Int>()
+    private val loadedEffects = mutableSetOf<SoundEffect>()
 
     init {
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
             if (status == 0) {
-                when (sampleId) {
-                    successId -> successLoaded = true
-                    failureId -> failureLoaded = true
+                soundIds.entries.find { it.value == sampleId }?.key?.let { effect ->
+                    loadedEffects += effect
                 }
             }
         }
-        successId = soundPool.load(context, R.raw.beep_success, 1)
-        failureId = soundPool.load(context, R.raw.beep_failure, 1)
+        SoundEffect.entries.forEach { effect ->
+            soundIds[effect] = soundPool.load(context, effect.resourceId, 1)
+        }
     }
 
-    fun playSuccess() { if (successLoaded) soundPool.play(successId, 1f, 1f, 1, 0, 1f) }
-    fun playFailure() { if (failureLoaded) soundPool.play(failureId, 0.7f, 0.7f, 1, 0, 0.8f) }
+    fun play(effect: SoundEffect) {
+        if (effect in loadedEffects) {
+            soundPool.play(soundIds.getValue(effect), effect.volume, effect.volume, 1, 0, effect.rate)
+        }
+    }
+
     fun release() = soundPool.release()
 }

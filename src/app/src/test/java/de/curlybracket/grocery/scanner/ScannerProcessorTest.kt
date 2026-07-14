@@ -3,6 +3,7 @@ package de.curlybracket.grocery.scanner
 import android.content.Context
 import app.cash.turbine.test
 import de.curlybracket.grocery.audio.AudioFeedback
+import de.curlybracket.grocery.audio.SoundEffect
 import de.curlybracket.grocery.domain.model.ProductKind
 import de.curlybracket.grocery.domain.repository.GroceryRepository
 import de.curlybracket.grocery.network.OFResult
@@ -130,7 +131,7 @@ class ScannerProcessorTest {
         // Should not throw
         processor.processScan(barcode, mode)
 
-        coVerify(exactly = 1) { audioFeedback.playFailure() }
+        coVerify(exactly = 1) { audioFeedback.play(SoundEffect.FAILURE) }
     }
 
     @Test
@@ -143,7 +144,7 @@ class ScannerProcessorTest {
             awaitItem()
         }
 
-        coVerify(exactly = 1) { audioFeedback.playSuccess() }
+        coVerify(exactly = 1) { audioFeedback.play(SoundEffect.SUCCESS) }
     }
 
     @Test
@@ -156,7 +157,7 @@ class ScannerProcessorTest {
             awaitItem()
         }
 
-        coVerify(exactly = 1) { audioFeedback.playSuccess() }
+        coVerify(exactly = 1) { audioFeedback.play(SoundEffect.SUCCESS) }
     }
 
     @Test
@@ -169,7 +170,7 @@ class ScannerProcessorTest {
             awaitItem()
         }
 
-        coVerify(exactly = 1) { audioFeedback.playFailure() }
+        coVerify(exactly = 1) { audioFeedback.play(SoundEffect.FAILURE) }
     }
 
     @Test
@@ -185,7 +186,7 @@ class ScannerProcessorTest {
         }
 
         coVerify(exactly = 1) { repository.addBarcode(product.id, barcode, householdId) }
-        coVerify(exactly = 1) { audioFeedback.playSuccess() }
+        coVerify(exactly = 1) { audioFeedback.play(SoundEffect.SUCCESS) }
     }
 
     @Test
@@ -202,8 +203,8 @@ class ScannerProcessorTest {
         }
 
         assertEquals(barcode, caughtException?.barcode)
-        coVerify(exactly = 1) { audioFeedback.playFailure() }
-        coVerify(exactly = 0) { audioFeedback.playSuccess() }
+        coVerify(exactly = 1) { audioFeedback.play(SoundEffect.FAILURE) }
+        coVerify(exactly = 0) { audioFeedback.play(SoundEffect.SUCCESS) }
     }
 
     @Test

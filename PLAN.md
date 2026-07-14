@@ -41,7 +41,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** In `GroceryApp.kt` (or theme wrapper), detect system dark mode via `isSystemInDarkTheme()` and apply `dynamicDarkColorScheme(context)` or `dynamicLightColorScheme(context)`. Remove hardcoded `Theme.Material.Light` from `res/values/themes.xml` and `res/values-night/themes.xml`; use `Theme.Material3.DayNight.NoActionBar` or just let Compose handle it. Update splash screen theme if needed.
   - **Review Criteria:** App respects system dark/light toggle; colors change dynamically; no hardcoded light-only colors in Compose code.
 
-- [ ] **Task 6: Refactor AudioFeedback to use enum**
+- [/] **Task 6: Refactor AudioFeedback to use enum**
   - **Description:** Create `SoundEffect` enum with properties: `resourceId: Int`, `volume: Float`, `rate: Float`. Values: `SUCCESS(R.raw.beep_success, 1f, 1f)`, `FAILURE(R.raw.beep_failure, 0.7f, 0.8f)`. Refactor `AudioFeedback` to use a `Map<SoundEffect, Int>` for sound IDs and a `Set<SoundEffect>` for loaded state. Replace `playSuccess()`/`playFailure()` with `play(effect: SoundEffect)`. Update all call sites.
   - **Review Criteria:** Enum-based; no named fields for individual sounds; existing behavior preserved; unit test verifies `play()` dispatches correctly.
 
