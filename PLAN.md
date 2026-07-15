@@ -61,7 +61,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
    - **Description:** Update `backup_rules.xml` to exclude: `sharedpref/` (contains auth tokens), `databases/` (PowerSync local DB, re-syncs on restore). Update `data_extraction_rules.xml` with matching `<exclude>` rules for cloud backup. Rationale: auth tokens are device-specific; local DB rebuilds from server.
    - **Review Criteria:** Both XML files have explicit exclude rules; no sensitive data backed up; app still functions after restore (re-auth + re-sync).
 
-- [/] **Task 10: Add bottom padding for FAB overlap**
+- [x] **Task 10: Add bottom padding for FAB overlap**
   - **Description:** In `ShoppingScreen` and `InventoryScreen`, add `contentPadding` to the `LazyColumn` with `PaddingValues(bottom = 80.dp)` to prevent last item from being obscured by the FAB.
   - **Review Criteria:** Last list item is fully visible when scrolled to bottom; FAB doesn't overlap content.
 
@@ -136,3 +136,4 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 - **Round 10:** Task 8 NOT APPROVED. (1) `DetailScreen.kt` is 363 lines — `GroupDropdown` and `CreateGroupDialog` must be extracted to a separate file. (2) `ShoppingProductCard.kt` has no `@Preview` for `ShoppingRow` or `SearchResultCard`. (3) `InventoryProductRow.kt` has no `@Preview` for `ProductRow`. All three must be fixed.
 - **Round 11:** Task 8 APPROVED. All extracted composables are in separate files with @Preview functions, no file is unreasonably large, and no behavioral changes were introduced.
 - **Round 12:** Task 9 APPROVED. Both `backup_rules.xml` and `data_extraction_rules.xml` correctly exclude `sharedpref` and `database` domains. Files are well-formed XML, properly referenced in manifest via `android:fullBackupContent` and `android:dataExtractionRules`. Post-restore UX is correct: re-auth + re-sync.
+- **Round 13:** Task 10 APPROVED. Both `ShoppingScreen` and `InventoryScreen` have `contentPadding = PaddingValues(bottom = 80.dp)` on their main `LazyColumn`. Search dropdown LazyColumn in ShoppingScreen correctly excluded (not affected by FAB).
