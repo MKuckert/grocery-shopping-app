@@ -65,7 +65,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** In `ShoppingScreen` and `InventoryScreen`, add `contentPadding` to the `LazyColumn` with `PaddingValues(bottom = 80.dp)` to prevent last item from being obscured by the FAB.
   - **Review Criteria:** Last list item is fully visible when scrolled to bottom; FAB doesn't overlap content.
 
-- [/] **Task 11: Product delete as button**
+- [x] **Task 11: Product delete as button**
   - **Description:** In `DetailScreen`, move the delete action from the `TopAppBar` `IconButton` to a prominent `OutlinedButton` or `TextButton` at the bottom of the detail content (with destructive styling: `MaterialTheme.colorScheme.error`). Remove the icon from the app bar.
   - **Review Criteria:** Delete button visible without accessing overflow/appbar; styled as destructive action; confirmation dialog still works.
 
@@ -137,3 +137,4 @@ Good, but also add: call `database.disconnectAndClear()` on logout (currently do
 - **Round 11:** Task 8 APPROVED. All extracted composables are in separate files with @Preview functions, no file is unreasonably large, and no behavioral changes were introduced.
 - **Round 12:** Task 9 APPROVED. Both `backup_rules.xml` and `data_extraction_rules.xml` correctly exclude `sharedpref` and `database` domains. Files are well-formed XML, properly referenced in manifest via `android:fullBackupContent` and `android:dataExtractionRules`. Post-restore UX is correct: re-auth + re-sync.
 - **Round 13:** Task 10 APPROVED. Both `ShoppingScreen` and `InventoryScreen` have `contentPadding = PaddingValues(bottom = 80.dp)` on their main `LazyColumn`. Search dropdown LazyColumn in ShoppingScreen correctly excluded (not affected by FAB).
+- **Round 14:** Task 11 APPROVED. Delete icon removed from TopAppBar. `OutlinedButton` with `fillMaxWidth()` placed at bottom of detail content. Both `contentColor` and `border` use `MaterialTheme.colorScheme.error`. Confirmation `AlertDialog` remains fully functional. All review criteria met. **All 11 tasks complete — plan fully delivered.**
