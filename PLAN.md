@@ -65,7 +65,7 @@ Modernize the app's infrastructure and UX: replace the foreground service with W
   - **Description:** In `ShoppingScreen` and `InventoryScreen`, add `contentPadding` to the `LazyColumn` with `PaddingValues(bottom = 80.dp)` to prevent last item from being obscured by the FAB.
   - **Review Criteria:** Last list item is fully visible when scrolled to bottom; FAB doesn't overlap content.
 
-- [ ] **Task 11: Product delete as button**
+- [/] **Task 11: Product delete as button**
   - **Description:** In `DetailScreen`, move the delete action from the `TopAppBar` `IconButton` to a prominent `OutlinedButton` or `TextButton` at the bottom of the detail content (with destructive styling: `MaterialTheme.colorScheme.error`). Remove the icon from the app bar.
   - **Review Criteria:** Delete button visible without accessing overflow/appbar; styled as destructive action; confirmation dialog still works.
 
