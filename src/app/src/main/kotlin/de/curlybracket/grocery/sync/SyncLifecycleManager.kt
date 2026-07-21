@@ -23,7 +23,7 @@ class SyncLifecycleManager @Inject constructor(
     private val connector: SupabaseConnector,
 ) : DefaultLifecycleObserver {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var disconnectJob: Job? = null
 
     fun initialize() {
