@@ -1,12 +1,14 @@
 ---
 description: "Reviews the work of Builder"
 mode: subagent
-model: manifest/ultra
+model: github-copilot/claude-opus-4.6
+reasoningEffort: low
 permission:
   read: allow
   edit:
     "*": deny
     "PLAN.md": allow
+    tasks/*: allow
   grep: allow
   glob: allow
   list: allow

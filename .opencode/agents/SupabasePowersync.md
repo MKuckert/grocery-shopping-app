@@ -1,7 +1,7 @@
 ---
 description: "Use this agent to connect to supabase and powersync."
 mode: primary
-model: manifest/ultra
+model: github-copilot/gpt-5.6-sol
 permission:
   read: allow
   edit: allow

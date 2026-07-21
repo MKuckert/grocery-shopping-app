@@ -1,7 +1,7 @@
 ---
 description: "Commits changes to git"
 mode: subagent
-model: manifest/medium
+model: github-copilot/gpt-5.6-luna
 permission:
   read: allow
   edit: deny
