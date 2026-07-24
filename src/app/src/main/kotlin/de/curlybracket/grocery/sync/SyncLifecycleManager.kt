@@ -33,7 +33,7 @@ class SyncLifecycleManager @Inject constructor(
     override fun onStart(owner: LifecycleOwner) {
         disconnectJob?.cancel()
         scope.launch {
-            val status = connector.sessionStatus.first()
+            val status = connector.sessionStatus.first { it !is SessionStatus.Initializing }
             if (status is SessionStatus.Authenticated) {
                 Logger.i("SyncLifecycleManager: app foregrounded, connecting")
                 database.connect(connector)
