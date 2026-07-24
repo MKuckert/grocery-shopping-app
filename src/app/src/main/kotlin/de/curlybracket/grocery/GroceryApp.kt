@@ -4,12 +4,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -41,6 +44,7 @@ interface AudioFeedbackEntryPoint {
 }
 
 @Composable
+@Suppress("UnusedMaterial3ScaffoldPaddingParameter")
 fun GroceryApp() {
     val appViewModel: AppViewModel = hiltViewModel()
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -84,11 +88,16 @@ fun GroceryApp() {
         }
     }
 
-    MaterialTheme {
+    val colorScheme = if (isSystemInDarkTheme()) {
+        dynamicDarkColorScheme(context)
+    } else {
+        dynamicLightColorScheme(context)
+    }
+    MaterialTheme(colorScheme = colorScheme) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { _ ->
-        NavHost(navController = navController, startDestination = Route.SignIn.path) {
+            NavHost(navController = navController, startDestination = Route.SignIn.path) {
             composable(Route.SignIn.path) {
                 SignInScreen(authViewModel = authViewModel)
             }

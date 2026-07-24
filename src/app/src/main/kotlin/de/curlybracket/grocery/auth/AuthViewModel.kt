@@ -2,9 +2,14 @@ package de.curlybracket.grocery.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.content.Context
+import androidx.work.WorkManager
 import co.touchlab.kermit.Logger
+import com.powersync.PowerSyncDatabase
 import com.powersync.connector.supabase.SupabaseConnector
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import de.curlybracket.grocery.sync.BackgroundSyncWorker
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.event.AuthEvent
 import io.github.jan.supabase.auth.status.RefreshFailureCause
@@ -22,6 +27,8 @@ sealed class AuthState {
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val connector: SupabaseConnector,
+    private val database: PowerSyncDatabase,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.SignedOut)
@@ -72,7 +79,9 @@ class AuthViewModel @Inject constructor(
 
     suspend fun signOut() {
         try {
+            WorkManager.getInstance(context).cancelAllWorkByTag(BackgroundSyncWorker.WORK_TAG)
             connector.signOut()
+            database.disconnectAndClear()
         } catch (e: Exception) {
             Logger.e("Error signing out: $e")
         }
